@@ -1,14 +1,45 @@
+version: '3.8'
+
 services:
-  auth-db:
+  keycloak-db:
     image: postgres:16
     ports:
       - "5432:5432"
     environment:
-          POSTGRES_DB: authdb
-          POSTGRES_USER: authuser
-          POSTGRES_PASSWORD: authpass
+      POSTGRES_DB: authdb
+      POSTGRES_USER: authuser
+      POSTGRES_PASSWORD: authpass
     volumes:
       - pgdata:/var/lib/postgresql/data
 
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0.1
+    command: start-dev --import-realm
+    ports:
+      - "8080:8080"
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL_HOST: keycloak-db
+      KC_DB_URL_PORT: 5432
+      KC_DB_URL_DATABASE: authdb
+      KC_DB_USERNAME: authuser
+      KC_DB_PASSWORD: authpass
+    depends_on:
+      - keycloak-db
+    volumes:
+      - ./keycloak:/opt/keycloak/data/import
+
+  catalog-db:
+    image: mongo:latest
+    container_name: catalog-db
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    restart: unless-stopped
+
 volumes:
   pgdata:
+  mongodb_data:

@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: Catalog Service
+
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: catalogdb
+
+server:
+  port: 8081
