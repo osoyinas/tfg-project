@@ -1,6 +1,9 @@
 package es.uah.pablopinas.catalog.application.service;
 
-import es.uah.pablopinas.catalog.domain.model.*;
+import es.uah.pablopinas.catalog.domain.model.CatalogItem;
+import es.uah.pablopinas.catalog.domain.model.CatalogSearchFilter;
+import es.uah.pablopinas.catalog.domain.model.CatalogType;
+import es.uah.pablopinas.catalog.domain.model.PageResult;
 import es.uah.pablopinas.catalog.domain.port.out.CatalogItemRepositoryPort;
 import es.uah.pablopinas.catalog.domain.port.out.ExternalCatalogRepositoryPort;
 import org.junit.jupiter.api.BeforeEach;
@@ -9,7 +12,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Collections;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 class SearchCatalogItemsServiceTest {
@@ -48,7 +51,7 @@ class SearchCatalogItemsServiceTest {
         when(catalogRepository.search(filter, 0, 10)).thenReturn(emptyPage).thenReturn(new PageResult<>(Collections.singletonList(externalItem), 0, 10, 1));
         when(externalRepository.fetchItemByTitleAndType("Test", CatalogType.MOVIE)).thenReturn(Optional.of(externalItem));
         PageResult<CatalogItem> result = service.search(filter, 0, 10);
-        assertEquals(1, result.getItems().size());
+        assertEquals(1, result.items().size());
         verify(catalogRepository).save(externalItem);
     }
 }

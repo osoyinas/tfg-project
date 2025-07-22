@@ -1,9 +1,9 @@
 package es.uah.pablopinas.catalog.application.service;
 
+import es.uah.pablopinas.catalog.domain.exception.CatalogItemNotFoundException;
 import es.uah.pablopinas.catalog.domain.model.CatalogItem;
 import es.uah.pablopinas.catalog.domain.port.in.GetCatalogItemByIdUseCase;
 import es.uah.pablopinas.catalog.domain.port.out.CatalogItemRepositoryPort;
-import es.uah.pablopinas.catalog.domain.exception.CatalogItemNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

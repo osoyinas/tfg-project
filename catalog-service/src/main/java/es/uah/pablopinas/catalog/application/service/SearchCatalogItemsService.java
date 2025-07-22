@@ -23,7 +23,7 @@ public class SearchCatalogItemsService implements SearchCatalogItemsUseCase {
 
         // If there are no results and both title and type are provided, try to fetch it from the external provider
         boolean isSearchableExternally =
-                result.getItems().isEmpty() &&
+                result.items().isEmpty() &&
                         filter.getTitleContains() != null &&
                         filter.getType() != null;
 
