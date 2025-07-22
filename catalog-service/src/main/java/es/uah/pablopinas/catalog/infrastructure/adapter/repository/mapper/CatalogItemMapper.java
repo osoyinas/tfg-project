@@ -4,17 +4,22 @@ import es.uah.pablopinas.catalog.domain.model.CatalogItem;
 import es.uah.pablopinas.catalog.domain.model.CatalogType;
 import es.uah.pablopinas.catalog.infrastructure.adapter.repository.model.CatalogItemDocument;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Date;
+
 public class CatalogItemMapper {
 
     public static CatalogItemDocument toDocument(CatalogItem item) {
         return CatalogItemDocument.builder()
                 .id(item.getId())
                 .title(item.getTitle())
+                .description(item.getDescription())
                 .type(item.getType().toString().toLowerCase())
-                .releaseYear(item.getReleaseYear())
+                .releaseDate(toDate(item.getReleaseDate()))
                 .genres(item.getGenres())
                 .creators(item.getCreators())
-                .averageRating(item.getAverageRating())
+                .images(item.getImages())
                 .build();
     }
 
@@ -22,11 +27,22 @@ public class CatalogItemMapper {
         return CatalogItem.builder()
                 .id(doc.getId())
                 .title(doc.getTitle())
+                .description(doc.getDescription())
                 .type(CatalogType.fromString(doc.getType()))
-                .releaseYear(doc.getReleaseYear())
+                .releaseDate(toLocalDate(doc.getReleaseDate()))
                 .genres(doc.getGenres())
                 .creators(doc.getCreators())
-                .averageRating(doc.getAverageRating())
+                .images(doc.getImages())
                 .build();
+    }
+
+    private static Date toDate(LocalDate localDate) {
+        if (localDate == null) return null;
+        return Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+    }
+
+    private static LocalDate toLocalDate(Date date) {
+        if (date == null) return null;
+        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
     }
 }

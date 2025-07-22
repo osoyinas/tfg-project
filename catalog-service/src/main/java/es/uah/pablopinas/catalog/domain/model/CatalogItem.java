@@ -3,6 +3,7 @@ package es.uah.pablopinas.catalog.domain.model;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Getter
@@ -20,8 +21,9 @@ public class CatalogItem {
     private String title;
     private String description;
     @NonNull
-    private CatalogType type; // e.g., movie, book, series
-    private int releaseYear;
+    private CatalogType type;
+    private LocalDate releaseDate;
     private List<String> genres;
     private List<String> creators;
+    private ImageSet images;
 }
