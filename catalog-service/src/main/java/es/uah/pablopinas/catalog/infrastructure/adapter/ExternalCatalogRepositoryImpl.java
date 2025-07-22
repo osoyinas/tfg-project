@@ -2,7 +2,6 @@ package es.uah.pablopinas.catalog.infrastructure.adapter;
 
 import es.uah.pablopinas.catalog.domain.model.CatalogItem;
 import es.uah.pablopinas.catalog.domain.model.CatalogType;
-import es.uah.pablopinas.catalog.domain.port.out.ExternalCatalogRepository;
 import es.uah.pablopinas.catalog.domain.port.out.ExternalCatalogRepositoryPort;
 import es.uah.pablopinas.catalog.infrastructure.adapter.provider.ExternalProviderStrategy;
 import lombok.RequiredArgsConstructor;

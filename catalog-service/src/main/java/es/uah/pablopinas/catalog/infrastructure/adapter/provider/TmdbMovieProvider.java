@@ -5,6 +5,7 @@ import es.uah.pablopinas.catalog.domain.model.CatalogType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,10 +27,9 @@ public class TmdbMovieProvider implements ExternalProviderStrategy {
                 CatalogItem.builder()
                         .title(title)
                         .type(CatalogType.MOVIE)
-                        .releaseYear(1999)
+                        .releaseDate(LocalDate.ofYearDay(2002, 10))
                         .genres(List.of("Sci-Fi", "Action"))
                         .creators(List.of("Lana Wachowski", "Lilly Wachowski"))
-                        .averageRating(4.5)
                         .build()
         );
     }
