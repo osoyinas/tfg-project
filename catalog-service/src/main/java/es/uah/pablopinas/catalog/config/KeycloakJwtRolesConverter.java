@@ -19,7 +19,6 @@ public class KeycloakJwtRolesConverter implements Converter<Jwt, Collection<Gran
     private static final String CLAIM_RESOURCE_ACCESS = "resource_access";
     private static final String CLAIM_ROLES = "roles";
 
-    // El nombre del cliente asociado a este microservicio
     private static final String LOCAL_CLIENT = "catalog-service";
 
     @Override
@@ -44,10 +43,10 @@ public class KeycloakJwtRolesConverter implements Converter<Jwt, Collection<Gran
                     roles.forEach(role -> {
                         String authority;
                         if (LOCAL_CLIENT.equals(resource)) {
-                            // Si es el microservicio actual, sin prefijo de cliente
+                            // if the resource is the local client, use a specific prefix
                             authority = PREFIX_RESOURCE_ROLE + role.toUpperCase().replace("-", "_");
                         } else {
-                            // Prefijo con nombre del cliente
+                            // Prefix with resource name
                             authority = PREFIX_RESOURCE_ROLE + resource + "_" + role;
                         }
                         grantedAuthorities.add(new SimpleGrantedAuthority(authority));
