@@ -2,7 +2,9 @@ package es.uah.pablopinas.catalog.domain.port.in;
 
 import es.uah.pablopinas.catalog.domain.model.CatalogItem;
 
+import java.util.Optional;
+
 public interface GetCatalogItemByIdUseCase {
 
-    CatalogItem getById(String id);
+    Optional<CatalogItem> getById(String id);
 }

@@ -5,9 +5,12 @@ import es.uah.pablopinas.catalog.domain.model.CatalogType;
 import es.uah.pablopinas.catalog.domain.port.out.ExternalCatalogRepositoryPort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class FetchExternalCatalogItemServiceTest {
     private ExternalCatalogRepositoryPort externalRepo;

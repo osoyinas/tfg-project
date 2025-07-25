@@ -3,12 +3,14 @@ package es.uah.pablopinas.catalog.application.service;
 import es.uah.pablopinas.catalog.domain.model.CatalogItem;
 import es.uah.pablopinas.catalog.domain.model.CatalogType;
 import es.uah.pablopinas.catalog.domain.port.out.CatalogItemRepositoryPort;
-import es.uah.pablopinas.catalog.domain.exception.CatalogItemNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import java.util.Optional;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class GetCatalogItemByIdServiceTest {
     private CatalogItemRepositoryPort repository;
@@ -24,14 +26,15 @@ class GetCatalogItemByIdServiceTest {
     void getById_ShouldReturnItemIfExists() {
         CatalogItem item = CatalogItem.builder().id("1").title("Test").type(CatalogType.MOVIE).build();
         when(repository.findById("1")).thenReturn(Optional.of(item));
-        CatalogItem result = service.getById("1");
-        assertEquals(item, result);
+        Optional<CatalogItem> result = service.getById("1");
+        assertEquals(item, result.get());
     }
 
     @Test
     void getById_ShouldThrowIfNotExists() {
         when(repository.findById("2")).thenReturn(Optional.empty());
-        assertThrows(CatalogItemNotFoundException.class, () -> service.getById("2"));
+        Optional<CatalogItem> result = service.getById("2");
+        assertEquals(Optional.empty(), result);
     }
 }
 

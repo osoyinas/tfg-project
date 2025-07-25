@@ -2,11 +2,26 @@ spring:
   application:
     name: Catalog Service
 
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8080/realms/TrustedFeedbackGateway}
+          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:http://localhost:8080/realms/TrustedFeedbackGateway/protocol/openid-connect/certs}
+          principal-claim-name: ${KEYCLOAK_PRINCIPAL_CLAIM:preferred_username}
+
   data:
     mongodb:
-      host: localhost
-      port: 27017
-      database: catalogdb
+      host: ${MONGO_HOST:localhost}
+      port: ${MONGO_PORT:27017}
+      database: ${MONGO_DB:catalogdb}
+
+tmdb:
+  api-key: ${TMDB_API_KEY:your_tmdb_api_key_here}
 
 server:
-  port: 8081
+  port: ${SERVER_PORT:8081}
+
+springdoc:
+  swagger-ui:
+    path: /swagger

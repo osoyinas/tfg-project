@@ -1,11 +1,12 @@
 package es.uah.pablopinas.catalog.application.service;
 
-import es.uah.pablopinas.catalog.domain.exception.CatalogItemNotFoundException;
 import es.uah.pablopinas.catalog.domain.model.CatalogItem;
 import es.uah.pablopinas.catalog.domain.port.in.GetCatalogItemByIdUseCase;
 import es.uah.pablopinas.catalog.domain.port.out.CatalogItemRepositoryPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -14,8 +15,7 @@ public class GetCatalogItemByIdService implements GetCatalogItemByIdUseCase {
     private final CatalogItemRepositoryPort repository;
 
     @Override
-    public CatalogItem getById(String id) {
-        return repository.findById(id)
-                .orElseThrow(() -> new CatalogItemNotFoundException(id));
+    public Optional<CatalogItem> getById(String id) {
+        return repository.findById(id);
     }
 }

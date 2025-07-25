@@ -1,6 +1,5 @@
 package es.uah.pablopinas.catalog.domain.model;
 
-import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -13,11 +12,7 @@ import java.util.List;
 @EqualsAndHashCode(of = "id")
 @Builder
 public class CatalogItem {
-
-    @NonNull
     private String id;
-    @NonNull
-    @NotBlank
     private String title;
     private String description;
     @NonNull
