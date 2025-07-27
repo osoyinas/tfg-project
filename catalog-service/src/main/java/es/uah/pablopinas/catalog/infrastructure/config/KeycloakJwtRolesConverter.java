@@ -8,7 +8,6 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class KeycloakJwtRolesConverter implements Converter<Jwt, Collection<GrantedAuthority>> {
 
@@ -30,7 +29,8 @@ public class KeycloakJwtRolesConverter implements Converter<Jwt, Collection<Gran
         if (realmAccess != null && !realmAccess.isEmpty()) {
             Collection<String> roles = realmAccess.get(CLAIM_ROLES);
             if (roles != null && !roles.isEmpty()) {
-                grantedAuthorities.addAll(roles.stream().map(role -> new SimpleGrantedAuthority(PREFIX_REALM_ROLE + role)).collect(Collectors.toList()));
+                grantedAuthorities.addAll(roles.stream()
+                        .map(role -> new SimpleGrantedAuthority(PREFIX_REALM_ROLE + role)).toList());
             }
         }
 
