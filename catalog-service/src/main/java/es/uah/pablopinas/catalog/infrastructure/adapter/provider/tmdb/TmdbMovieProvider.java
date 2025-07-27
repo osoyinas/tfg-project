@@ -55,7 +55,7 @@ public class TmdbMovieProvider implements ExternalProviderStrategy {
             MovieResultsPage resultsPage = tmdbTrending.getMovies(
                     TimeWindow.WEEK,
                     TmdbConfig.LANGUAGE,
-                    pagination.getPage()
+                    pagination.getPage() + 1 // TMDB uses 1-based indexing for pages
             );
 
             var items = resultsPage.getResults()

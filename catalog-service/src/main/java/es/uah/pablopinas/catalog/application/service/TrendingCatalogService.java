@@ -43,42 +43,58 @@ public class TrendingCatalogService implements GetRelevantCatalogItemsUseCase {
      */
     @Override
     public PageResult<CatalogItem> getRelevantCatalogItems(CatalogType type, Pagination pagination) {
-        String queryKey = "TRENDING_" + type.name();
+        int requestedPage = pagination.getPage();
+        int pageSize = pagination.getSize();
 
-        // Check if the trending data is stale or missing
-        Optional<CatalogSearchStatus> statusOpt = searchStatusRepository.findByQueryKey(queryKey);
-        boolean isStale = statusOpt
-                .map(s -> s.getLastFetchedAt().isBefore(LocalDateTime.now().minusDays(TRENDING_CACHE_TTL_DAYS)))
-                .orElse(true);
+        boolean needsFetch = false;
+        for (int i = 0; i <= requestedPage; i++) {
+            String queryKey = "TRENDING_" + type.name() + "_" + i + "_" + pageSize;
+            Optional<CatalogSearchStatus> statusOpt = searchStatusRepository.findByQueryKey(queryKey);
 
-        if (isStale) {
-            // Fetch trending items from the external provider
-            PageResult<CatalogItem> externalResult = externalCatalogRepository.fetchTrending(type, pagination);
-            externalResult.items().forEach(item -> {
-                // Mark items as relevant and set an expiration window
-                item.setRelevant(true);
-                item.setRelevantUntil(LocalDateTime.now().plusWeeks(1));
+            boolean isStale = statusOpt
+                    .map(s -> s.getLastFetchedAt().isBefore(LocalDateTime.now().minusDays(TRENDING_CACHE_TTL_DAYS)))
+                    .orElse(true);
 
-                // Save or update the item in the local catalog
-                if (catalogRepository.alreadyExists(item)) {
-                    catalogRepository.update(item.getId(), item);
-                } else {
-                    catalogRepository.save(item);
-                }
-            });
-
-            // Update the search status for trending items of this type
-            CatalogSearchStatus status = CatalogSearchStatus.builder()
-                    .queryKey(queryKey)
-                    .rawQuery("TRENDING")
-                    .type(type)
-                    .fetchedPages(pagination.getPage())
-                    .lastFetchedAt(LocalDateTime.now())
-                    .build();
-            searchStatusRepository.save(status);
+            if (isStale) {
+                needsFetch = true;
+                break;
+            }
         }
 
-        // Return the relevant items stored in the local catalog
+        if (needsFetch) {
+            for (int i = 0; i <= requestedPage; i++) {
+                String queryKey = "TRENDING_" + type.name() + "_" + i + "_" + pageSize;
+
+                // Solo si está desactualizado o no existe
+                Optional<CatalogSearchStatus> statusOpt = searchStatusRepository.findByQueryKey(queryKey);
+                boolean isStale = statusOpt
+                        .map(s -> s.getLastFetchedAt().isBefore(LocalDateTime.now().minusDays(TRENDING_CACHE_TTL_DAYS)))
+                        .orElse(true);
+
+                if (isStale) {
+                    Pagination currentPage = new Pagination(i, pageSize);
+                    PageResult<CatalogItem> externalResult = externalCatalogRepository.fetchTrending(type, currentPage);
+                    externalResult.items().forEach(item -> {
+                        item.setRelevant(true);
+                        item.setRelevantUntil(LocalDateTime.now().plusWeeks(1));
+                        if (!catalogRepository.alreadyExists(item)) {
+                            catalogRepository.save(item);
+                        }
+                    });
+
+                    CatalogSearchStatus status = CatalogSearchStatus.builder()
+                            .queryKey(queryKey)
+                            .rawQuery("TRENDING")
+                            .type(type)
+                            .fetchedPages(i)
+                            .lastFetchedAt(LocalDateTime.now())
+                            .build();
+                    searchStatusRepository.save(status);
+                }
+            }
+        }
+
         return catalogRepository.findRelevantItems(type, pagination);
     }
+
 }
