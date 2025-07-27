@@ -1,14 +1,14 @@
 package es.uah.pablopinas.catalog.infrastructure.adapter.controller;
 
 import es.uah.pablopinas.catalog.application.port.in.GetRelevantCatalogItemsUseCase;
+import es.uah.pablopinas.catalog.application.service.CatalogItemCRUDService;
 import es.uah.pablopinas.catalog.application.service.CatalogSearchService;
-import es.uah.pablopinas.catalog.application.service.CreateCatalogItemService;
-import es.uah.pablopinas.catalog.application.service.DeleteCatalogItemService;
-import es.uah.pablopinas.catalog.application.service.GetCatalogItemByIdService;
 import es.uah.pablopinas.catalog.domain.model.*;
+import es.uah.pablopinas.catalog.infrastructure.config.Authorities;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
@@ -17,27 +17,27 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/catalog/items")
 public class CatalogItemController {
-    private final CreateCatalogItemService createService;
-    private final DeleteCatalogItemService deleteService;
-    private final GetCatalogItemByIdService getByIdService;
+    private final CatalogItemCRUDService commandService;
     private final CatalogSearchService searchService;
     private final GetRelevantCatalogItemsUseCase getRelevantCatalogItemsService;
 
+    @PreAuthorize(Authorities.HAS_ADMIN_ROLE)
     @PostMapping
     public ResponseEntity<CatalogItem> create(@RequestBody CatalogItem item) {
-        CatalogItem created = createService.create(item);
+        CatalogItem created = commandService.create(item);
         return ResponseEntity.ok(created);
     }
 
+    @PreAuthorize(Authorities.HAS_ADMIN_ROLE)
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable String id) {
-        deleteService.deleteById(id);
+        commandService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<CatalogItem> getById(@PathVariable String id) {
-        Optional<CatalogItem> item = getByIdService.getById(id);
+        Optional<CatalogItem> item = commandService.getById(id);
         return item.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
