@@ -1,11 +1,11 @@
-package es.uah.pablopinas.catalog.infrastructure.adapter.repository.model;
+package es.uah.pablopinas.catalog.infrastructure.adapter.repository;
 
 import es.uah.pablopinas.catalog.application.port.out.CatalogSearchStatusRepositoryPort;
 import es.uah.pablopinas.catalog.domain.model.CatalogSearchFilter;
 import es.uah.pablopinas.catalog.domain.model.CatalogSearchStatus;
-import es.uah.pablopinas.catalog.infrastructure.adapter.repository.SpringDataCatalogItemRepository;
+import es.uah.pablopinas.catalog.domain.util.QueryKeyUtil;
+import es.uah.pablopinas.catalog.infrastructure.adapter.repository.mapper.CatalogSearchStatusMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -14,16 +14,22 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class CatalogSearchStatusRepositoryAdapter implements CatalogSearchStatusRepositoryPort {
 
-    private final SpringDataCatalogItemRepository repository;
-    private final MongoTemplate mongoTemplate;
+    private final SpringDataCatalogSearchStatusRepository searchStatusRepository;
 
     @Override
     public Optional<CatalogSearchStatus> findByFilter(CatalogSearchFilter filter) {
-
+        String queryKey = QueryKeyUtil.buildKey(filter);
+        return searchStatusRepository.findById(queryKey)
+                .map(CatalogSearchStatusMapper::toDomain);
     }
 
     @Override
     public void save(CatalogSearchStatus status) {
+        searchStatusRepository.save(CatalogSearchStatusMapper.toDocument(status));
+    }
 
+    @Override
+    public Optional<CatalogSearchStatus> findByQueryKey(String queryKey) {
+        return Optional.empty();
     }
 }

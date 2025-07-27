@@ -1,24 +1,23 @@
-package es.uah.pablopinas.catalog.infrastructure.adapter.provider;
+package es.uah.pablopinas.catalog.infrastructure.adapter.provider.tmdb;
 
 import es.uah.pablopinas.catalog.domain.model.*;
-import info.movito.themoviedbapi.model.core.Movie;
+import es.uah.pablopinas.catalog.infrastructure.adapter.provider.ExternalProviderStrategy;
+import info.movito.themoviedbapi.TmdbApi;
+import info.movito.themoviedbapi.TmdbTrending;
 import info.movito.themoviedbapi.model.core.MovieResultsPage;
+import info.movito.themoviedbapi.tools.model.time.TimeWindow;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-
 @Slf4j
-@Component
+@Component("tmdbMovieProvider")
 @RequiredArgsConstructor
 public class TmdbMovieProvider implements ExternalProviderStrategy {
 
     private final TmdbBasicSearch apiSearch;
-
-    public final String SOURCE_NAME = "TMDB";
+    private final MovieMapper movieMapper;
+    private final TmdbApi tmdbApi;
 
     @Override
     public boolean supports(CatalogType type) {
@@ -26,46 +25,49 @@ public class TmdbMovieProvider implements ExternalProviderStrategy {
     }
 
     @Override
-    public Optional<CatalogItem> fetchItem(CatalogSearchFilter filter) {
+    public PageResult<CatalogItem> fetch(CatalogSearchFilter filter, Pagination pagination) {
         try {
             MovieResultsPage moviesPage = apiSearch
-                    .searchMovie(filter.getTitleContains(), 0);
-
-            List<CatalogItem> items = moviesPage.getResults().stream()
-                    .map(movie -> mapToCatalogItem(movie).orElse(null))
-                    .filter(item -> item != null)
+                    .searchMovie(filter.getTitleContains(), pagination.getPage());
+            if (moviesPage == null || moviesPage.getResults() == null) {
+                log.warn("No movies found for filter: {}", filter);
+                return PageResult.empty(pagination);
+            }
+            var items = moviesPage.getResults().stream()
+                    .map(movie -> movieMapper.toDomain(movie))
                     .toList();
-
-            return items.isEmpty() ? Optional.empty() : Optional.of(items.get(0));
+            return new PageResult<>(items,
+                    pagination.getPage(),
+                    pagination.getSize(),
+                    moviesPage.getTotalResults(),
+                    moviesPage.getTotalPages());
         } catch (Exception e) {
-            log.error("Error while fetching TMDB: {}", e.getMessage());
-            return Optional.empty();
+            log.error("Error while fetching TMDB items: {}", e.getMessage());
+            return PageResult.empty(pagination);
         }
     }
 
     @Override
-    public PageResult<CatalogItem> fetch(CatalogSearchFilter filter, Pagination pagination) {
-        return null;
-    }
+    public PageResult<CatalogItem> fetchTrending(Pagination pagination) {
+        TmdbTrending tmdbTrending = tmdbApi.getTrending();
+        try {
 
-    private Optional<CatalogItem> mapToCatalogItem(Movie movie) {
-        if (movie == null) {
-            return Optional.empty();
+            MovieResultsPage resultsPage = tmdbTrending.getMovies(
+                    TimeWindow.WEEK,
+                    TmdbConfig.LANGUAGE,
+                    pagination.getPage()
+            );
+
+            var items = resultsPage.getResults()
+                    .stream()
+                    .map(movie -> movieMapper.toDomain(movie))
+                    .toList();
+            return new PageResult<>(items, pagination.getPage(), 20, resultsPage.getTotalResults(),
+                    resultsPage.getTotalPages());
+        } catch (Exception e) {
+            log.error("Error while fetching trending items from TMDB: {}", e.getMessage());
+            return PageResult.empty(pagination);
         }
-
-        CatalogItem item = CatalogItem.builder()
-                .title(movie.getTitle())
-                .type(CatalogType.MOVIE)
-                .releaseDate(movie.getReleaseDate() != null ? LocalDate.parse(movie.getReleaseDate()) : null)
-                .externalSource(getExternalSourceInfoFrom(movie.getId()))
-//                .genres(movie.getGenreIds() != null ? movie.getGenres().stream().map(Genre::getName).collect(Collectors.toList()) : List.of())
-//                .creators()
-                .build();
-
-        return Optional.of(item);
     }
 
-    private ExternalSourceInfo getExternalSourceInfoFrom(int id) {
-        return new ExternalSourceInfo(SOURCE_NAME, String.valueOf(id));
-    }
 }

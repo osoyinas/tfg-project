@@ -1,4 +1,29 @@
 package es.uah.pablopinas.catalog.infrastructure.adapter.repository.mapper;
 
+import es.uah.pablopinas.catalog.domain.model.CatalogSearchStatus;
+import es.uah.pablopinas.catalog.infrastructure.adapter.repository.model.CatalogSearchStatusDocument;
+
 public class CatalogSearchStatusMapper {
+
+    public static CatalogSearchStatusDocument toDocument(CatalogSearchStatus domain) {
+        return CatalogSearchStatusDocument.builder()
+                .queryKey(domain.getQueryKey())
+                .rawQuery(domain.getRawQuery())
+                .type(domain.getType().name())
+                .fetchedPages(domain.getFetchedPages())
+                .lastFetchedAt(domain.getLastFetchedAt())
+                .totalPages(domain.getTotalPages())
+                .build();
+    }
+
+    public static CatalogSearchStatus toDomain(CatalogSearchStatusDocument document) {
+        return CatalogSearchStatus.builder()
+                .queryKey(document.getQueryKey())
+                .rawQuery(document.getRawQuery())
+                .type(Enum.valueOf(es.uah.pablopinas.catalog.domain.model.CatalogType.class, document.getType()))
+                .fetchedPages(document.getFetchedPages())
+                .lastFetchedAt(document.getLastFetchedAt())
+                .totalPages(document.getTotalPages())
+                .build();
+    }
 }

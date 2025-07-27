@@ -1,7 +1,7 @@
 package es.uah.pablopinas.catalog.application.service;
 
-import es.uah.pablopinas.catalog.domain.port.in.DeleteCatalogItemUseCase;
-import es.uah.pablopinas.catalog.domain.port.out.CatalogItemRepositoryPort;
+import es.uah.pablopinas.catalog.application.port.in.DeleteCatalogItemUseCase;
+import es.uah.pablopinas.catalog.application.port.out.CatalogItemRepositoryPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

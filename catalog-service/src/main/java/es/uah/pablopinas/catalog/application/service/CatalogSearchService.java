@@ -1,111 +1,70 @@
 package es.uah.pablopinas.catalog.application.service;
 
-import es.uah.pablopinas.catalog.application.port.in.GetRelevantCatalogItemsUseCase;
 import es.uah.pablopinas.catalog.application.port.in.SearchCatalogItemsUseCase;
 import es.uah.pablopinas.catalog.application.port.out.CatalogItemRepositoryPort;
 import es.uah.pablopinas.catalog.application.port.out.CatalogSearchStatusRepositoryPort;
 import es.uah.pablopinas.catalog.application.port.out.ExternalCatalogFetchQueuePort;
-import es.uah.pablopinas.catalog.application.port.out.ExternalCatalogRepositoryPort;
 import es.uah.pablopinas.catalog.domain.model.*;
-import es.uah.pablopinas.catalog.domain.util.QueryKeyUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+/**
+ * Application service responsible for handling catalog item searches.
+ * <p>
+ * It coordinates between the local catalog repository and the fetcher service,
+ * determining whether to return local results, perform a synchronous fetch,
+ * or enqueue an asynchronous background fetch based on query freshness and coverage.
+ */
 @Service
 @RequiredArgsConstructor
-public class SearchCatalogItemsService implements SearchCatalogItemsUseCase, ExternalCatalogFetchQueuePort, GetRelevantCatalogItemsUseCase {
+public class CatalogSearchService implements SearchCatalogItemsUseCase {
 
     private final CatalogItemRepositoryPort catalogRepository;
-    private final ExternalCatalogRepositoryPort externalCatalogRepository;
     private final CatalogSearchStatusRepositoryPort searchStatusRepository;
-    private final ExternalCatalogFetchQueuePort fetchQueue;
+    private final ExternalCatalogFetchQueuePort fetcherService;
 
+    /**
+     * Searches catalog items using the provided filter and pagination.
+     * <p>
+     * If results are not found locally and the query was never fetched before,
+     * it will trigger a synchronous fetch from the external provider.
+     * <p>
+     * If results are stale or pagination exceeds what's been previously fetched,
+     * it will enqueue a background fetch to update the local catalog asynchronously.
+     *
+     * @param filter     the search filter (title, type, genre, year)
+     * @param pagination pagination parameters (page number and size)
+     * @return a page result containing catalog items from the local repository
+     */
     @Override
     public PageResult<CatalogItem> search(CatalogSearchFilter filter, Pagination pagination) {
+        // Try to retrieve results from the local database
         PageResult<CatalogItem> localResults = catalogRepository.search(filter, pagination);
         boolean hasLocalResults = !localResults.items().isEmpty();
 
+        // Check if this query has been previously fetched
         Optional<CatalogSearchStatus> statusOpt = searchStatusRepository.findByFilter(filter);
 
         boolean neverFetched = statusOpt.isEmpty();
         boolean notEnoughPages = statusOpt.map(s -> pagination.getPage() > s.getFetchedPages()).orElse(true);
-        boolean isStale = statusOpt.map(s -> s.getLastFetchedAt().isBefore(LocalDateTime.now().minusDays(7))).orElse(true);
+        boolean isStale = statusOpt.map(s ->
+                s.getLastFetchedAt().isBefore(LocalDateTime.now().minusDays(7))
+        ).orElse(true);
 
+        // If no local data and never fetched, do a blocking fetch
         if (!hasLocalResults && neverFetched) {
-            return fetchAndCache(filter, pagination);
+            return fetcherService.fetchAndCache(filter, pagination); // synchronous fetch
         }
 
+        // If existing data is stale or insufficient, enqueue a background fetch
         if (notEnoughPages || isStale) {
-            fetchQueue.enqueueFetch(filter, pagination);
+            fetcherService.enqueueFetch(filter, pagination); // asynchronous fetch
         }
 
+        // Return local data (even if incomplete or stale)
         return localResults;
     }
-
-    @Override
-    public void enqueueFetch(CatalogSearchFilter filter, Pagination pagination) {
-        fetchInBackground(filter, pagination);
-    }
-
-    @Async
-    public void fetchInBackground(CatalogSearchFilter filter, Pagination pagination) {
-        fetchAndCache(filter, pagination);
-    }
-
-    private PageResult<CatalogItem> fetchAndCache(CatalogSearchFilter filter, Pagination pagination) {
-        PageResult<CatalogItem> externalResult = externalCatalogRepository.fetch(filter, pagination);
-        externalResult.items().forEach(item -> {
-            if (!catalogRepository.alreadyExists(item)) {
-                catalogRepository.save(item);
-            }
-        });
-
-        CatalogSearchStatus status = CatalogSearchStatus.builder()
-                .queryKey(QueryKeyUtil.buildKey(filter))
-                .rawQuery(filter.getTitleContains())
-                .type(filter.getType())
-                .fetchedPages(pagination.getPage())
-                .lastFetchedAt(LocalDateTime.now())
-                .build();
-        searchStatusRepository.save(status);
-
-        return catalogRepository.search(filter, pagination);
-    }
-
-    @Override
-    public PageResult<CatalogItem> getRelevantCatalogItems(CatalogType type, Pagination pagination) {
-        String queryKey = "TRENDING_" + type.name(); // Clave clara, sin engaños
-
-        Optional<CatalogSearchStatus> statusOpt = searchStatusRepository.findByQueryKey(queryKey);
-        boolean isStale = statusOpt.map(s -> s.getLastFetchedAt().isBefore(LocalDateTime.now().minusHours(6))).orElse(true);
-
-        if (isStale) {
-            PageResult<CatalogItem> externalResult = externalCatalogRepository.fetchTrending(type, pagination);
-            externalResult.items().forEach(item -> {
-                item.setRelevant(true);
-                item.setRelevantUntil(LocalDateTime.now().plusWeeks(1));
-                if (catalogRepository.alreadyExists(item)) {
-                    catalogRepository.update(item.getId(), item);
-                } else {
-                    catalogRepository.save(item);
-                }
-            });
-
-            CatalogSearchStatus status = CatalogSearchStatus.builder()
-                    .queryKey(queryKey)
-                    .rawQuery("TRENDING")
-                    .type(type)
-                    .fetchedPages(pagination.getPage())
-                    .lastFetchedAt(LocalDateTime.now())
-                    .build();
-            searchStatusRepository.save(status);
-        }
-
-        return catalogRepository.findRelevantItems(type, pagination);
-    }
-
 }

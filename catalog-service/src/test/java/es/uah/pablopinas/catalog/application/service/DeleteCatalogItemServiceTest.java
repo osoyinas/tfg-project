@@ -1,9 +1,11 @@
 package es.uah.pablopinas.catalog.application.service;
 
-import es.uah.pablopinas.catalog.domain.port.out.CatalogItemRepositoryPort;
+import es.uah.pablopinas.catalog.application.port.out.CatalogItemRepositoryPort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.mockito.Mockito.*;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 class DeleteCatalogItemServiceTest {
     private CatalogItemRepositoryPort repository;

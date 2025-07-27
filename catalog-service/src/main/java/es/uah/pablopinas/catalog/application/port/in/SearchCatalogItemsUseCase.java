@@ -1,4 +1,4 @@
-package es.uah.pablopinas.catalog.domain.port.in;
+package es.uah.pablopinas.catalog.application.port.in;
 
 import es.uah.pablopinas.catalog.domain.model.CatalogItem;
 import es.uah.pablopinas.catalog.domain.model.CatalogSearchFilter;

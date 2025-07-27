@@ -1,5 +1,7 @@
-package es.uah.pablopinas.catalog.domain.model;
+package es.uah.pablopinas.catalog.domain.util;
 
+
+import es.uah.pablopinas.catalog.domain.model.CatalogSearchFilter;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;

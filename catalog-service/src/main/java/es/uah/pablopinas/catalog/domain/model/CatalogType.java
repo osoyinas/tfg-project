@@ -1,5 +1,7 @@
 package es.uah.pablopinas.catalog.domain.model;
 
+import es.uah.pablopinas.catalog.domain.exception.InvalidCatalogTypeException;
+
 public enum CatalogType {
     BOOK,
     MOVIE,
@@ -14,7 +16,7 @@ public enum CatalogType {
             case "TV_SERIE":
                 return TV_SERIE;
             default:
-                throw new IllegalArgumentException("Unknown catalog type: " + type);
+                throw new InvalidCatalogTypeException("Invalid catalog type: " + type);
         }
     }
 

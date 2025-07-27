@@ -1,115 +1,132 @@
 package es.uah.pablopinas.catalog.application.service;
 
 import es.uah.pablopinas.catalog.application.port.out.CatalogItemRepositoryPort;
-import es.uah.pablopinas.catalog.application.port.out.ExternalCatalogRepositoryPort;
+import es.uah.pablopinas.catalog.application.port.out.CatalogSearchStatusRepositoryPort;
+import es.uah.pablopinas.catalog.application.port.out.ExternalCatalogFetchQueuePort;
 import es.uah.pablopinas.catalog.domain.model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
-class SearchCatalogItemsServiceTest {
+class CatalogSearchServiceTest {
+
     private CatalogItemRepositoryPort catalogRepository;
-    private ExternalCatalogRepositoryPort externalRepository;
+    private CatalogSearchStatusRepositoryPort searchStatusRepository;
+    private ExternalCatalogFetchQueuePort externalFetchQueue;
     private CatalogSearchService service;
 
     @BeforeEach
     void setUp() {
         catalogRepository = mock(CatalogItemRepositoryPort.class);
-        externalRepository = mock(ExternalCatalogRepositoryPort.class);
-        service = new CatalogSearchService(catalogRepository, externalRepository);
+        searchStatusRepository = mock(CatalogSearchStatusRepositoryPort.class);
+        externalFetchQueue = mock(ExternalCatalogFetchQueuePort.class);
+
+        service = new CatalogSearchService(
+                catalogRepository,
+                searchStatusRepository,
+                externalFetchQueue
+        );
     }
 
     @Test
     void search_ShouldReturnResultsFromRepository() {
-        CatalogSearchFilter filter =
-                CatalogSearchFilter.builder()
-                        .titleContains("Test")
-                        .type(CatalogType.MOVIE)
-                        .build();
-        PageResult<CatalogItem> page = new PageResult<>(Collections.emptyList(), 0, 10, 0);
-        when(catalogRepository.search(filter, new Pagination(0, 10))).thenReturn(page);
-        when(externalRepository.fetch(filter, new Pagination(0, 10)))
-                .thenReturn(new PageResult<>(Collections.emptyList(), 0, 10, 0));
-        PageResult<CatalogItem> result = service.search(filter, new Pagination(0, 10));
-        assertEquals(page, result);
-    }
-
-    @Test
-    void search_ShouldFetchFromExternalIfFilterIsProvided() {
         CatalogSearchFilter filter = CatalogSearchFilter.builder()
                 .titleContains("Test")
                 .type(CatalogType.MOVIE)
                 .build();
-
-        CatalogItem externalItem = CatalogItem.builder().id("1").title("Test").type(CatalogType.MOVIE).build();
         Pagination pagination = new Pagination(0, 10);
 
-        when(externalRepository.fetch(filter, pagination))
-                .thenReturn(new PageResult<>(Collections.singletonList(externalItem), 1, 10, 0));
-        when(catalogRepository.alreadyExists(externalItem)).thenReturn(false);
+        PageResult<CatalogItem> expectedPage = new PageResult<>(Collections.emptyList(), 0, 10, 0, 0);
 
-        when(catalogRepository.search(filter, pagination)).thenReturn(new PageResult<>(
-                Collections.singletonList(externalItem), 1, 10, 0));
+        when(catalogRepository.search(filter, pagination)).thenReturn(expectedPage);
+        when(searchStatusRepository.findByFilter(filter)).thenReturn(Optional.of(
+                CatalogSearchStatus.builder()
+                        .fetchedPages(1)
+                        .lastFetchedAt(LocalDateTime.now())
+                        .build()
+        ));
+
         PageResult<CatalogItem> result = service.search(filter, pagination);
-        // Assert external repository is called
-        verify(externalRepository).fetch(filter, pagination);
-        verify(catalogRepository).alreadyExists(externalItem);
-        verify(catalogRepository).save(externalItem);
 
-        assertEquals(1, result.items().size());
-        verify(catalogRepository).save(externalItem);
+        assertEquals(expectedPage, result);
+        verify(externalFetchQueue, never()).fetchAndCache(any(), any());
+        verify(externalFetchQueue, never()).enqueueFetch(any(), any());
     }
 
     @Test
-    void search_ShouldFetchFromExternalIfPageIsGreaterThan0() {
+    void search_ShouldFetchAndCacheIfNoLocalDataAndNeverFetched() {
         CatalogSearchFilter filter = CatalogSearchFilter.builder()
+                .titleContains("Test")
                 .type(CatalogType.MOVIE)
                 .build();
+        Pagination pagination = new Pagination(0, 10);
 
-        CatalogItem externalItem = CatalogItem.builder().id("1").title("Test").type(CatalogType.MOVIE).build();
-        Pagination pagination = new Pagination(1, 10);
+        PageResult<CatalogItem> fetchedPage = new PageResult<>(Collections.emptyList(), 0, 10, 0, 0);
 
-        when(externalRepository.fetch(filter, pagination))
-                .thenReturn(new PageResult<>(Collections.singletonList(externalItem), 1, 10, 0));
-        when(catalogRepository.alreadyExists(externalItem)).thenReturn(false);
+        when(catalogRepository.search(filter, pagination)).thenReturn(new PageResult<>(Collections.emptyList(), 0, 10, 0, 0));
+        when(searchStatusRepository.findByFilter(filter)).thenReturn(Optional.empty());
+        when(externalFetchQueue.fetchAndCache(filter, pagination)).thenReturn(fetchedPage);
 
-        when(catalogRepository.search(filter, pagination)).thenReturn(new PageResult<>(
-                Collections.singletonList(externalItem), 1, 10, 0));
         PageResult<CatalogItem> result = service.search(filter, pagination);
-        // Assert external repository is called
-        verify(externalRepository).fetch(filter, pagination);
-        verify(catalogRepository).alreadyExists(externalItem);
-        verify(catalogRepository).save(externalItem);
 
-        assertEquals(1, result.items().size());
-        verify(catalogRepository).save(externalItem);
+        assertEquals(fetchedPage, result);
+        verify(externalFetchQueue).fetchAndCache(filter, pagination);
+        verify(externalFetchQueue, never()).enqueueFetch(any(), any());
     }
 
     @Test
-    void search_ShouldNotFetchFromExternalIfNoFiltersOrPagination() {
+    void search_ShouldEnqueueIfStaleOrMissingPages() {
         CatalogSearchFilter filter = CatalogSearchFilter.builder()
+                .titleContains("Test")
                 .type(CatalogType.MOVIE)
                 .build();
+        Pagination pagination = new Pagination(2, 10);
 
-        CatalogItem externalItem = CatalogItem.builder().id("1").title("Test").type(CatalogType.MOVIE).build();
+        when(catalogRepository.search(filter, pagination)).thenReturn(new PageResult<>(Collections.singletonList(
+                CatalogItem.builder().id("123").type(CatalogType.MOVIE).title("X").build()
+        ), 2, 10, 0, 0));
+
+        when(searchStatusRepository.findByFilter(filter)).thenReturn(Optional.of(
+                CatalogSearchStatus.builder()
+                        .fetchedPages(1)
+                        .lastFetchedAt(LocalDateTime.now().minusDays(8))
+                        .build()
+        ));
+
+        service.search(filter, pagination);
+
+        verify(externalFetchQueue).enqueueFetch(filter, pagination);
+        verify(externalFetchQueue, never()).fetchAndCache(any(), any());
+    }
+
+    @Test
+    void search_ShouldNotEnqueueIfFreshAndComplete() {
+        CatalogSearchFilter filter = CatalogSearchFilter.builder()
+                .titleContains("Test")
+                .type(CatalogType.MOVIE)
+                .build();
         Pagination pagination = new Pagination(0, 10);
 
-        when(externalRepository.fetch(filter, pagination))
-                .thenReturn(new PageResult<>(Collections.singletonList(externalItem), 1, 10, 0));
-        when(catalogRepository.alreadyExists(externalItem)).thenReturn(false);
+        when(catalogRepository.search(filter, pagination)).thenReturn(new PageResult<>(Collections.singletonList(
+                CatalogItem.builder().id("abc").type(CatalogType.MOVIE).title("Cached").build()
+        ), 0, 10, 0, 0));
 
-        when(catalogRepository.search(filter, pagination)).thenReturn(new PageResult<>(
-                Collections.singletonList(externalItem), 1, 10, 0));
-        PageResult<CatalogItem> result = service.search(filter, pagination);
-        // Assert external repository is called
-        verify(externalRepository, never()).fetch(filter, pagination);
-        verify(catalogRepository, never()).alreadyExists(externalItem);
-        verify(catalogRepository, never()).save(externalItem);
+        when(searchStatusRepository.findByFilter(filter)).thenReturn(Optional.of(
+                CatalogSearchStatus.builder()
+                        .fetchedPages(5)
+                        .lastFetchedAt(LocalDateTime.now())
+                        .build()
+        ));
 
-        assertEquals(1, result.items().size());
+        service.search(filter, pagination);
+
+        verify(externalFetchQueue, never()).fetchAndCache(any(), any());
+        verify(externalFetchQueue, never()).enqueueFetch(any(), any());
     }
 }

@@ -1,4 +1,4 @@
-package es.uah.pablopinas.catalog.config;
+package es.uah.pablopinas.catalog.infrastructure.config;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.core.GrantedAuthority;

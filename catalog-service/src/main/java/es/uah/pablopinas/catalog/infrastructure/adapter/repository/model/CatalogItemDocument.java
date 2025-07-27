@@ -1,5 +1,6 @@
 package es.uah.pablopinas.catalog.infrastructure.adapter.repository.model;
 
+import es.uah.pablopinas.catalog.domain.model.ExternalSourceInfo;
 import es.uah.pablopinas.catalog.domain.model.ImageSet;
 import lombok.*;
 import org.springframework.data.annotation.Id;
@@ -28,4 +29,9 @@ public class CatalogItemDocument {
     private double averageRating;
 
     private ImageSet images;
+
+    private ExternalSourceInfo externalSource;
+
+    private boolean isRelevant;
+    private Date relevantUntil;
 }

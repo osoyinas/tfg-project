@@ -1,8 +1,8 @@
 package es.uah.pablopinas.catalog.application.service;
 
+import es.uah.pablopinas.catalog.application.port.out.CatalogItemRepositoryPort;
 import es.uah.pablopinas.catalog.domain.model.CatalogItem;
 import es.uah.pablopinas.catalog.domain.model.CatalogType;
-import es.uah.pablopinas.catalog.domain.port.out.CatalogItemRepositoryPort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

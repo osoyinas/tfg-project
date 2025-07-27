@@ -1,4 +1,4 @@
-package es.uah.pablopinas.catalog.domain.port.in;
+package es.uah.pablopinas.catalog.application.port.in;
 
 public interface DeleteCatalogItemUseCase {
 

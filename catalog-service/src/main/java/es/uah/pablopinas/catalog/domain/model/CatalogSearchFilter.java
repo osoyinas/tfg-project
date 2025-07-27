@@ -10,4 +10,13 @@ public class CatalogSearchFilter {
     CatalogType type;
     String genre;
     Integer releaseYear;
+
+    /**
+     * Checks if the filter is empty, meaning no search criteria is set.
+     *
+     * @return true if all fields except type are null, false otherwise
+     */
+    public boolean isEmpty() {
+        return titleContains == null && genre == null && releaseYear == null;
+    }
 }

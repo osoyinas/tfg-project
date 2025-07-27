@@ -20,6 +20,9 @@ public class CatalogItemMapper {
                 .genres(item.getGenres())
                 .creators(item.getCreators())
                 .images(item.getImages())
+                .externalSource(item.getExternalSource())
+                .isRelevant(item.isRelevant())
+                .relevantUntil(item.getRelevantUntil() != null ? Date.from(item.getRelevantUntil().atZone(ZoneId.systemDefault()).toInstant()) : null)
                 .build();
     }
 
@@ -33,6 +36,9 @@ public class CatalogItemMapper {
                 .genres(doc.getGenres())
                 .creators(doc.getCreators())
                 .images(doc.getImages())
+                .externalSource(doc.getExternalSource())
+                .isRelevant(doc.isRelevant())
+                .relevantUntil(doc.getRelevantUntil() != null ? doc.getRelevantUntil().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime() : null)
                 .build();
     }
 

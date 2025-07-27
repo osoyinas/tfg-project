@@ -1,17 +1,13 @@
 package es.uah.pablopinas.catalog.infrastructure.adapter.provider;
 
-import es.uah.pablopinas.catalog.domain.model.CatalogItem;
-import es.uah.pablopinas.catalog.domain.model.CatalogType;
-import info.movito.themoviedbapi.TmdbApi;
-import info.movito.themoviedbapi.TmdbSearch;
-import info.movito.themoviedbapi.model.core.MovieResultsPage;
-import info.movito.themoviedbapi.tools.TmdbException;
+import es.uah.pablopinas.catalog.domain.model.*;
+import es.uah.pablopinas.catalog.infrastructure.adapter.provider.tmdb.GenresProvider;
+import es.uah.pablopinas.catalog.infrastructure.adapter.provider.tmdb.TmdbMovieProvider;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
-
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -22,27 +18,34 @@ import static org.junit.jupiter.api.Assertions.*;
 @Disabled("Run manually only with valid API key and internet connection")
 class TmdbMovieProviderIntegrationTest {
 
-    @Value("${tmdb.api-key}")
-    private String apiKey;
+    @Autowired
+    @Qualifier("tmdbMovieProvider")
+    private TmdbMovieProvider tmdbMovieProvider;
+
+    @Autowired
+    private GenresProvider genresProvider;
+
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(TmdbMovieProviderIntegrationTest.class);
 
     @Test
     void fetchRealMovieFromApi() {
-        TmdbApi tmdbApi = new TmdbApi(apiKey);
-        TmdbMovieProvider provider = new TmdbMovieProvider(apiKey, tmdbApi);
-        Optional<CatalogItem> result = provider.fetch("Matrix");
-        assertTrue(result.isPresent(), "Should find the movie Matrix in TMDB");
-        CatalogItem item = result.get();
+        PageResult<CatalogItem> result = tmdbMovieProvider.fetch(CatalogSearchFilter
+                .builder()
+                .titleContains("Matrix")
+                .type(CatalogType.MOVIE)
+                .build(), new Pagination(0, 1));
+        assertTrue(!result.isEmpty(), "Should find the movie Matrix in TMDB");
+        CatalogItem item = result.items().get(0);
         assertEquals("Matrix", item.getTitle());
         assertEquals(CatalogType.MOVIE, item.getType());
         assertNotNull(item.getReleaseDate());
     }
 
     @Test
-    void tmdbApiSearchReturnsResults() throws TmdbException {
-        TmdbApi tmdbApi = new TmdbApi(apiKey);
-        TmdbSearch search = tmdbApi.getSearch();
-        MovieResultsPage page = search.searchMovie("Matrix", null, "US", null, null, null, null);
-        assertNotNull(page);
-        assertFalse(page.getResults().isEmpty(), "Search should return results");
+    void checkGenresFetch() {
+        var genres = genresProvider.getGenreCache();
+        assertNotNull(genres, "Genres should not be null");
+        assertFalse(genres.isEmpty(), "Genres should not be empty");
+        log.info("Available genres: {}", genres);
     }
 }
