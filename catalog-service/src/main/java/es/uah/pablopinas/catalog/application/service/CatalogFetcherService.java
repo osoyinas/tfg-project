@@ -22,11 +22,11 @@ public class CatalogFetcherService implements ExternalCatalogFetchQueuePort {
 
     @Override
     public void enqueueFetch(CatalogSearchFilter filter, Pagination pagination) {
-        fetchInBackground(filter, pagination);
+        asyncFetch(filter, pagination);
     }
 
     @Async
-    public void fetchInBackground(CatalogSearchFilter filter, Pagination pagination) {
+    public void asyncFetch(CatalogSearchFilter filter, Pagination pagination) {
         fetchAndCache(filter, pagination);
     }
 
@@ -46,7 +46,6 @@ public class CatalogFetcherService implements ExternalCatalogFetchQueuePort {
         CatalogSearchStatus status = CatalogSearchStatus.builder()
                 .queryKey(QueryKeyUtil.buildKey(filter, pagination))
                 .rawQuery(QueryKeyUtil.buildRawKey(filter, pagination))
-                .type(filter.getType())
                 .fetchedPages(pagination.getPage())
                 .lastFetchedAt(LocalDateTime.now())
                 .build();
@@ -57,11 +56,11 @@ public class CatalogFetcherService implements ExternalCatalogFetchQueuePort {
     private void fetchMissingPreviousPages(CatalogSearchFilter filter, Pagination pagination) {
         int currentPage = pagination.getPage();
 
-        // No hay páginas anteriores a la 1
-        if (currentPage <= 1) return;
+        // No hay páginas anteriores a la 0
+        if (currentPage <= 0) return;
 
-        // Desde la 1 hasta la anterior a la actual
-        for (int i = 1; i < currentPage; i++) {
+        // Desde la 0 hasta la anterior a la actual
+        for (int i = 0; i < currentPage; i++) {
             Pagination previous = new Pagination(i, pagination.getSize());
             String queryKey = QueryKeyUtil.buildKey(filter, previous);
 

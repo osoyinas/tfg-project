@@ -103,7 +103,6 @@ public class TrendingCatalogService implements GetRelevantCatalogItemsUseCase {
         CatalogSearchStatus status = CatalogSearchStatus.builder()
                 .queryKey(queryKey)
                 .rawQuery("TRENDING_" + type + "_" + page)
-                .type(type)
                 .fetchedPages(page)
                 .lastFetchedAt(LocalDateTime.now())
                 .build();

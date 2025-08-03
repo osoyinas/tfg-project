@@ -18,7 +18,6 @@ public class CatalogSearchStatusDocument {
     private String queryKey; // hashed key
 
     private String rawQuery;
-    private String type;
 
     private int fetchedPages;
     private LocalDateTime lastFetchedAt;

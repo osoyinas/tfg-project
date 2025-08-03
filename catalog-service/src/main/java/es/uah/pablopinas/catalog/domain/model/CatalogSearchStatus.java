@@ -13,9 +13,7 @@ import java.time.LocalDateTime;
 public class CatalogSearchStatus {
 
     private String queryKey;
-
     private String rawQuery;
-    private CatalogType type;
 
     private int fetchedPages;
     private LocalDateTime lastFetchedAt;

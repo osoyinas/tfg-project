@@ -3,7 +3,12 @@ package es.uah.pablopinas.catalog.infrastructure.adapter.controller;
 import es.uah.pablopinas.catalog.application.port.in.GetRelevantCatalogItemsUseCase;
 import es.uah.pablopinas.catalog.application.service.CatalogItemCRUDService;
 import es.uah.pablopinas.catalog.application.service.CatalogSearchService;
-import es.uah.pablopinas.catalog.domain.model.*;
+import es.uah.pablopinas.catalog.domain.model.CatalogItem;
+import es.uah.pablopinas.catalog.domain.model.CatalogSearchFilter;
+import es.uah.pablopinas.catalog.domain.model.CatalogType;
+import es.uah.pablopinas.catalog.domain.model.PageResult;
+import es.uah.pablopinas.catalog.infrastructure.adapter.controller.dto.CatalogSearchRequest;
+import es.uah.pablopinas.catalog.infrastructure.adapter.controller.dto.PaginationRequest;
 import es.uah.pablopinas.catalog.infrastructure.config.Authorities;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -42,18 +47,18 @@ public class CatalogItemController {
     }
 
     @GetMapping
-    public ResponseEntity<PageResult<CatalogItem>> search(@RequestParam(required = false) String title,
-                                                          @RequestParam() CatalogType type,
-                                                          @Valid @ModelAttribute Pagination pagination) {
-        CatalogSearchFilter filter = CatalogSearchFilter.builder().titleContains(title).type(type).build();
-        PageResult<CatalogItem> result = searchService.search(filter, pagination);
+    public ResponseEntity<PageResult<CatalogItem>> search(@Valid @ModelAttribute CatalogSearchRequest request,
+                                                          @Valid @ModelAttribute PaginationRequest pagination) {
+        CatalogSearchFilter filter = request.toFilter();
+        PageResult<CatalogItem> result = searchService.search(filter, pagination.toDomain());
         return ResponseEntity.ok(result);
     }
 
     @GetMapping("/trending")
     public ResponseEntity<PageResult<CatalogItem>> getTrending(@RequestParam() CatalogType type,
-                                                               @Valid @ModelAttribute Pagination pagination) {
-        PageResult<CatalogItem> result = getRelevantCatalogItemsService.getRelevantCatalogItems(type, pagination);
+                                                               @Valid @ModelAttribute PaginationRequest pagination) {
+        PageResult<CatalogItem> result = getRelevantCatalogItemsService.
+                getRelevantCatalogItems(type, pagination.toDomain());
         return ResponseEntity.ok(result);
     }
 }

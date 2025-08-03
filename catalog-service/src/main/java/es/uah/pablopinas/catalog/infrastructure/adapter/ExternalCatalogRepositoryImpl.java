@@ -16,11 +16,20 @@ public class ExternalCatalogRepositoryImpl implements ExternalCatalogRepositoryP
 
     @Override
     public PageResult<CatalogItem> fetch(CatalogSearchFilter filter, Pagination pagination) {
-        return strategies.stream()
-                .filter(provider -> provider.supports(filter.getType()))
-                .findFirst()
-                .map(provider -> provider.fetch(filter, pagination))
-                .orElse(PageResult.empty(pagination));
+        if (filter.getType() != null) {
+            return strategies.stream()
+                    .filter(strategy -> strategy.supports(filter.getType()))
+                    .findFirst()
+                    .map(strategy -> strategy.fetch(filter, pagination))
+                    .orElse(PageResult.empty(pagination));
+        }
+
+        // If no type is specified, combine results from all strategies
+        List<CatalogItem> combined = strategies.stream()
+                .map(strategy -> strategy.fetch(filter, pagination))
+                .flatMap(page -> page.items().stream())
+                .toList();
+        return PageResult.of(combined, pagination);
     }
 
     @Override

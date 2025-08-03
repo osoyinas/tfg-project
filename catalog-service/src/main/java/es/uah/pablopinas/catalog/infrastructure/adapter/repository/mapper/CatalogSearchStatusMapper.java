@@ -9,7 +9,6 @@ public class CatalogSearchStatusMapper {
         return CatalogSearchStatusDocument.builder()
                 .queryKey(domain.getQueryKey())
                 .rawQuery(domain.getRawQuery())
-                .type(domain.getType().name())
                 .fetchedPages(domain.getFetchedPages())
                 .lastFetchedAt(domain.getLastFetchedAt())
                 .build();
@@ -19,7 +18,6 @@ public class CatalogSearchStatusMapper {
         return CatalogSearchStatus.builder()
                 .queryKey(document.getQueryKey())
                 .rawQuery(document.getRawQuery())
-                .type(Enum.valueOf(es.uah.pablopinas.catalog.domain.model.CatalogType.class, document.getType()))
                 .fetchedPages(document.getFetchedPages())
                 .lastFetchedAt(document.getLastFetchedAt())
                 .build();
