@@ -22,6 +22,4 @@ public class CatalogSearchStatusDocument {
 
     private int fetchedPages;
     private LocalDateTime lastFetchedAt;
-
-    private int totalPages;
 }

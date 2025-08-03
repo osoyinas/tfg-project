@@ -2,6 +2,7 @@ package es.uah.pablopinas.catalog.infrastructure.adapter.repository.mapper;
 
 import es.uah.pablopinas.catalog.domain.model.CatalogItem;
 import es.uah.pablopinas.catalog.domain.model.CatalogType;
+import es.uah.pablopinas.catalog.domain.util.CatalogItemIdGenerator;
 import es.uah.pablopinas.catalog.infrastructure.adapter.repository.model.CatalogItemDocument;
 
 import java.time.LocalDate;
@@ -11,6 +12,10 @@ import java.util.Date;
 public class CatalogItemMapper {
 
     public static CatalogItemDocument toDocument(CatalogItem item) {
+        if (item.getId() == null && item.getExternalSource() != null) {
+            item.setId(CatalogItemIdGenerator.fromExternalSource(item.getExternalSource()));
+        }
+
         return CatalogItemDocument.builder()
                 .id(item.getId())
                 .title(item.getTitle())

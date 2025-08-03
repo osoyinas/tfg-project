@@ -63,9 +63,12 @@ public class CatalogItemRepositoryAdapter implements CatalogItemRepositoryPort {
 
     @Override
     public PageResult<CatalogItem> findAll(int page, int size) {
-        org.springframework.data.domain.Page<CatalogItemDocument> result = repository.findAll(PageRequest.of(page, size));
-        List<CatalogItem> items = result.getContent().stream().map(CatalogItemMapper::toDomain).collect(Collectors.toList());
-        return new PageResult<>(items, page, size, result.getTotalElements(), result.getTotalPages());
+        org.springframework.data.domain.Page<CatalogItemDocument> result = repository
+                .findAll(PageRequest.of(page, size));
+        List<CatalogItem> items = result.getContent().stream()
+                .map(CatalogItemMapper::toDomain)
+                .collect(Collectors.toList());
+        return PageResult.of(items, page, size);
     }
 
     @Override
@@ -113,9 +116,12 @@ public class CatalogItemRepositoryAdapter implements CatalogItemRepositoryPort {
         long total = mongoTemplate.count(query, CatalogItemDocument.class);
         query.with(PageRequest.of(pagination.getPage(), pagination.getSize()));
 
-        List<CatalogItem> items = mongoTemplate.find(query, CatalogItemDocument.class).stream().map(CatalogItemMapper::toDomain).collect(Collectors.toList());
+        List<CatalogItem> items = mongoTemplate
+                .find(query, CatalogItemDocument.class).stream()
+                .map(CatalogItemMapper::toDomain)
+                .collect(Collectors.toList());
 
-        return new PageResult<>(items, pagination.getPage(), pagination.getSize(), items.size(), (int) Math.ceil((double) total / pagination.getSize()));
+        return PageResult.of(items, pagination.getPage(), pagination.getSize());
     }
 
 }

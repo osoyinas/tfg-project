@@ -42,10 +42,10 @@ class CatalogSearchServiceTest {
                 .build();
         Pagination pagination = new Pagination(0, 10);
 
-        PageResult<CatalogItem> expectedPage = new PageResult<>(Collections.emptyList(), 0, 10, 0, 0);
+        PageResult<CatalogItem> expectedPage = new PageResult<>(Collections.emptyList(), 0, 10);
 
         when(catalogRepository.search(filter, pagination)).thenReturn(expectedPage);
-        when(searchStatusRepository.findByFilter(filter)).thenReturn(Optional.of(
+        when(searchStatusRepository.findByFilterAndPagination(filter, pagination)).thenReturn(Optional.of(
                 CatalogSearchStatus.builder()
                         .fetchedPages(1)
                         .lastFetchedAt(LocalDateTime.now())
@@ -67,10 +67,10 @@ class CatalogSearchServiceTest {
                 .build();
         Pagination pagination = new Pagination(0, 10);
 
-        PageResult<CatalogItem> fetchedPage = new PageResult<>(Collections.emptyList(), 0, 10, 0, 0);
+        PageResult<CatalogItem> fetchedPage = new PageResult<>(Collections.emptyList(), 0, 10);
 
-        when(catalogRepository.search(filter, pagination)).thenReturn(new PageResult<>(Collections.emptyList(), 0, 10, 0, 0));
-        when(searchStatusRepository.findByFilter(filter)).thenReturn(Optional.empty());
+        when(catalogRepository.search(filter, pagination)).thenReturn(new PageResult<>(Collections.emptyList(), 0, 10));
+        when(searchStatusRepository.findByFilterAndPagination(filter, pagination)).thenReturn(Optional.empty());
         when(externalFetchQueue.fetchAndCache(filter, pagination)).thenReturn(fetchedPage);
 
         PageResult<CatalogItem> result = service.search(filter, pagination);
@@ -90,9 +90,9 @@ class CatalogSearchServiceTest {
 
         when(catalogRepository.search(filter, pagination)).thenReturn(new PageResult<>(Collections.singletonList(
                 CatalogItem.builder().id("123").type(CatalogType.MOVIE).title("X").build()
-        ), 2, 10, 0, 0));
+        ), 2, 10));
 
-        when(searchStatusRepository.findByFilter(filter)).thenReturn(Optional.of(
+        when(searchStatusRepository.findByFilterAndPagination(filter, pagination)).thenReturn(Optional.of(
                 CatalogSearchStatus.builder()
                         .fetchedPages(1)
                         .lastFetchedAt(LocalDateTime.now().minusDays(8))
@@ -115,9 +115,9 @@ class CatalogSearchServiceTest {
 
         when(catalogRepository.search(filter, pagination)).thenReturn(new PageResult<>(Collections.singletonList(
                 CatalogItem.builder().id("abc").type(CatalogType.MOVIE).title("Cached").build()
-        ), 0, 10, 0, 0));
+        ), 0, 10));
 
-        when(searchStatusRepository.findByFilter(filter)).thenReturn(Optional.of(
+        when(searchStatusRepository.findByFilterAndPagination(filter, pagination)).thenReturn(Optional.of(
                 CatalogSearchStatus.builder()
                         .fetchedPages(5)
                         .lastFetchedAt(LocalDateTime.now())

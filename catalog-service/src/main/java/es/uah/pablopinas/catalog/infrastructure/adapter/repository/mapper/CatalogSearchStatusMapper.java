@@ -12,7 +12,6 @@ public class CatalogSearchStatusMapper {
                 .type(domain.getType().name())
                 .fetchedPages(domain.getFetchedPages())
                 .lastFetchedAt(domain.getLastFetchedAt())
-                .totalPages(domain.getTotalPages())
                 .build();
     }
 
@@ -23,7 +22,6 @@ public class CatalogSearchStatusMapper {
                 .type(Enum.valueOf(es.uah.pablopinas.catalog.domain.model.CatalogType.class, document.getType()))
                 .fetchedPages(document.getFetchedPages())
                 .lastFetchedAt(document.getLastFetchedAt())
-                .totalPages(document.getTotalPages())
                 .build();
     }
 }

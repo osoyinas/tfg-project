@@ -2,6 +2,7 @@ package es.uah.pablopinas.catalog.infrastructure.adapter.provider.tmdb;
 
 import info.movito.themoviedbapi.TmdbApi;
 import info.movito.themoviedbapi.TmdbGenre;
+import info.movito.themoviedbapi.TmdbMovies;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,5 +28,10 @@ public class TmdbConfig {
     @Bean
     public TmdbGenre tmdbGenre(TmdbApi tmdbApi) {
         return tmdbApi.getGenre();
+    }
+
+    @Bean
+    public TmdbMovies tmdbMovies(TmdbApi tmdbApi) {
+        return tmdbApi.getMovies();
     }
 }

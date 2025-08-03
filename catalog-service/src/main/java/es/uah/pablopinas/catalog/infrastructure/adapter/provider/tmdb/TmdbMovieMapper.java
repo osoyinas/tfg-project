@@ -9,7 +9,7 @@ import java.time.LocalDate;
 
 @RequiredArgsConstructor
 @Component
-public class MovieMapper {
+public class TmdbMovieMapper {
 
     public static final String SOURCE_NAME = "TMDB";
     private static final String TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/";

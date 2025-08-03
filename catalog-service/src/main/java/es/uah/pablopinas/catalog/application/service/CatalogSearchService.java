@@ -5,6 +5,7 @@ import es.uah.pablopinas.catalog.application.port.out.CatalogItemRepositoryPort;
 import es.uah.pablopinas.catalog.application.port.out.CatalogSearchStatusRepositoryPort;
 import es.uah.pablopinas.catalog.application.port.out.ExternalCatalogFetchQueuePort;
 import es.uah.pablopinas.catalog.domain.model.*;
+import es.uah.pablopinas.catalog.domain.util.QueryKeyUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -41,30 +42,28 @@ public class CatalogSearchService implements SearchCatalogItemsUseCase {
      */
     @Override
     public PageResult<CatalogItem> search(CatalogSearchFilter filter, Pagination pagination) {
-        // Try to retrieve results from the local database
-        PageResult<CatalogItem> localResults = catalogRepository.search(filter, pagination);
-        boolean hasLocalResults = !localResults.items().isEmpty();
+        String queryKey = QueryKeyUtil.buildKey(filter, pagination);
 
-        // Check if this query has been previously fetched
-        Optional<CatalogSearchStatus> statusOpt = searchStatusRepository.findByFilter(filter);
+        Optional<CatalogSearchStatus> statusOpt = searchStatusRepository.findByQueryKey(queryKey);
 
-        boolean neverFetched = statusOpt.isEmpty();
-        boolean notEnoughPages = statusOpt.map(s -> pagination.getPage() > s.getFetchedPages()).orElse(true);
-        boolean isStale = statusOpt.map(s ->
-                s.getLastFetchedAt().isBefore(LocalDateTime.now().minusDays(7))
-        ).orElse(true);
+        boolean isStale = statusOpt
+                .map(s -> s.getLastFetchedAt().isBefore(LocalDateTime.now().minusDays(7)))
+                .orElse(true);
 
-        // If no local data and never fetched, do a blocking fetch
-        if (!hasLocalResults && neverFetched) {
-            return fetcherService.fetchAndCache(filter, pagination); // synchronous fetch
+        PageResult<CatalogItem> localResult = catalogRepository.search(filter, pagination);
+
+        if (localResult.isEmpty()) {
+            // Nunca fetcheado o datos perdidos → fetch directo
+            PageResult<CatalogItem> result = fetcherService.fetchAndCache(filter, pagination);
+            return result;
         }
 
-        // If existing data is stale or insufficient, enqueue a background fetch
-        if (notEnoughPages || isStale) {
-            fetcherService.enqueueFetch(filter, pagination); // asynchronous fetch
+        if (isStale) {
+            // Stale pero no vacío → actualizar en segundo plano
+            fetcherService.enqueueFetch(filter, pagination);
         }
 
-        // Return local data (even if incomplete or stale)
-        return localResults;
+        return localResult;
     }
+
 }
