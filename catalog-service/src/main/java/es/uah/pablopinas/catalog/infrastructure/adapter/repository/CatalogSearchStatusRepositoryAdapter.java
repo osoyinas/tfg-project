@@ -31,6 +31,7 @@ public class CatalogSearchStatusRepositoryAdapter implements CatalogSearchStatus
 
     @Override
     public Optional<CatalogSearchStatus> findByQueryKey(String queryKey) {
-        return Optional.empty();
+        return searchStatusRepository.findById(queryKey)
+                .map(CatalogSearchStatusMapper::toDomain);
     }
 }

@@ -1,6 +1,8 @@
 spring:
   application:
     name: Catalog Service
+  profiles:
+    active: dev
 
   security:
     oauth2:
@@ -18,6 +20,10 @@ spring:
 
 tmdb:
   api-key: ${TMDB_API_KEY:your_tmdb_api_key_here}
+
+google:
+  books:
+    api-key: ${GOOGLE_API_KEY:your_google_api_key_here}
 
 server:
   port: ${SERVER_PORT:8081}
