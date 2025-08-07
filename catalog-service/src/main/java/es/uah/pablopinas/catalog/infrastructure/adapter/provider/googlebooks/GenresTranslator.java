@@ -31,7 +31,8 @@ public class GenresTranslator {
             Map.entry("self-help", "Autoayuda"),
             Map.entry("philosophy", "Filosofía"),
             Map.entry("psychology", "Psicología"),
-            Map.entry("religion", "Religión")
+            Map.entry("religion", "Religión"),
+            Map.entry("juvenil fiction", "Ficción juvenil")
     );
 
     /**
@@ -59,7 +60,7 @@ public class GenresTranslator {
      * If the word is not recognized, it returns null.
      */
     public String translateWord(String word) {
-        return GENRE_TRANSLATIONS.get(word);
+        return GENRE_TRANSLATIONS.get(word) != null ? GENRE_TRANSLATIONS.get(word) : word;
     }
 
     /**

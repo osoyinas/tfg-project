@@ -1,6 +1,5 @@
 package es.uah.pablopinas.catalog.infrastructure.adapter.provider.googlebooks;
 
-import es.uah.pablopinas.catalog.application.port.out.CatalogItemRepositoryPort;
 import es.uah.pablopinas.catalog.domain.model.*;
 import es.uah.pablopinas.catalog.infrastructure.adapter.provider.ExternalProviderStrategy;
 import lombok.RequiredArgsConstructor;
@@ -11,8 +10,6 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 @Slf4j
 @Component("googleBooksBookProvider")
@@ -21,10 +18,7 @@ public class GoogleBooksBookProvider implements ExternalProviderStrategy {
 
     private final GoogleBooksSearchClient client;
     private final GoogleBooksBookMapper mapper;
-    private final CatalogItemRepositoryPort repository;
-
-    private final ExecutorService executor = Executors.newFixedThreadPool(5);
-
+    
     private static final List<String> BASE_TRENDING_QUERIES = List.of(
             "bestseller books", "fantasy novels", "romance books",
             "science fiction", "young adult", "historical fiction"
@@ -32,9 +26,9 @@ public class GoogleBooksBookProvider implements ExternalProviderStrategy {
 
     private volatile List<String> trendingQueries = new ArrayList<>(BASE_TRENDING_QUERIES);
 
-    @Scheduled(cron = "0 0 0 * * *") // cada día a medianoche
+    @Scheduled(cron = "0 0 0 * * *") // every day at midnight
     public void refreshTrendingQueries() {
-        trendingQueries = new ArrayList<>(BASE_TRENDING_QUERIES); // puedes hacer que cambien aleatoriamente si quieres
+        trendingQueries = new ArrayList<>(BASE_TRENDING_QUERIES);
         Collections.shuffle(trendingQueries);
         log.info("Trending queries actualizadas: {}", trendingQueries);
     }
@@ -54,8 +48,7 @@ public class GoogleBooksBookProvider implements ExternalProviderStrategy {
             }
 
             var items = result.items().stream()
-                    .map(mapper::toCatalogItemBasic)
-                    .peek(this::enrichAsync)
+                    .map(mapper::toDomain)
                     .toList();
 
             return PageResult.of(items, pagination);
@@ -80,7 +73,7 @@ public class GoogleBooksBookProvider implements ExternalProviderStrategy {
                             var result = client.searchVolumes(q, 0, itemsPerQuery);
                             if (result != null && result.items() != null) {
                                 return result.items().stream()
-                                        .map(mapper::toCatalogItemBasic)
+                                        .map(mapper::toDomain)
                                         .toList();
                             }
                         } catch (Exception e) {
@@ -118,18 +111,5 @@ public class GoogleBooksBookProvider implements ExternalProviderStrategy {
         return result;
     }
 
-    private void enrichAsync(CatalogItem item) {
-        executor.submit(() -> {
-            try {
-                var full = client.getVolumeById(item.getExternalSource().getExternalId());
-                if (full != null) {
-                    repository.save(mapper.enrich(item, full));
-                    log.debug("Enriched item: {}", item.getTitle());
-                }
-            } catch (Exception e) {
-                log.warn("Error enriching item '{}': {}", item.getTitle(), e.getMessage());
-            }
-        });
-    }
 }
 

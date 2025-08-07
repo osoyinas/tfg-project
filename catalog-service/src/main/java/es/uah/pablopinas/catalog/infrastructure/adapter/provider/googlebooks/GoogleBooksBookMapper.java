@@ -1,6 +1,7 @@
 package es.uah.pablopinas.catalog.infrastructure.adapter.provider.googlebooks;
 
 import es.uah.pablopinas.catalog.domain.model.*;
+import es.uah.pablopinas.catalog.domain.model.details.BookDetails;
 import es.uah.pablopinas.catalog.infrastructure.adapter.provider.googlebooks.dto.GoogleBooksVolume;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -8,7 +9,6 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Component
@@ -19,34 +19,31 @@ public class GoogleBooksBookMapper {
 
     private final GenresTranslator genresTranslator;
 
-    public CatalogItem toCatalogItemBasic(GoogleBooksVolume volume) {
+    public CatalogItem toDomain(GoogleBooksVolume volume) {
         var info = volume.volumeInfo();
+
         return CatalogItem.builder()
                 .id(SOURCE_NAME.toLowerCase() + ":" + volume.id())
                 .title(info.title())
-                .description(null)
+                .description(info.description())
                 .type(CatalogType.BOOK)
+                .rating(info.averageRating() != null ? info.averageRating() : 0.0)
+                .ratingCount(info.ratingsCount() != null ? info.ratingsCount() : 0)
                 .releaseDate(parseDate(info.publishedDate()))
                 .creators(info.authors() != null ? info.authors() : List.of())
-                .genres(List.of())
+                .genres(genresTranslator.translateCategories(info.categories(), 10))
                 .images(extractImages(info.imageLinks()))
                 .externalSource(ExternalSourceInfo.builder()
                         .sourceName(SOURCE_NAME)
                         .externalId(volume.id())
                         .build())
+                .details(BookDetails.builder()
+                        .isbn(extractIsbn(info))
+                        .pageCount(info.pageCount())
+                        .publisher(info.publisher())
+                        .build()
+                )
                 .build();
-    }
-
-    public CatalogItem enrich(CatalogItem item, GoogleBooksVolume volume) {
-        var info = volume.volumeInfo();
-        item.setDescription(Optional.ofNullable(info.description()).orElse("No description available."));
-        if (info.categories() != null) {
-            item.setGenres(genresTranslator.translateCategories(info.categories(), 10));
-        }
-        if (info.authors() != null && !info.authors().isEmpty()) {
-            item.setCreators(info.authors());
-        }
-        return item;
     }
 
     private LocalDate parseDate(String publishedDate) {
@@ -73,6 +70,19 @@ public class GoogleBooksBookMapper {
                 .thumbnail(new Image(links.smallThumbnail(), "Thumbnail"))
                 .build();
     }
+
+    private String extractIsbn(GoogleBooksVolume.VolumeInfo info) {
+        if (info.industryIdentifiers() == null) {
+            return null;
+        }
+
+        return info.industryIdentifiers().stream()
+                .filter(id -> "ISBN_13".equalsIgnoreCase(id.type()))
+                .map(GoogleBooksVolume.IndustryIdentifier::identifier)
+                .findFirst()
+                .orElse(null);
+    }
+
 
 }
 

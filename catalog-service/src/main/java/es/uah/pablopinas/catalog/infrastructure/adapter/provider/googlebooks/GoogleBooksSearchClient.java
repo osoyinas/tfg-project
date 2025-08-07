@@ -26,7 +26,7 @@ public class GoogleBooksSearchClient {
     private static final String LANGUAGE = "es"; // Default language for results
 
     public GoogleBooksVolumeList searchVolumes(String query, int startIndex, int maxResults) throws IOException {
-        String url = String.format("%s?q=%s&startIndex=%d&maxResults=%d&projection=lite&langRestrict=%s&key=%s",
+        String url = String.format("%s?q=%s&startIndex=%d&maxResults=%d&projection=full&langRestrict=%s&key=%s",
                 BASE_URL, query.replace(" ", "+"), startIndex, maxResults, LANGUAGE, apiKey);
         return doRequest(url, GoogleBooksVolumeList.class);
     }

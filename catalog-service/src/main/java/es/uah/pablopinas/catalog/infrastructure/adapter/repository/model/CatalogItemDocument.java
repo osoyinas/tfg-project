@@ -2,6 +2,7 @@ package es.uah.pablopinas.catalog.infrastructure.adapter.repository.model;
 
 import es.uah.pablopinas.catalog.domain.model.ExternalSourceInfo;
 import es.uah.pablopinas.catalog.domain.model.ImageSet;
+import es.uah.pablopinas.catalog.infrastructure.adapter.repository.model.details.CatalogItemDetailsDocument;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -26,7 +27,9 @@ public class CatalogItemDocument {
     private Date releaseDate;
     private List<String> genres;
     private List<String> creators;
-    private double averageRating;
+
+    private Double rating;
+    private Integer ratingCount;
 
     private ImageSet images;
 
@@ -34,4 +37,7 @@ public class CatalogItemDocument {
 
     private boolean isRelevant;
     private Date relevantUntil;
+
+    private CatalogItemDetailsDocument details;
+
 }

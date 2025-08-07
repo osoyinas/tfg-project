@@ -22,6 +22,8 @@ public class TmdbMovieMapper {
         return CatalogItem.builder()
                 .title(movie.getTitle())
                 .description(movie.getOverview())
+                .rating(movie.getVoteAverage() != null ? movie.getVoteAverage() : 0.0)
+                .ratingCount(movie.getVoteCount() != null ? movie.getVoteCount() : 0)
                 .type(CatalogType.MOVIE)
                 .releaseDate(parseReleaseDate(movie.getReleaseDate()))
                 .genres(genresProvider.getGenres(movie))
