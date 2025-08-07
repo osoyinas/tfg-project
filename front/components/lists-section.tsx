@@ -126,7 +126,7 @@ export function ListsSection({ className, onItemSelect }: ListsSectionProps) {
             <div className="flex items-center gap-2">
               <Avatar className="w-6 h-6">
                 <AvatarImage src={list.author.avatar || "/placeholder.svg"} alt={list.author.name} />
-                <AvatarFallback className="text-xs">{list.author.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                <AvatarFallback className="text-xs">{list.author.name.split(' ').map((n: any[]) => n[0]).join('')}</AvatarFallback>
               </Avatar>
               <span className="text-xs text-gray-600">{list.author.name}</span>
               {list.sharedBy && (
