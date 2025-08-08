@@ -5,11 +5,13 @@ import es.uah.pablopinas.catalog.domain.model.CatalogType;
 import es.uah.pablopinas.catalog.domain.model.details.BookDetails;
 import es.uah.pablopinas.catalog.domain.model.details.CatalogItemDetails;
 import es.uah.pablopinas.catalog.domain.model.details.MovieDetails;
+import es.uah.pablopinas.catalog.domain.model.details.TvShowDetails;
 import es.uah.pablopinas.catalog.domain.util.CatalogItemIdGenerator;
 import es.uah.pablopinas.catalog.infrastructure.adapter.repository.model.CatalogItemDocument;
 import es.uah.pablopinas.catalog.infrastructure.adapter.repository.model.details.BookDetailsDocument;
 import es.uah.pablopinas.catalog.infrastructure.adapter.repository.model.details.CatalogItemDetailsDocument;
 import es.uah.pablopinas.catalog.infrastructure.adapter.repository.model.details.MovieDetailsDocument;
+import es.uah.pablopinas.catalog.infrastructure.adapter.repository.model.details.TvShowDetailsDocument;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -83,6 +85,14 @@ public class CatalogItemMapper {
                     .originalLanguage(movie.getOriginalLanguage())
                     .build();
         }
+        if (doc instanceof TvShowDetailsDocument tvShow) {
+            return TvShowDetails.builder()
+                    .seasonCount(tvShow.getSeasonCount())
+                    .episodeCount(tvShow.getEpisodeCount())
+                    .averageRuntime(tvShow.getAverageRuntime())
+                    .originalLanguage(tvShow.getOriginalLanguage())
+                    .build();
+        }
         return null;
     }
 
@@ -100,6 +110,16 @@ public class CatalogItemMapper {
                     .originalLanguage(movie.getOriginalLanguage())
                     .build();
         }
+
+        if (details instanceof TvShowDetails tvShow) {
+            return TvShowDetailsDocument.builder()
+                    .seasonCount(tvShow.getSeasonCount())
+                    .episodeCount(tvShow.getEpisodeCount())
+                    .averageRuntime(tvShow.getAverageRuntime())
+                    .originalLanguage(tvShow.getOriginalLanguage())
+                    .build();
+        }
+
         return null;
     }
 }

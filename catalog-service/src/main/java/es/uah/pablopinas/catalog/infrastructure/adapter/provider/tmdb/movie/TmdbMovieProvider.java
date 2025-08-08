@@ -1,14 +1,19 @@
-package es.uah.pablopinas.catalog.infrastructure.adapter.provider.tmdb;
+package es.uah.pablopinas.catalog.infrastructure.adapter.provider.tmdb.movie;
 
 import es.uah.pablopinas.catalog.application.port.out.CatalogItemRepositoryPort;
 import es.uah.pablopinas.catalog.domain.model.*;
+import es.uah.pablopinas.catalog.domain.model.details.MovieDetails;
 import es.uah.pablopinas.catalog.infrastructure.adapter.provider.ExternalProviderStrategy;
+import es.uah.pablopinas.catalog.infrastructure.adapter.provider.tmdb.TmdbBasicSearch;
+import es.uah.pablopinas.catalog.infrastructure.adapter.provider.tmdb.TmdbConfig;
+import es.uah.pablopinas.catalog.infrastructure.adapter.provider.tmdb.TmdbPaginationHelper;
 import info.movito.themoviedbapi.TmdbApi;
 import info.movito.themoviedbapi.TmdbMovies;
 import info.movito.themoviedbapi.TmdbTrending;
 import info.movito.themoviedbapi.model.core.MovieResultsPage;
 import info.movito.themoviedbapi.model.core.NamedIdElement;
 import info.movito.themoviedbapi.model.movies.Credits;
+import info.movito.themoviedbapi.model.movies.MovieDb;
 import info.movito.themoviedbapi.tools.model.time.TimeWindow;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -62,46 +67,36 @@ public class TmdbMovieProvider implements ExternalProviderStrategy {
      */
     @Override
     public PageResult<CatalogItem> fetch(CatalogSearchFilter filter, Pagination pagination) {
-        try {
-            MovieResultsPage moviesPage = apiSearch
-                    .searchMovie(filter.getTitleContains(),
-                            pagination.getPage() + 1 // TMDB uses 1-based indexing
-                    );
-            if (moviesPage == null || moviesPage.getResults() == null) {
-                log.warn("No movies found for filter: {}", filter);
-                return PageResult.empty(pagination);
-            }
+        return TmdbPaginationHelper.fetchWithFlexiblePagination(pagination, tmdbPage -> {
+            try {
+                var results = apiSearch.searchMovie(filter.getTitleContains(), tmdbPage);
+                if (results == null || results.getResults() == null) return List.of();
 
-            var items = translateResults(moviesPage);
-            return PageResult.of(items, pagination);
-        } catch (Exception e) {
-            log.error("Error while fetching TMDB items: {}", e.getMessage());
-            return PageResult.empty(pagination);
-        }
+                return translateResults(results);
+
+            } catch (Exception e) {
+                log.warn("Error fetching TMDB movie page {}: {}", tmdbPage, e.getMessage());
+                return List.of();
+            }
+        });
     }
 
-    /**
-     * Fetches trending movies from TMDB (by week) with pagination.
-     *
-     * @param pagination pagination settings (page, size)
-     * @return a page of trending catalog items
-     */
     @Override
     public PageResult<CatalogItem> fetchTrending(Pagination pagination) {
-        TmdbTrending tmdbTrending = tmdbApi.getTrending();
-        try {
-            MovieResultsPage resultsPage = tmdbTrending.getMovies(
-                    TimeWindow.WEEK,
-                    TmdbConfig.LANGUAGE,
-                    pagination.getPage() + 1 // TMDB uses 1-based indexing
-            );
+        TmdbTrending trending = tmdbApi.getTrending();
 
-            var items = translateResults(resultsPage);
-            return PageResult.of(items, pagination);
-        } catch (Exception e) {
-            log.error("Error while fetching trending items from TMDB: {}", e.getMessage());
-            return PageResult.empty(pagination);
-        }
+        return TmdbPaginationHelper.fetchWithFlexiblePagination(pagination, tmdbPage -> {
+            try {
+                MovieResultsPage results = trending.getMovies(TimeWindow.WEEK, TmdbConfig.LANGUAGE, tmdbPage);
+                if (results == null || results.getResults() == null) return List.of();
+
+                return translateResults(results);
+
+            } catch (Exception e) {
+                log.warn("Error fetching TMDB trending movie page {}: {}", tmdbPage, e.getMessage());
+                return List.of();
+            }
+        });
     }
 
     /**
@@ -116,6 +111,7 @@ public class TmdbMovieProvider implements ExternalProviderStrategy {
                 .map(movie -> {
                     var item = movieMapper.toDomain(movie); // initial mapping without directors
                     asyncUpdateWithCreators(item, movie.getId()); // enrich in background
+                    asyncUpdateWithDetails(item, movie.getId()); // enrich with details in background
                     return item;
                 })
                 .toList();
@@ -128,15 +124,10 @@ public class TmdbMovieProvider implements ExternalProviderStrategy {
      * @param item   the catalog item to enrich
      * @param tmdbId the TMDB movie ID
      */
-    private void asyncUpdateWithCreators(CatalogItem item, int tmdbId) {
+    protected void asyncUpdateWithCreators(CatalogItem item, int tmdbId) {
         executor.submit(() -> {
             try {
-                var creators = tmdbMovies.getCredits(tmdbId, TmdbConfig.LANGUAGE)
-                        .getCrew()
-                        .stream()
-                        .filter(c -> "Director".equalsIgnoreCase(c.getJob()))
-                        .map(NamedIdElement::getName)
-                        .toList();
+                var creators = extractCreatorsFromCredits(tmdbMovies.getCredits(tmdbId, TmdbConfig.LANGUAGE));
 
                 if (!creators.isEmpty()) {
                     item.setCreators(creators);
@@ -171,6 +162,27 @@ public class TmdbMovieProvider implements ExternalProviderStrategy {
         }
 
         return new ArrayList<>(creators);
+    }
+
+    private void asyncUpdateWithDetails(CatalogItem item, int tmdbId) {
+        executor.submit(() -> {
+            try {
+                MovieDb details = tmdbMovies.getDetails(tmdbId, TmdbConfig.LANGUAGE);
+
+                Integer runtime = details.getRuntime();
+                if (runtime != null && runtime > 0) {
+                    MovieDetails movieDetails = MovieDetails.builder()
+                            .durationMinutes(runtime)
+                            .originalLanguage(details.getOriginalLanguage())
+                            .build();
+                    item.setDetails(movieDetails);
+                    catalogItemRepository.update(item.getId(), item);
+                    log.info("Enriched '{}' with runtime: {} min", item.getTitle(), runtime);
+                }
+            } catch (Exception e) {
+                log.warn("Failed to enrich '{}' with runtime: {}", item.getTitle(), e.getMessage());
+            }
+        });
     }
 
 }

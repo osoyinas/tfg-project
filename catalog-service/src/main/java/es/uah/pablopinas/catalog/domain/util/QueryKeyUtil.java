@@ -30,7 +30,13 @@ public class QueryKeyUtil {
      * Builds a raw (readable) key for a search query using all available fields.
      */
     public static String buildRawKey(CatalogSearchFilter filter, Pagination pagination) {
-        String raw = String.format("title=%s|type=%s|genre=%s|year=%s|page=%d", nullToEmpty(filter.getTitleContains()), nullToEmpty(filter.getType() != null ? filter.getType().name() : null), nullToEmpty(filter.getGenre()), filter.getReleaseYear() != null ? filter.getReleaseYear().toString() : "", pagination != null ? pagination.getPage() : 0);
+        String raw = String.format("title=%s|type=%s|genre=%s|year=%s|page=%d|size=%d",
+                nullToEmpty(filter.getTitleContains()),
+                nullToEmpty(filter.getType() != null ? filter.getType().name() : null),
+                nullToEmpty(filter.getGenre()),
+                filter.getReleaseYear() != null ? filter.getReleaseYear().toString() : "",
+                pagination != null ? pagination.getPage() : 0,
+                pagination != null ? pagination.getSize() : 0);
         return raw;
     }
 

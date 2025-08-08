@@ -3,6 +3,7 @@ package es.uah.pablopinas.catalog.infrastructure.adapter.provider.tmdb;
 import info.movito.themoviedbapi.TmdbGenre;
 import info.movito.themoviedbapi.model.core.Genre;
 import info.movito.themoviedbapi.model.core.Movie;
+import info.movito.themoviedbapi.model.core.TvSeries;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -46,6 +47,15 @@ public class GenresProvider {
     public List<String> getGenres(Movie movie) {
         try {
             List<Integer> genresIds = movie.getGenreIds();
+            return getGenreNames(genresIds);
+        } catch (Exception e) {
+            return List.of();
+        }
+    }
+
+    public List<String> getGenres(TvSeries tvSeries) {
+        try {
+            List<Integer> genresIds = tvSeries.getGenreIds();
             return getGenreNames(genresIds);
         } catch (Exception e) {
             return List.of();

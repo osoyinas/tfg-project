@@ -2,7 +2,7 @@ package es.uah.pablopinas.catalog.infrastructure.adapter.provider;
 
 import es.uah.pablopinas.catalog.domain.model.*;
 import es.uah.pablopinas.catalog.infrastructure.adapter.provider.tmdb.GenresProvider;
-import es.uah.pablopinas.catalog.infrastructure.adapter.provider.tmdb.TmdbMovieProvider;
+import es.uah.pablopinas.catalog.infrastructure.adapter.provider.tmdb.movie.TmdbMovieProvider;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

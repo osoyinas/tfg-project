@@ -1,6 +1,7 @@
-package es.uah.pablopinas.catalog.infrastructure.adapter.provider.tmdb;
+package es.uah.pablopinas.catalog.infrastructure.adapter.provider.tmdb.movie;
 
 import es.uah.pablopinas.catalog.domain.model.*;
+import es.uah.pablopinas.catalog.infrastructure.adapter.provider.tmdb.GenresProvider;
 import info.movito.themoviedbapi.model.core.Movie;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
