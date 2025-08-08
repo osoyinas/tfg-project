@@ -53,9 +53,8 @@ public class CatalogSearchService implements SearchCatalogItemsUseCase {
         PageResult<CatalogItem> localResult = catalogRepository.search(filter, pagination);
 
         if (localResult.isEmpty()) {
-            // Nunca fetcheado o datos perdidos → fetch directo
-            PageResult<CatalogItem> result = fetcherService.fetchAndCache(filter, pagination);
-            return result;
+            // Never fetched before or empty result
+            return fetcherService.fetchAndCache(filter, pagination);
         }
 
         if (isStale) {

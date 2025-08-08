@@ -11,7 +11,11 @@ spring:
           issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8080/realms/TrustedFeedbackGateway}
           jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:http://localhost:8080/realms/TrustedFeedbackGateway/protocol/openid-connect/certs}
           principal-claim-name: ${KEYCLOAK_PRINCIPAL_CLAIM:preferred_username}
-
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
   data:
     mongodb:
       host: ${MONGO_HOST:localhost}

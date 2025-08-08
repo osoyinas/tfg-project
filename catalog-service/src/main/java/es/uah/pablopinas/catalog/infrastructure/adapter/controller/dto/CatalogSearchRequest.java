@@ -7,6 +7,8 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 public class CatalogSearchRequest {
@@ -22,6 +24,8 @@ public class CatalogSearchRequest {
     @Min(value = 1800, message = "El año debe ser posterior a 1800.")
     private Integer year;
 
+    private List<String> ids;
+
     /**
      * Maps this request DTO into the domain-level CatalogSearchFilter
      */
@@ -29,6 +33,7 @@ public class CatalogSearchRequest {
         return CatalogSearchFilter.builder()
                 .titleContains(title)
                 .type(type)
+                .ids(ids)
                 .genre(genre)
                 .releaseYear(year)
                 .build();

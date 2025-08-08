@@ -61,4 +61,5 @@ public class CatalogItemCRUDService implements
     public Optional<CatalogItem> getById(String id) {
         return repository.findById(id);
     }
+    
 }

@@ -43,6 +43,10 @@ public class CatalogFetcherService implements ExternalCatalogFetchQueuePort {
 
 
     private void updateSearchStatus(CatalogSearchFilter filter, Pagination pagination, PageResult<CatalogItem> result) {
+        if (!shouldCreateSearchStatus(filter)) {
+            return;
+        }
+
         CatalogSearchStatus status = CatalogSearchStatus.builder()
                 .queryKey(QueryKeyUtil.buildKey(filter, pagination))
                 .rawQuery(QueryKeyUtil.buildRawKey(filter, pagination))
@@ -83,5 +87,15 @@ public class CatalogFetcherService implements ExternalCatalogFetchQueuePort {
         updateSearchStatus(filter, pagination, previousResult);
     }
 
-
+    /**
+     * Determines whether to create a search status entry based on the filter.
+     * <p>
+     * If the filter has no specific IDs, it indicates a general search that should be tracked.
+     *
+     * @param filter the search filter
+     * @return true if a search status should be created, false otherwise
+     */
+    private boolean shouldCreateSearchStatus(CatalogSearchFilter filter) {
+        return filter.getIds() == null || filter.getIds().isEmpty();
+    }
 }

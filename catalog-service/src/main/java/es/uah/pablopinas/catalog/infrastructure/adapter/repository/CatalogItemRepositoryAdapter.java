@@ -38,12 +38,8 @@ public class CatalogItemRepositoryAdapter implements CatalogItemRepositoryPort {
         }
 
         // Otherwise, check if external source is provided and if the item exists by external source
-        if (item.getExternalSource() != null
-                && item.getExternalSource().getSourceName() != null
-                && item.getExternalSource().getExternalId() != null) {
-            return repository.existsByExternalSource_SourceNameAndExternalSource_ExternalId(
-                    item.getExternalSource().getSourceName(),
-                    item.getExternalSource().getExternalId());
+        if (item.getExternalSource() != null && item.getExternalSource().getSourceName() != null && item.getExternalSource().getExternalId() != null) {
+            return repository.existsByExternalSource_SourceNameAndExternalSource_ExternalId(item.getExternalSource().getSourceName(), item.getExternalSource().getExternalId());
         }
 
         // If no ID or external source is provided, we cannot determine if it exists
@@ -63,11 +59,8 @@ public class CatalogItemRepositoryAdapter implements CatalogItemRepositoryPort {
 
     @Override
     public PageResult<CatalogItem> findAll(int page, int size) {
-        org.springframework.data.domain.Page<CatalogItemDocument> result = repository
-                .findAll(PageRequest.of(page, size));
-        List<CatalogItem> items = result.getContent().stream()
-                .map(CatalogItemMapper::toDomain)
-                .collect(Collectors.toList());
+        org.springframework.data.domain.Page<CatalogItemDocument> result = repository.findAll(PageRequest.of(page, size));
+        List<CatalogItem> items = result.getContent().stream().map(CatalogItemMapper::toDomain).collect(Collectors.toList());
         return PageResult.of(items, page, size);
     }
 
@@ -87,6 +80,9 @@ public class CatalogItemRepositoryAdapter implements CatalogItemRepositoryPort {
         if (filter.getReleaseYear() != null) {
             query.addCriteria(Criteria.where("releaseYear").is(filter.getReleaseYear()));
         }
+        if (filter.getIds() != null && !filter.getIds().isEmpty()) {
+            query.addCriteria(Criteria.where("id").in(filter.getIds()));
+        }
 
         return getCatalogItemPageResult(pagination, query);
     }
@@ -104,8 +100,7 @@ public class CatalogItemRepositoryAdapter implements CatalogItemRepositoryPort {
         if (!repository.existsById(id)) {
             throw new IllegalArgumentException("Item with id " + id + " does not exist");
         }
-        CatalogItemDocument existing = repository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Item with id " + id + " does not exist"));
+        CatalogItemDocument existing = repository.findById(id).orElseThrow(() -> new IllegalArgumentException("Item with id " + id + " does not exist"));
         CatalogItemDocument updatedDocument = CatalogItemMapper.toDocument(item);
         updatedDocument.setId(existing.getId()); // Preserve the existing ID
         CatalogItemDocument saved = repository.save(updatedDocument);
@@ -113,13 +108,9 @@ public class CatalogItemRepositoryAdapter implements CatalogItemRepositoryPort {
     }
 
     private PageResult<CatalogItem> getCatalogItemPageResult(Pagination pagination, Query query) {
-        long total = mongoTemplate.count(query, CatalogItemDocument.class);
         query.with(PageRequest.of(pagination.getPage(), pagination.getSize()));
 
-        List<CatalogItem> items = mongoTemplate
-                .find(query, CatalogItemDocument.class).stream()
-                .map(CatalogItemMapper::toDomain)
-                .collect(Collectors.toList());
+        List<CatalogItem> items = mongoTemplate.find(query, CatalogItemDocument.class).stream().map(CatalogItemMapper::toDomain).collect(Collectors.toList());
 
         return PageResult.of(items, pagination.getPage(), pagination.getSize());
     }

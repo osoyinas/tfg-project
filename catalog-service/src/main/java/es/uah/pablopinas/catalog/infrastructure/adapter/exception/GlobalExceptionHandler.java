@@ -1,6 +1,5 @@
-package es.uah.pablopinas.catalog.infrastructure.exception;
+package es.uah.pablopinas.catalog.infrastructure.adapter.exception;
 
-import es.uah.pablopinas.catalog.infrastructure.adapter.exception.ApiError;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
