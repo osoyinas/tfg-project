@@ -21,16 +21,16 @@ public class TmdbBasicSearch extends TmdbSearch {
         apiUrl.addQueryParam("include_adult", true);
         apiUrl.addLanguage(language);
         apiUrl.addPage(page);
-        return (MovieResultsPage) this.mapJsonResult(apiUrl, MovieResultsPage.class);
+        return this.mapJsonResult(apiUrl, MovieResultsPage.class);
     }
 
     public TvSeriesResultsPage searchTv(String query, Integer page) throws TmdbException {
-        ApiUrl apiUrl = new ApiUrl(new Object[]{"search", "tv"});
+        ApiUrl apiUrl = new ApiUrl("search", "tv");
         apiUrl.addPathParam("query", query);
         apiUrl.addQueryParam("include_adult", true);
         apiUrl.addLanguage(language);
         apiUrl.addPage(page);
-        return (TvSeriesResultsPage) this.mapJsonResult(apiUrl, TvSeriesResultsPage.class);
+        return this.mapJsonResult(apiUrl, TvSeriesResultsPage.class);
     }
 
 }

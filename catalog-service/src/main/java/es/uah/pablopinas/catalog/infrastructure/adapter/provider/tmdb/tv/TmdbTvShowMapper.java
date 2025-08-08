@@ -8,8 +8,6 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 
-;
-
 @RequiredArgsConstructor
 @Component
 public class TmdbTvShowMapper {
