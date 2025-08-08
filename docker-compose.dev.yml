@@ -1,4 +1,12 @@
 services:
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    env_file:
+      - gateway/.env
+    ports:
+      - "${GATEWAY_PORT}:${GATEWAY_PORT}"
   keycloak-db:
     image: postgres:16
     ports:
