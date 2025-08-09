@@ -1,6 +1,12 @@
-version: '3.8'
-
 services:
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    env_file:
+      - gateway/.env
+    ports:
+      - "${GATEWAY_PORT}:${GATEWAY_PORT}"
   keycloak-db:
     image: postgres:16
     ports:
@@ -40,6 +46,14 @@ services:
       - mongodb_data:/data/db
     restart: unless-stopped
 
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
 volumes:
   pgdata:
   mongodb_data:
