@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Search, Plus } from "lucide-react"
-import { ContentCard } from "@/components/content-card"
+import { ContentCard } from "@/components/content/content-card"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import {
   Dialog,
@@ -17,7 +17,6 @@ import {
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
-import { MovieItem } from "@/types"
 
 export function MoviesSection() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -72,14 +71,13 @@ export function MoviesSection() {
     },
   ]
 
-  // const filteredMovies = movies.filter((movie) => {
-  //   const matchesSearch = movie.title.toLowerCase().includes(searchTerm.toLowerCase())
-  //   const matchesGenre = filterGenre === "all" || movie.genre === filterGenre
-  //   const matchesRating = filterRating === "all" || movie.rating >= Number.parseFloat(filterRating)
-  //   return matchesSearch && matchesGenre && matchesRating
-  // })
+  const filteredMovies = movies.filter((movie) => {
+    const matchesSearch = movie.title.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesGenre = filterGenre === "all" || movie.genre === filterGenre
+    const matchesRating = filterRating === "all" || movie.rating >= Number.parseFloat(filterRating)
+    return matchesSearch && matchesGenre && matchesRating
+  })
 
-  const filteredMovies: MovieItem[] = [] // Replace with actual movie data filtering logic
   return (
     <div
       className={cn(
@@ -137,7 +135,7 @@ export function MoviesSection() {
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
         {filteredMovies.map((movie) => (
-          <ContentCard key={movie.id} content={{ ...movie, type: "MOVIE" }} />
+          <ContentCard key={movie.id} content={{ ...movie, type: "movie" }} />
         ))}
       </div>
 

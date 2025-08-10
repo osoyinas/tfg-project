@@ -1,3 +1,5 @@
+// types/index.ts
+
 export type ContentType = "MOVIE" | "BOOK" | "TV_SERIE" | "LIST"
 
 export interface ImageInfo {
@@ -94,7 +96,7 @@ export interface Content {
 
 export interface Review {
   id: string
-  user?: User
+  user?: string
   contentTitle: string
   contentType: "movie" | "book" | "series"
   rating: number

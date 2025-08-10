@@ -16,8 +16,8 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
-import { ActionButtonsRow } from "@/components/action-buttons-row"
-import { ReviewCard } from "@/components/review-card"
+import { ActionButtonsRow } from "@/components/content/action-buttons-row"
+import { ReviewCard } from "@/components/content/review-card"
 import type { Content, UserActivity, Review } from "@/types"
 import { cn } from "@/lib/utils"
 
@@ -41,20 +41,20 @@ const relatedBooks: Content[] = [
   {
     id: "rb1",
     title: "A Man Called Ove",
-    type: "book",
+    type: "BOOK",
     genre: "Fiction",
     imageUrl: "/placeholder.svg?height=300&width=200",
     rating: 4.6,
-    releaseYear: "2012",
+    releaseYear: 2012,
   },
   {
     id: "rb2",
     title: "Eleanor Oliphant Is Completely Fine",
-    type: "book",
+    type: "BOOK",
     genre: "Fiction",
     imageUrl: "/placeholder.svg?height=300&width=200",
     rating: 4.4,
-    releaseYear: "2017",
+    releaseYear: 2017,
   },
 ]
 
@@ -96,40 +96,40 @@ const bookActivity: UserActivity[] = [
 ]
 
 const bookReviews: Review[] = [
-  // {
-  //   id: "br1",
-  //   // content: {
-  //   //   id: "2",
-  //   //   title: "The Midnight Library",
-  //   //   type: "BOOK",
-  //   //   imageUrl: "/placeholder.svg?height=100&width=70",
-  //   // },
-  //   rating: 4.8,
-  //   text: "A truly thought-provoking and heartwarming read. It makes you reflect on life choices and possibilities.",
-  //   timestamp: "1 day ago",
-  //   user: {
-  //     id: "u2",
-  //     name: "Bob",
-  //     avatar: "/placeholder-user.jpg",
-  //   },
-  // },
-  // {
-  //   id: "br2",
-  //   content: {
-  //     id: "2",
-  //     title: "The Midnight Library",
-  //     type: "BOOK",
-  //     imageUrl: "/placeholder.svg?height=100&width=70",
-  //   },
-  //   rating: 5,
-  //   text: "An absolute masterpiece! This book changed my perspective on so many things. A must-read!",
-  //   timestamp: "3 days ago",
-  //   user: {
-  //     id: "u3",
-  //     name: "Charlie",
-  //     avatar: "/placeholder-user.jpg",
-  //   },
-  // },
+  {
+    id: "br1",
+    content: {
+      id: "2",
+      title: "The Midnight Library",
+      type: "BOOK",
+      imageUrl: "/placeholder.svg?height=100&width=70",
+    },
+    rating: 4.8,
+    text: "A truly thought-provoking and heartwarming read. It makes you reflect on life choices and possibilities.",
+    timestamp: "1 day ago",
+    user: {
+      id: "u2",
+      name: "Bob",
+      avatar: "/placeholder-user.jpg",
+    },
+  },
+  {
+    id: "br2",
+    content: {
+      id: "2",
+      title: "The Midnight Library",
+      type: "BOOK",
+      imageUrl: "/placeholder.svg?height=100&width=70",
+    },
+    rating: 5,
+    text: "An absolute masterpiece! This book changed my perspective on so many things. A must-read!",
+    timestamp: "3 days ago",
+    user: {
+      id: "u3",
+      name: "Charlie",
+      avatar: "/placeholder-user.jpg",
+    },
+  },
 ]
 
 export function BookDetail({ book }: BookDetailProps) {

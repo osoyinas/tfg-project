@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Search, Plus } from "lucide-react"
-import { ContentCard } from "@/components/content-card"
+import { ContentCard } from "@/components/content/content-card"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import {
   Dialog,
@@ -17,7 +17,6 @@ import {
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
-import { SeriesItem } from "@/types"
 
 export function SeriesSection() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -59,14 +58,13 @@ export function SeriesSection() {
       genre: "Sci-Fi",
     },
   ]
-  const filteredSeries: SeriesItem[] = [] // Replace with actual series data filtering logic
 
-  // const filteredSeries = series.filter((s) => {
-  //   const matchesSearch = s.title.toLowerCase().includes(searchTerm.toLowerCase())
-  //   const matchesGenre = filterGenre === "all" || s.genre === filterGenre
-  //   const matchesRating = filterRating === "all" || s.rating >= Number.parseFloat(filterRating)
-  //   return matchesSearch && matchesGenre && matchesRating
-  // })
+  const filteredSeries = series.filter((s) => {
+    const matchesSearch = s.title.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesGenre = filterGenre === "all" || s.genre === filterGenre
+    const matchesRating = filterRating === "all" || s.rating >= Number.parseFloat(filterRating)
+    return matchesSearch && matchesGenre && matchesRating
+  })
 
   return (
     <div
@@ -124,7 +122,7 @@ export function SeriesSection() {
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
         {filteredSeries.map((s) => (
-          <ContentCard key={s.id} content={{ ...s, type: "TV_SERIE" }} />
+          <ContentCard key={s.id} content={{ ...s, type: "series" }} />
         ))}
       </div>
 

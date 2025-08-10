@@ -6,10 +6,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { List, Star, MessageSquare, UserPlus } from "lucide-react"
-import { ContentCard } from "@/components/content-card"
-import { ReviewCard } from "@/components/review-card"
-import { UserActivityCard } from "@/components/user-activity-card"
-import { ListOverviewCard } from "@/components/list-overview-card"
+import { ContentCard } from "@/components/content/content-card"
+import { ReviewCard } from "@/components/content/review-card"
+import { UserActivityCard } from "@/components/content/user-activity-card"
+import { ListOverviewCard } from "@/components/lists/list-overview-card"
 import { useState } from "react"
 import { CreateListModal } from "@/components/create-list-modal"
 import { InviteFriendsModal } from "@/components/invite-friends-modal"
@@ -192,9 +192,9 @@ export function ProfileSection() {
         <TabsContent value="activity" className="mt-6">
           <h2 className="text-2xl font-bold mb-4 text-dark-primary">Actividad Reciente</h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {/* {recentActivity.map((activity, index) => (
+            {recentActivity.map((activity, index) => (
               <UserActivityCard key={index} activity={activity} />
-            ))} */}
+            ))}
           </div>
         </TabsContent>
 
@@ -210,18 +210,18 @@ export function ProfileSection() {
             </Button>
           </div>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {/* {userLists.map((list) => (
+            {userLists.map((list) => (
               <ListOverviewCard key={list.id} list={list} />
-            ))} */}
+            ))}
           </div>
         </TabsContent>
 
         <TabsContent value="reviews" className="mt-6">
           <h2 className="text-2xl font-bold mb-4 text-dark-primary">Mis Reseñas</h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {/* {userReviews.map((review) => (
+            {userReviews.map((review) => (
               <ReviewCard key={review.id} review={review} />
-            ))} */}
+            ))}
           </div>
         </TabsContent>
 
@@ -248,11 +248,11 @@ export function ProfileSection() {
           <h2 className="text-2xl font-bold mb-4 text-dark-primary">Contenido Visto/Leído</h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {/* Placeholder for watched/read content */}
-            {/* <ContentCard
+            <ContentCard
               content={{
                 id: "w1",
                 title: "Inception",
-                type: "MOVIE",
+                type: "movie",
                 imageUrl: "/placeholder.svg?height=300&width=200",
                 rating: 4.8,
               }}
@@ -274,7 +274,7 @@ export function ProfileSection() {
                 imageUrl: "/placeholder.svg?height=300&width=200",
                 rating: 4.7,
               }}
-            /> */}
+            />
           </div>
         </TabsContent>
       </Tabs>

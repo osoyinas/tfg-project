@@ -1,25 +1,18 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Search, Plus } from "lucide-react";
-import { ListOverviewCard } from "@/components/list-overview-card";
-import { CreateListModal } from "@/components/create-list-modal";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
-import { cn } from "@/lib/utils";
-import { List, ListItem } from "@/types";
+import { useState } from "react"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Search, Plus } from "lucide-react"
+import { ListOverviewCard } from "@/components/lists/list-overview-card"
+import { CreateListModal } from "@/components/create-list-modal"
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
+import { cn } from "@/lib/utils"
 
 export function ListsSection() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterType, setFilterType] = useState("all");
-  const [isCreateListModalOpen, setIsCreateListModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("")
+  const [filterType, setFilterType] = useState("all")
+  const [isCreateListModalOpen, setIsCreateListModalOpen] = useState(false)
 
   const lists = [
     {
@@ -57,21 +50,21 @@ export function ListsSection() {
       items: 10,
       type: "book",
     },
-  ];
+  ]
 
   const filteredLists = lists.filter((list) => {
     const matchesSearch =
       list.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      list.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = filterType === "all" || list.type === filterType;
-    return matchesSearch && matchesType;
-  });
+      list.description.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesType = filterType === "all" || list.type === filterType
+    return matchesSearch && matchesType
+  })
 
   return (
     <div
       className={cn(
         "container mx-auto px-4 py-8 min-h-screen transition-colors duration-500",
-        "bg-dark-background text-dark-foreground"
+        "bg-dark-background text-dark-foreground",
       )}
     >
       <h1 className="text-4xl font-bold mb-8 text-list-purple">Mis Listas</h1>
@@ -109,14 +102,11 @@ export function ListsSection() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredLists.map((list) => (
-          <ListOverviewCard key={list.id} list={list as unknown as ListItem} />
+          <ListOverviewCard key={list.id} list={list} />
         ))}
       </div>
 
-      <CreateListModal
-        open={isCreateListModalOpen}
-        onOpenChange={setIsCreateListModalOpen}
-      />
+      <CreateListModal open={isCreateListModalOpen} onOpenChange={setIsCreateListModalOpen} />
     </div>
-  );
+  )
 }

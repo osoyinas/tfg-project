@@ -1,4 +1,4 @@
-import type { Content, List } from "@/types";
+import type { Content, List } from "@/types"
 
 // Mock data for content items
 const mockContent: Content[] = [
@@ -54,8 +54,7 @@ const mockContent: Content[] = [
     genre: "Biography",
     director: "Christopher Nolan",
     cast: ["Cillian Murphy", "Emily Blunt"],
-    description:
-      "The story of J. Robert Oppenheimer's role in the development of the atomic bomb during World War II.",
+    description: "The story of J. Robert Oppenheimer's role in the development of the atomic bomb during World War II.",
     releaseDate: "2023-07-21",
     reviews: [],
   },
@@ -88,7 +87,7 @@ const mockContent: Content[] = [
     seasons: 1,
     reviews: [],
   },
-];
+]
 
 // Mock data for lists
 const mockLists: List[] = [
@@ -142,154 +141,144 @@ const mockLists: List[] = [
     createdAt: "2023-11-05T15:00:00Z",
     updatedAt: "2024-07-10T11:45:00Z",
   },
-];
+]
 
-export async function fetchContent(
-  type: Content["type"] | "all"
-): Promise<Content[]> {
+export async function fetchContent(type: Content["type"] | "all"): Promise<Content[]> {
   // Simulate API call
-  await new Promise((resolve) => setTimeout(resolve, 500));
+  await new Promise((resolve) => setTimeout(resolve, 500))
 
   if (type === "all") {
-    return mockContent;
+    return mockContent
   }
-  return mockContent.filter((item) => item.type === type);
+  return mockContent.filter((item) => item.type === type)
 }
 
-export async function fetchContentById(
-  id: string,
-  type: Content["type"]
-): Promise<Content | undefined> {
+export async function fetchContentById(id: string, type: Content["type"]): Promise<Content | undefined> {
   // Simulate API call
-  await new Promise((resolve) => setTimeout(resolve, 300));
+  await new Promise((resolve) => setTimeout(resolve, 300))
 
-  const allContent = await fetchContent("all");
-  const content = allContent.find(
-    (item) => item.id === id && item.type === type
-  );
+  const allContent = await fetchContent("all")
+  const content = allContent.find((item) => item.id === id && item.type === type)
 
   // Add mock reviews for detail pages
   if (content) {
     content.reviews = [
-      // {
-      //   id: "rev1",
-      //   user: "Alice",
-      //   rating: 4.5,
-      //   text: "¡Me encantó! Una experiencia increíble.",
-      //   date: "2024-07-25",
-      //   contentTitle: content.title,
-      //   contentType: content.type,
-      // },
-      // {
-      //   id: "rev2",
-      //   user: "Bob",
-      //   rating: 4.0,
-      //   text: "Muy buena, aunque un poco lenta al principio.",
-      //   date: "2024-07-20",
-      //   contentTitle: content.title,
-      //   contentType: content.type,
-      // },
-    ];
+      {
+        id: "rev1",
+        user: "Alice",
+        rating: 4.5,
+        text: "¡Me encantó! Una experiencia increíble.",
+        date: "2024-07-25",
+        contentTitle: content.title,
+        contentType: content.type,
+      },
+      {
+        id: "rev2",
+        user: "Bob",
+        rating: 4.0,
+        text: "Muy buena, aunque un poco lenta al principio.",
+        date: "2024-07-20",
+        contentTitle: content.title,
+        contentType: content.type,
+      },
+    ]
   }
-  return content;
+  return content
 }
 
 export async function fetchLists(): Promise<List[]> {
   // Simulate API call
-  await new Promise((resolve) => setTimeout(resolve, 400));
+  await new Promise((resolve) => setTimeout(resolve, 400))
 
-  return mockLists;
+  return mockLists
 }
 
-// export async function fetchListById(id: string): Promise<List | undefined> {
-//   // Simulate API call
-//   await new Promise((resolve) => setTimeout(resolve, 300))
+export async function fetchListById(id: string): Promise<List | undefined> {
+  // Simulate API call
+  await new Promise((resolve) => setTimeout(resolve, 300))
 
-//   const allLists = await fetchLists()
-//   const list = allLists.find((l) => l.id === id)
+  const allLists = await fetchLists()
+  const list = allLists.find((l) => l.id === id)
 
-//   // Add mock items for detail page
-//   if (list) {
-//     list.items = [
-//       {
-//         id: "m1",
-//         title: "Dune: Part Two",
-//         type: "movie",
-//         imageUrl: "/placeholder.svg?height=300&width=200",
-//         rating: 4.8,
-//       },
-//       {
-//         id: "b1",
-//         title: "Project Hail Mary",
-//         type: "book",
-//         imageUrl: "/placeholder.svg?height=300&width=200",
-//         rating: 4.7,
-//       },
-//       {
-//         id: "s1",
-//         title: "Breaking Bad",
-//         type: "series",
-//         imageUrl: "/placeholder.svg?height=300&width=200",
-//         rating: 4.9,
-//       },
-//       { id: "m2", title: "Oppenheimer", type: "movie", imageUrl: "/placeholder.svg?height=300&width=200", rating: 4.7 },
-//     ]
-//   }
-//   return list
-// }
+  // Add mock items for detail page
+  if (list) {
+    list.items = [
+      {
+        id: "m1",
+        title: "Dune: Part Two",
+        type: "movie",
+        imageUrl: "/placeholder.svg?height=300&width=200",
+        rating: 4.8,
+      },
+      {
+        id: "b1",
+        title: "Project Hail Mary",
+        type: "book",
+        imageUrl: "/placeholder.svg?height=300&width=200",
+        rating: 4.7,
+      },
+      {
+        id: "s1",
+        title: "Breaking Bad",
+        type: "series",
+        imageUrl: "/placeholder.svg?height=300&width=200",
+        rating: 4.9,
+      },
+      { id: "m2", title: "Oppenheimer", type: "movie", imageUrl: "/placeholder.svg?height=300&width=200", rating: 4.7 },
+    ]
+  }
+  return list
+}
 
 export async function fetchContentItems(
   type?: Content["type"],
   query?: string,
-  genre?: string
+  genre?: string,
 ): Promise<{ items: Content[]; totalCount: number }> {
-  await new Promise((resolve) => setTimeout(resolve, 500)); // Simulate network delay
+  await new Promise((resolve) => setTimeout(resolve, 500)) // Simulate network delay
 
-  let filteredItems = mockContent;
+  let filteredItems = mockContent
 
-  if (type) {
-    filteredItems = filteredItems.filter((item) => item.type === type);
+  if (type && type !== "all") {
+    filteredItems = filteredItems.filter((item) => item.type === type)
   }
 
   if (query) {
-    const lowerCaseQuery = query.toLowerCase();
+    const lowerCaseQuery = query.toLowerCase()
     filteredItems = filteredItems.filter(
       (item) =>
-        item.title.toLowerCase().includes(lowerCaseQuery) ||
-        item.description?.toLowerCase().includes(lowerCaseQuery)
-    );
+        item.title.toLowerCase().includes(lowerCaseQuery) || item.description?.toLowerCase().includes(lowerCaseQuery),
+    )
   }
 
   if (genre) {
-    filteredItems = filteredItems.filter((item) => item.genre === genre);
+    filteredItems = filteredItems.filter((item) => item.genre === genre)
   }
 
-  return { items: filteredItems, totalCount: filteredItems.length };
+  return { items: filteredItems, totalCount: filteredItems.length }
 }
 
-export async function getSearchResults(
-  searchTerm: string
-): Promise<Array<Content | List>> {
-  await new Promise((resolve) => setTimeout(resolve, 300)); // Simulate network delay
+export async function getSearchResults(searchTerm: string): Promise<Array<Content | List>> {
+  await new Promise((resolve) => setTimeout(resolve, 300)) // Simulate network delay
 
   if (!searchTerm) {
-    return [];
+    return []
   }
 
-  const lowerCaseSearchTerm = searchTerm.toLowerCase();
+  const lowerCaseSearchTerm = searchTerm.toLowerCase()
 
-  // const contentResults = mockContent.filter(
-  //   (item) =>
-  //     item.title.toLowerCase().includes(lowerCaseSearchTerm) ||
-  //     item.genres.toLowerCase().includes(lowerCaseSearchTerm) ||
-  //     item.description?.toLowerCase().includes(lowerCaseSearchTerm),
-  // )
+  const contentResults = mockContent.filter(
+    (item) =>
+      item.title.toLowerCase().includes(lowerCaseSearchTerm) ||
+      item.genre.toLowerCase().includes(lowerCaseSearchTerm) ||
+      item.description?.toLowerCase().includes(lowerCaseSearchTerm),
+  )
 
   const listResults = mockLists.filter(
     (list) =>
       list.name.toLowerCase().includes(lowerCaseSearchTerm) ||
-      list.description.toLowerCase().includes(lowerCaseSearchTerm)
-  );
+      list.description.toLowerCase().includes(lowerCaseSearchTerm),
+  )
 
-  return [...listResults];
+  return [...contentResults, ...listResults]
 }

@@ -17,10 +17,10 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
-import { ActionButtonsRow } from "@/components/action-buttons-row"
-import { ReviewCard } from "@/components/review-card"
+import { ActionButtonsRow } from "@/components/content/action-buttons-row"
+import { ReviewCard } from "@/components/content/review-card"
 import { cn } from "@/lib/utils"
-import { ContentCard } from "@/components/content-card" // Import ContentCard
+import { ContentCard } from "./content/content-card" // Import ContentCard
 
 interface SeriesDetailProps {
   series: {

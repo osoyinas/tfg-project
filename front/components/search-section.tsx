@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ContentCard } from "@/components/content-card"
+import { ContentCard } from "@/components/content/content-card"
 
 const mockSearchResults = [
   {
@@ -127,7 +127,7 @@ export function SearchSection({ className }: SearchSectionProps) {
       {/* Search Results */}
       <div className="space-y-4">
         <h2 className="text-base sm:text-lg font-semibold text-purple-600">Resultados</h2>
-        {/* {mockSearchResults.map((item, index) => (
+        {mockSearchResults.map((item, index) => (
           <ContentCard
             key={item.id}
             id={item.id}
@@ -141,7 +141,7 @@ export function SearchSection({ className }: SearchSectionProps) {
             className="animate-in fade-in-0 slide-in-from-left-4"
             style={{ animationDelay: `${index * 100}ms` }}
           >
-    
+            {/* Additional details specific to search results */}
             <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
               <Calendar className="w-3 h-3" />
               <span>{item.year}</span>
@@ -170,7 +170,7 @@ export function SearchSection({ className }: SearchSectionProps) {
               </Button>
             </div>
           </ContentCard>
-        ))} */}
+        ))}
       </div>
     </div>
   )

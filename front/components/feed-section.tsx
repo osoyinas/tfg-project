@@ -2,8 +2,8 @@
 
 import { useState } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ContentCard } from "@/components/content-card"
-import { UserActivityCard } from "@/components/user-activity-card"
+import { ContentCard } from "@/components/content/content-card"
+import { UserActivityCard } from "@/components/content/user-activity-card"
 import { cn } from "@/lib/utils"
 
 export function FeedSection() {
@@ -71,27 +71,27 @@ export function FeedSection() {
         <TabsContent value="for-you" className="mt-6">
           <h2 className="text-2xl font-bold mb-4 text-dark-primary">Recomendaciones para ti</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-            {/* {forYouContent.map((content) => (
-              
-))} */}
+            {forYouContent.map((content) => (
+              <ContentCard key={content.id} content={content} />
+            ))}
           </div>
         </TabsContent>
 
         <TabsContent value="friends" className="mt-6">
           <h2 className="text-2xl font-bold mb-4 text-dark-primary">Actividad de Amigos</h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {/* {friendsActivity.map((activity, index) => (
+            {friendsActivity.map((activity, index) => (
               <UserActivityCard key={index} activity={activity} />
-            ))} */}
+            ))}
           </div>
         </TabsContent>
 
         <TabsContent value="global" className="mt-6">
           <h2 className="text-2xl font-bold mb-4 text-dark-primary">Actividad Global</h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {/* {globalActivity.map((activity, index) => (
+            {globalActivity.map((activity, index) => (
               <UserActivityCard key={index} activity={activity} />
-            ))} */}
+            ))}
           </div>
         </TabsContent>
       </Tabs>

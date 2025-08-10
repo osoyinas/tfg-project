@@ -1,17 +1,11 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Search, Plus } from "lucide-react";
-import { ContentCard } from "@/components/content-card";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
+import { useState } from "react"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Search, Plus } from "lucide-react"
+import { ContentCard } from "@/components/content/content-card"
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import {
   Dialog,
   DialogContent,
@@ -19,33 +13,76 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
-import { BookItem } from "@/types";
+} from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { cn } from "@/lib/utils"
 
 export function BooksSection() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterGenre, setFilterGenre] = useState("all");
-  const [filterRating, setFilterRating] = useState("all");
-  const [isCreateBookModalOpen, setIsCreateBookModalOpen] = useState(false);
-  const filteredBooks: BookItem[] = []; // Replace with actual book data filtering logic
-  // const filteredBooks = books.filter((book) => {
-  //   const matchesSearch = book.title
-  //     .toLowerCase()
-  //     .includes(searchTerm.toLowerCase());
-  //   const matchesGenre = filterGenre === "all" || book.genre === filterGenre;
-  //   const matchesRating =
-  //     filterRating === "all" || book.rating >= Number.parseFloat(filterRating);
-  //   return matchesSearch && matchesGenre && matchesRating;
-  // });
+  const [searchTerm, setSearchTerm] = useState("")
+  const [filterGenre, setFilterGenre] = useState("all")
+  const [filterRating, setFilterRating] = useState("all")
+  const [isCreateBookModalOpen, setIsCreateBookModalOpen] = useState(false)
+
+  const books = [
+    {
+      id: "1",
+      title: "The Midnight Library",
+      imageUrl: "/placeholder.svg?height=300&width=200",
+      rating: 4.2,
+      genre: "Fantasy",
+    },
+    {
+      id: "2",
+      title: "Project Hail Mary",
+      imageUrl: "/placeholder.svg?height=300&width=200",
+      rating: 4.7,
+      genre: "Sci-Fi",
+    },
+    {
+      id: "3",
+      title: "Atomic Habits",
+      imageUrl: "/placeholder.svg?height=300&width=200",
+      rating: 4.5,
+      genre: "Self-Help",
+    },
+    { id: "4", title: "Circe", imageUrl: "/placeholder.svg?height=300&width=200", rating: 4.3, genre: "Mythology" },
+    {
+      id: "5",
+      title: "The Henna Artist",
+      imageUrl: "/placeholder.svg?height=300&width=200",
+      rating: 4.0,
+      genre: "Historical Fiction",
+    },
+    {
+      id: "6",
+      title: "Where the Crawdads Sing",
+      imageUrl: "/placeholder.svg?height=300&width=200",
+      rating: 4.1,
+      genre: "Mystery",
+    },
+    {
+      id: "7",
+      title: "The Vanishing Half",
+      imageUrl: "/placeholder.svg?height=300&width=200",
+      rating: 3.9,
+      genre: "Fiction",
+    },
+    { id: "8", title: "Educated", imageUrl: "/placeholder.svg?height=300&width=200", rating: 4.6, genre: "Memoir" },
+  ]
+
+  const filteredBooks = books.filter((book) => {
+    const matchesSearch = book.title.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesGenre = filterGenre === "all" || book.genre === filterGenre
+    const matchesRating = filterRating === "all" || book.rating >= Number.parseFloat(filterRating)
+    return matchesSearch && matchesGenre && matchesRating
+  })
 
   return (
     <div
       className={cn(
         "container mx-auto px-4 py-8 min-h-screen transition-colors duration-500",
-        "bg-dark-book-bg text-dark-foreground"
+        "bg-dark-book-bg text-dark-foreground",
       )}
     >
       <h1 className="text-4xl font-bold mb-8 text-book-green">Libros</h1>
@@ -71,9 +108,7 @@ export function BooksSection() {
             <SelectItem value="Sci-Fi">Ciencia Ficción</SelectItem>
             <SelectItem value="Self-Help">Autoayuda</SelectItem>
             <SelectItem value="Mythology">Mitología</SelectItem>
-            <SelectItem value="Historical Fiction">
-              Ficción Histórica
-            </SelectItem>
+            <SelectItem value="Historical Fiction">Ficción Histórica</SelectItem>
             <SelectItem value="Mystery">Misterio</SelectItem>
             <SelectItem value="Fiction">Ficción</SelectItem>
             <SelectItem value="Memoir">Memorias</SelectItem>
@@ -101,43 +136,21 @@ export function BooksSection() {
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
         {filteredBooks.map((book) => (
-          <ContentCard
-            key={book.id}
-            content={{
-              ...book,
-              type: "BOOK",
-              details: {
-                isbn: "1234",
-                publisher: "XX",
-                pageCount: 2,
-              },
-              description: "Descripción no disponible",
-              ratingCount: 0,
-              releaseDate: "",
-            }}
-          />
+          <ContentCard key={book.id} content={{ ...book, type: "book" }} />
         ))}
       </div>
 
-      <Dialog
-        open={isCreateBookModalOpen}
-        onOpenChange={setIsCreateBookModalOpen}
-      >
+      <Dialog open={isCreateBookModalOpen} onOpenChange={setIsCreateBookModalOpen}>
         <DialogContent className="bg-dark-card border-dark-border text-dark-foreground">
           <DialogHeader>
-            <DialogTitle className="text-dark-primary">
-              Añadir Nuevo Libro
-            </DialogTitle>
+            <DialogTitle className="text-dark-primary">Añadir Nuevo Libro</DialogTitle>
             <DialogDescription className="text-dark-muted-foreground">
               Introduce los detalles del libro que quieres añadir.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label
-                htmlFor="title"
-                className="text-right text-dark-foreground"
-              >
+              <Label htmlFor="title" className="text-right text-dark-foreground">
                 Título
               </Label>
               <Input
@@ -147,10 +160,7 @@ export function BooksSection() {
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label
-                htmlFor="author"
-                className="text-right text-dark-foreground"
-              >
+              <Label htmlFor="author" className="text-right text-dark-foreground">
                 Autor
               </Label>
               <Input
@@ -160,10 +170,7 @@ export function BooksSection() {
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label
-                htmlFor="rating"
-                className="text-right text-dark-foreground"
-              >
+              <Label htmlFor="rating" className="text-right text-dark-foreground">
                 Calificación
               </Label>
               <Input
@@ -177,10 +184,7 @@ export function BooksSection() {
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label
-                htmlFor="description"
-                className="text-right text-dark-foreground"
-              >
+              <Label htmlFor="description" className="text-right text-dark-foreground">
                 Descripción
               </Label>
               <Textarea
@@ -197,15 +201,12 @@ export function BooksSection() {
             >
               Cancelar
             </Button>
-            <Button
-              type="submit"
-              className="bg-book-green text-dark-primary-foreground hover:bg-book-green/90"
-            >
+            <Button type="submit" className="bg-book-green text-dark-primary-foreground hover:bg-book-green/90">
               Guardar Libro
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
-  );
+  )
 }

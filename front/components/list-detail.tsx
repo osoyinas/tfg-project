@@ -17,7 +17,7 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
-import { ListItemCard } from "@/components/list-item-card"
+import { ListItemCard } from "@/components/lists/list-item-card"
 import { cn } from "@/lib/utils"
 
 interface ListDetailProps {
