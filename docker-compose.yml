@@ -1,15 +1,15 @@
 services:
   # Frontend
-  # frontend:
-  #   build:
-  #     context: ./front
-  #     dockerfile: Dockerfile
-  #   env_file:
-  #     - front/.env.local
-  #   ports:
-  #     - "3000:3000"
-  #   depends_on:
-  #     - catalog-service
+  frontend:
+    build:
+      context: ./front
+      dockerfile: Dockerfile
+    env_file:
+      - front/.env.local
+    ports:
+      - "3000:3000"
+    depends_on:
+      - catalog-service
   # Gateway API
   gateway:
     build:
