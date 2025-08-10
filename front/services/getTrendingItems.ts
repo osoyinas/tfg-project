@@ -3,6 +3,7 @@ import { AxiosInstance } from "axios";
 
 interface Filters {
   type: ContentType;
+  page?: number;
 }
 
 export async function getTrendingItems(

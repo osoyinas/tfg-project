@@ -171,3 +171,4 @@ buildNumber.properties
 
 # End of https://www.toptal.com/developers/gitignore/api/java,intellij,maven,web,dotenv
 catalog-service/.env.prod
+gateway/.env.prod

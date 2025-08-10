@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useRef, useState, useEffect } from "react";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Plus } from "lucide-react";
@@ -24,6 +25,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { useAuthAxios } from "@/hooks/useAuthAxios";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useKeycloak } from "./keycloak-provider";
 import { getTrendingItems } from "@/services/getTrendingItems";
 
@@ -48,7 +50,6 @@ interface ContentSectionProps {
 }
 
 export function ContentSection(props: ContentSectionProps) {
-  const [items, setItems] = useState<ItemType[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterGenre, setFilterGenre] = useState("all");
   const [filterRating, setFilterRating] = useState("all");
@@ -56,14 +57,52 @@ export function ContentSection(props: ContentSectionProps) {
   const axios = useAuthAxios();
   const { initialized, authenticated } = useKeycloak();
 
+  // Ref para el scroll infinito
+  const loaderRef = useRef<HTMLDivElement | null>(null);
+
+  // Infinite Query
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    status,
+    error,
+  } = useInfiniteQuery({
+    queryKey: ["content", props.type, searchTerm, filterGenre, filterRating],
+    enabled: initialized && authenticated,
+    queryFn: async ({ pageParam = 1 }) => {
+      // Puedes añadir filtros aquí si tu API los soporta
+  const response = await getTrendingItems({ type: props.type, page: pageParam }, axios);
+      return response;
+    },
+    getNextPageParam: (lastPage, allPages) => {
+      // Si la última página tiene menos items que el pageSize, no hay más
+      if (!lastPage.items || lastPage.items.length === 0) return undefined;
+      return lastPage.page + 1;
+    },
+    initialPageParam: 1,
+  });
+
+  // Unir todos los items de las páginas
+  const items: ItemType[] = data?.pages.flatMap((page) => page.items) ?? [];
+
+  // Scroll infinito: observar el loaderRef
   useEffect(() => {
-    const fetchItems = async () => {
-      if (!initialized || !authenticated) return;
-      const response = await getTrendingItems({ type: props.type }, axios);
-      setItems(response.items);
+    if (!hasNextPage || isFetchingNextPage) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 1 }
+    );
+    if (loaderRef.current) observer.observe(loaderRef.current);
+    return () => {
+      if (loaderRef.current) observer.unobserve(loaderRef.current);
     };
-    fetchItems();
-  }, [initialized, authenticated, props.type, axios]);
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   return (
     <div
@@ -114,19 +153,33 @@ export function ContentSection(props: ContentSectionProps) {
         </Select>
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-        {items.map((item) => (
-          <ContentCard
-            key={item.id}
-            content={{
-              id: item.id,
-              title: item.title,
-              imageUrl: props.getImageUrl(item) || "/placeholder.svg",
-              type: item.type,
-              rating: item.rating,
-            }}
-          />
-        ))}
+  {status === "pending"
+          ? Array.from({ length: 12 }).map((_, i) => (
+              <Skeleton key={i} className="w-full aspect-[2/3] rounded-lg" />
+            ))
+          : items.map((item) => (
+              <ContentCard
+                key={item.id}
+                content={{
+                  id: item.id,
+                  title: item.title,
+                  imageUrl: props.getImageUrl(item) || "/placeholder.svg",
+                  type: item.type,
+                  rating: item.rating,
+                }}
+              />
+            ))}
+        {/* Skeletons para fetchNextPage (scroll infinito) */}
+        {isFetchingNextPage &&
+          Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={"next-" + i} className="w-full aspect-[2/3] rounded-lg" />
+          ))}
       </div>
+      <div ref={loaderRef} style={{ height: 40 }} />
+      {isFetchingNextPage && <div className="text-center py-4">Cargando más...</div>}
+      {!hasNextPage && status === "success" && (
+        <div className="text-center py-4 text-muted-foreground">No hay más resultados.</div>
+      )}
       <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
         <DialogContent className="bg-dark-card border-dark-border text-dark-foreground">
           <DialogHeader>
