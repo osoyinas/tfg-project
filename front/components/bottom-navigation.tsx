@@ -32,7 +32,7 @@ export function BottomNavigation() {
                 size="icon"
                 asChild
                 className={cn(
-                  "flex h-full flex-col items-center justify-center gap-1 text-dark-muted-foreground hover:bg-dark-accent hover:text-dark-primary",
+                  "flex h-full flex-col items-center justify-center gap-1 text-dark-muted-foreground hover:bg-dark-accent hover:text-dark-primary px-10",
                   isActive && "text-dark-primary"
                 )}
               >
