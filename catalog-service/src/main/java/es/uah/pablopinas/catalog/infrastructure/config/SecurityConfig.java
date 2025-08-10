@@ -31,7 +31,10 @@ public class SecurityConfig {
                         .jwt(jwt -> jwt
                                 .jwtAuthenticationConverter(jwtAuthenticationConverter())
                         )
-                );
+                )
+                .cors(cors -> cors.disable())
+
+        ;
 
         return http.build();
     }
