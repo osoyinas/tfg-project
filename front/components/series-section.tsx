@@ -1,11 +1,17 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Search, Plus } from "lucide-react"
-import { ContentCard } from "@/components/content/content-card"
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
+import { useEffect, useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Search, Plus } from "lucide-react";
+import { ContentCard } from "@/components/content/content-card";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -13,64 +19,45 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { cn } from "@/lib/utils"
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
+import { SeriesItem } from "@/types";
+import { useAuthAxios } from "@/hooks/useAuthAxios";
+import { useKeycloak } from "./keycloak-provider";
+import { getTrendingItems } from "@/services/getTrendingItems";
 
 export function SeriesSection() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [filterGenre, setFilterGenre] = useState("all")
-  const [filterRating, setFilterRating] = useState("all")
-  const [isCreateSeriesModalOpen, setIsCreateSeriesModalOpen] = useState(false)
+  const [series, setSeries] = useState<SeriesItem[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterGenre, setFilterGenre] = useState("all");
+  const [filterRating, setFilterRating] = useState("all");
+  const [isCreateSeriesModalOpen, setIsCreateSeriesModalOpen] = useState(false);
+  const axios = useAuthAxios();
 
-  const series = [
-    {
-      id: "1",
-      title: "The Queen's Gambit",
-      imageUrl: "/placeholder.svg?height=300&width=200",
-      rating: 4.7,
-      genre: "Drama",
-    },
-    { id: "2", title: "Breaking Bad", imageUrl: "/placeholder.svg?height=300&width=200", rating: 4.9, genre: "Crime" },
-    {
-      id: "3",
-      title: "Stranger Things",
-      imageUrl: "/placeholder.svg?height=300&width=200",
-      rating: 4.6,
-      genre: "Sci-Fi",
-    },
-    {
-      id: "4",
-      title: "The Crown",
-      imageUrl: "/placeholder.svg?height=300&width=200",
-      rating: 4.4,
-      genre: "Historical",
-    },
-    { id: "5", title: "Ted Lasso", imageUrl: "/placeholder.svg?height=300&width=200", rating: 4.8, genre: "Comedy" },
-    { id: "6", title: "Squid Game", imageUrl: "/placeholder.svg?height=300&width=200", rating: 4.5, genre: "Thriller" },
-    { id: "7", title: "Chernobyl", imageUrl: "/placeholder.svg?height=300&width=200", rating: 4.9, genre: "Drama" },
-    {
-      id: "8",
-      title: "The Mandalorian",
-      imageUrl: "/placeholder.svg?height=300&width=200",
-      rating: 4.6,
-      genre: "Sci-Fi",
-    },
-  ]
+  const { initialized, authenticated } = useKeycloak();
 
-  const filteredSeries = series.filter((s) => {
-    const matchesSearch = s.title.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesGenre = filterGenre === "all" || s.genre === filterGenre
-    const matchesRating = filterRating === "all" || s.rating >= Number.parseFloat(filterRating)
-    return matchesSearch && matchesGenre && matchesRating
-  })
+  useEffect(() => {
+    const fetchMovies = async () => {
+      if (initialized === false) return;
+      if (authenticated === false) return;
+      const response = await getTrendingItems(
+        {
+          type: "tv_serie",
+        },
+        axios
+      );
+      setSeries(response.items as SeriesItem[]);
+    };
+    fetchMovies();
+  }, [initialized, authenticated]);
 
   return (
     <div
       className={cn(
         "container mx-auto px-4 py-8 min-h-screen transition-colors duration-500",
-        "bg-dark-series-bg text-dark-foreground",
+        "bg-dark-series-bg text-dark-foreground"
       )}
     >
       <h1 className="text-4xl font-bold mb-8 text-series-blue">Series</h1>
@@ -121,22 +108,36 @@ export function SeriesSection() {
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-        {filteredSeries.map((s) => (
-          <ContentCard key={s.id} content={{ ...s, type: "series" }} />
+        {series.map((s) => (
+          <ContentCard
+            key={s.id}
+            content={{
+              ...s,
+              imageUrl: s.images.cover?.url || "/placeholder.svg",
+            }}
+          />
         ))}
       </div>
 
-      <Dialog open={isCreateSeriesModalOpen} onOpenChange={setIsCreateSeriesModalOpen}>
+      <Dialog
+        open={isCreateSeriesModalOpen}
+        onOpenChange={setIsCreateSeriesModalOpen}
+      >
         <DialogContent className="bg-dark-card border-dark-border text-dark-foreground">
           <DialogHeader>
-            <DialogTitle className="text-dark-primary">Añadir Nueva Serie</DialogTitle>
+            <DialogTitle className="text-dark-primary">
+              Añadir Nueva Serie
+            </DialogTitle>
             <DialogDescription className="text-dark-muted-foreground">
               Introduce los detalles de la serie que quieres añadir.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="title" className="text-right text-dark-foreground">
+              <Label
+                htmlFor="title"
+                className="text-right text-dark-foreground"
+              >
                 Título
               </Label>
               <Input
@@ -146,7 +147,10 @@ export function SeriesSection() {
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="genre" className="text-right text-dark-foreground">
+              <Label
+                htmlFor="genre"
+                className="text-right text-dark-foreground"
+              >
                 Género
               </Label>
               <Input
@@ -156,7 +160,10 @@ export function SeriesSection() {
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="rating" className="text-right text-dark-foreground">
+              <Label
+                htmlFor="rating"
+                className="text-right text-dark-foreground"
+              >
                 Calificación
               </Label>
               <Input
@@ -170,7 +177,10 @@ export function SeriesSection() {
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="description" className="text-right text-dark-foreground">
+              <Label
+                htmlFor="description"
+                className="text-right text-dark-foreground"
+              >
                 Descripción
               </Label>
               <Textarea
@@ -187,12 +197,15 @@ export function SeriesSection() {
             >
               Cancelar
             </Button>
-            <Button type="submit" className="bg-series-blue text-dark-primary-foreground hover:bg-series-blue/90">
+            <Button
+              type="submit"
+              className="bg-series-blue text-dark-primary-foreground hover:bg-series-blue/90"
+            >
               Guardar Serie
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }

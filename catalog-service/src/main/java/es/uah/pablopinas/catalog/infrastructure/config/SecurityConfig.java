@@ -22,6 +22,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .cors(cors -> cors.disable()) // Disable CORS
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/public/**").permitAll()
                         .requestMatchers("/admin/**").hasRole(ADMIN_ROLE)
@@ -31,10 +32,7 @@ public class SecurityConfig {
                         .jwt(jwt -> jwt
                                 .jwtAuthenticationConverter(jwtAuthenticationConverter())
                         )
-                )
-                .cors(cors -> cors.disable())
-
-        ;
+                );
 
         return http.build();
     }
@@ -48,4 +46,5 @@ public class SecurityConfig {
         ));
         return converter;
     }
+
 }

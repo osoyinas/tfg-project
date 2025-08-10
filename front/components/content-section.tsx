@@ -1,0 +1,191 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Search, Plus } from "lucide-react";
+import { ContentCard } from "@/components/content/content-card";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
+import { useAuthAxios } from "@/hooks/useAuthAxios";
+import { useKeycloak } from "./keycloak-provider";
+import { getTrendingItems } from "@/services/getTrendingItems";
+
+import { ContentType, MovieItem, BookItem, SeriesItem } from "@/types";
+
+type ItemType = MovieItem | BookItem | SeriesItem;
+
+interface ContentSectionProps {
+  type: ContentType;
+  title: string;
+  colorClass: string; // e.g. "text-movie-red", "text-book-green", "text-series-blue"
+  bgClass: string; // e.g. "bg-dark-movie-bg"
+  itemFields: Array<{
+    label: string;
+    id: string;
+    type?: string;
+    options?: string[];
+  }>;
+  genres: string[];
+  ratings: string[];
+  getImageUrl: (item: ItemType) => string;
+}
+
+export function ContentSection(props: ContentSectionProps) {
+  const [items, setItems] = useState<ItemType[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterGenre, setFilterGenre] = useState("all");
+  const [filterRating, setFilterRating] = useState("all");
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const axios = useAuthAxios();
+  const { initialized, authenticated } = useKeycloak();
+
+  useEffect(() => {
+    const fetchItems = async () => {
+      if (!initialized || !authenticated) return;
+      const response = await getTrendingItems({ type: props.type }, axios);
+      setItems(response.items);
+    };
+    fetchItems();
+  }, [initialized, authenticated, props.type, axios]);
+
+  return (
+    <div
+      className={cn(
+        "container mx-auto px-4 py-8 min-h-screen transition-colors duration-500",
+        props.bgClass + " text-dark-foreground"
+      )}
+    >
+      <h1 className={cn("text-4xl font-bold mb-8", props.colorClass)}>
+        {props.title}
+      </h1>
+      <div className="flex flex-col sm:flex-row gap-4 mb-8">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-dark-muted-foreground" />
+          <Input
+            type="text"
+            placeholder={`Buscar ${props.title.toLowerCase()}...`}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full rounded-lg bg-dark-input pl-9 pr-4 py-2 text-sm border-dark-border focus:border focus:ring text-dark-foreground placeholder:text-dark-muted-foreground"
+          />
+        </div>
+        <Select value={filterGenre} onValueChange={setFilterGenre}>
+          <SelectTrigger className="w-full sm:w-[180px] bg-dark-input border-dark-border text-dark-foreground">
+            <SelectValue placeholder="Género" />
+          </SelectTrigger>
+          <SelectContent className="bg-dark-card border-dark-border text-dark-foreground">
+            <SelectItem value="all">Todos los géneros</SelectItem>
+            {props.genres.map((genre) => (
+              <SelectItem key={genre} value={genre}>
+                {genre}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={filterRating} onValueChange={setFilterRating}>
+          <SelectTrigger className="w-full sm:w-[180px] bg-dark-input border-dark-border text-dark-foreground">
+            <SelectValue placeholder="Calificación" />
+          </SelectTrigger>
+          <SelectContent className="bg-dark-card border-dark-border text-dark-foreground">
+            <SelectItem value="all">Todas las calificaciones</SelectItem>
+            {props.ratings.map((rating) => (
+              <SelectItem key={rating} value={rating}>
+                {rating}+
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+        {items.map((item) => (
+          <ContentCard
+            key={item.id}
+            content={{
+              id: item.id,
+              title: item.title,
+              imageUrl: props.getImageUrl(item) || "/placeholder.svg",
+              type: item.type,
+              rating: item.rating,
+            }}
+          />
+        ))}
+      </div>
+      <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+        <DialogContent className="bg-dark-card border-dark-border text-dark-foreground">
+          <DialogHeader>
+            <DialogTitle className="text-dark-primary">
+              Añadir Nuevo {props.title}
+            </DialogTitle>
+            <DialogDescription className="text-dark-muted-foreground">
+              Introduce los detalles del {props.title.toLowerCase()} que quieres
+              añadir.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            {props.itemFields.map((field) => (
+              <div
+                key={field.id}
+                className="grid grid-cols-4 items-center gap-4"
+              >
+                <Label
+                  htmlFor={field.id}
+                  className="text-right text-dark-foreground"
+                >
+                  {field.label}
+                </Label>
+                {field.type === "textarea" ? (
+                  <Textarea
+                    id={field.id}
+                    className="col-span-3 bg-dark-input border-dark-border text-dark-foreground"
+                  />
+                ) : (
+                  <Input
+                    id={field.id}
+                    type={field.type || "text"}
+                    defaultValue=""
+                    className="col-span-3 bg-dark-input border-dark-border text-dark-foreground"
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsCreateModalOpen(false)}
+              className="border-dark-border text-dark-foreground hover:bg-dark-accent hover:text-dark-primary"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              className={cn(
+                props.colorClass.replace("text-", "bg-"),
+                "text-dark-primary-foreground hover:opacity-90"
+              )}
+            >
+              Guardar {props.title}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}

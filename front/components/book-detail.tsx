@@ -65,7 +65,7 @@ const bookActivity: UserActivity[] = [
     content: {
       id: "2",
       title: "The Midnight Library",
-      type: "BOOK",
+      type: "book",
       imageUrl: "/placeholder.svg?height=100&width=70",
     },
     rating: 4.8,
@@ -82,7 +82,7 @@ const bookActivity: UserActivity[] = [
     content: {
       id: "2",
       title: "The Midnight Library",
-      type: "BOOK",
+      type: "book",
       imageUrl: "/placeholder.svg?height=100&width=70",
     },
     review: "A truly thought-provoking and heartwarming read. Highly recommend!",

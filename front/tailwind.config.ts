@@ -74,8 +74,8 @@ module.exports = {
 
         // Section specific backgrounds (slightly different shades of the dark theme)
         "dark-movie-bg": "#221E33", // Darker blue-purple for movies
-        "dark-book-bg": "#2E1A2E", // Darker purple-red for books
-        "dark-series-bg": "#1A2E2E", // Darker teal-blue for series
+        "dark-book-bg": "#221E33", // Darker purple-red for books
+        "dark-series-bg": "#221E33", // Darker teal-blue for series
 
         // Existing specific colors (adjusting to dark theme if needed)
         "movie-red": "#FF6B6B",

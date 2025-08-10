@@ -7,10 +7,11 @@ import { DesktopAuthButtons } from "./layout/desktop-auth-buttons";
 import { DesktopUserMenu } from "./layout/desktop-user-menu";
 import { MobileMenuToggle } from "./layout/mobile-menu-toggle";
 import { useState } from "react";
+import { useKeycloak } from "@/components/keycloak-provider";
 import { SearchModal } from "./search-modal";
 
 export function TopBar() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // This would come from auth context
+  const { authenticated, login, logout } = useKeycloak();
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
 
   return (
@@ -39,7 +40,11 @@ export function TopBar() {
             >
               <Search className="h-6 w-6" />
             </button>
-            {isLoggedIn ? <DesktopUserMenu /> : <DesktopAuthButtons />}
+            {authenticated ? (
+              <DesktopUserMenu onLogout={logout} />
+            ) : (
+              <DesktopAuthButtons onLogin={login} />
+            )}
           </div>
         </div>
       </header>

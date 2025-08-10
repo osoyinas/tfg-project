@@ -4,6 +4,7 @@ import { Inter } from "next/font/google"
 import "./globals.css"
 import { cn } from "@/lib/utils"
 import { QueryClientProviderWrapper } from "@/components/query-client-provider-wrapper"
+import { KeycloakProvider } from "@/components/keycloak-provider"
 import { TopBar } from "@/components/top-bar"
 import { BottomNavigation } from "@/components/bottom-navigation"
 
@@ -23,11 +24,13 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={cn("min-h-screen bg-background font-sans antialiased", inter.className)}>
-        <QueryClientProviderWrapper>
-          <TopBar />
-          <main className="flex-1">{children}</main>
-          <BottomNavigation />
-        </QueryClientProviderWrapper>
+        <KeycloakProvider>
+          <QueryClientProviderWrapper>
+            <TopBar />
+            <main className="flex-1">{children}</main>
+            <BottomNavigation />
+          </QueryClientProviderWrapper>
+        </KeycloakProvider>
       </body>
     </html>
   )

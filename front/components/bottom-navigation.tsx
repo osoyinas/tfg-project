@@ -13,7 +13,6 @@ export function BottomNavigation() {
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
 
   const navItems = [
-    { href: "/", icon: Home, label: "Inicio" },
     { href: "/movies", icon: Film, label: "Películas" },
     { href: "/books", icon: Book, label: "Libros" },
     { href: "/series", icon: Tv, label: "Series" },

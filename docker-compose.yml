@@ -1,15 +1,18 @@
+networks:
+  app: {}
 services:
   # Frontend
-  frontend:
-    build:
-      context: ./front
-      dockerfile: Dockerfile
-    env_file:
-      - front/.env.local
-    ports:
-      - "3000:3000"
-    depends_on:
-      - catalog-service
+  # frontend:
+  #   build:
+  #     context: ./front
+  #     dockerfile: Dockerfile
+  #   env_file:
+  #     - front/.env.local
+  #   ports:
+  #     - "3000:3000"
+  #   depends_on:
+  #     - catalog-service
+  # networks: [app]
   # Gateway API
   gateway:
     build:
@@ -21,6 +24,7 @@ services:
       - "${GATEWAY_PORT}:${GATEWAY_PORT}"
     depends_on:
       - keycloak
+    networks: [app]
 
   # Keycloak Auth
   keycloak-db:
@@ -33,10 +37,12 @@ services:
       POSTGRES_PASSWORD: authpass
     volumes:
       - pgdata:/var/lib/postgresql/data
+    networks: [app]
+
 
   keycloak:
     image: quay.io/keycloak/keycloak:24.0.1
-    command: start-dev --import-realm
+    command: start-dev --import-realm --hostname=auth.local.test --hostname-strict=false
     ports:
       - "8080:8080"
     environment:
@@ -52,6 +58,10 @@ services:
       - keycloak-db
     volumes:
       - ./keycloak:/opt/keycloak/data/import
+    networks:
+      app:
+        aliases:
+          - auth.local.test
 
   # Catalog Service
   catalog-db:
@@ -62,6 +72,8 @@ services:
     volumes:
       - mongodb_data:/data/db
     restart: unless-stopped
+    networks: [app]
+
   catalog-service:
     build:
       context: ./catalog-service
@@ -73,6 +85,7 @@ services:
     depends_on:
       - catalog-db
       - rabbitmq
+    networks: [app]
 
   # Rabbit MQ
   rabbitmq:
@@ -83,6 +96,7 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
+    networks: [app]
 volumes:
   pgdata:
   mongodb_data:

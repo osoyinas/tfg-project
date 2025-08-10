@@ -1,11 +1,17 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Search, Plus } from "lucide-react"
-import { ContentCard } from "@/components/content/content-card"
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
+import { useEffect, useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Search, Plus } from "lucide-react";
+import { ContentCard } from "@/components/content/content-card";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -13,76 +19,43 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { cn } from "@/lib/utils"
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
+import { MovieItem } from "@/types";
+import { useAuthAxios } from "@/hooks/useAuthAxios";
+import { useKeycloak } from "./keycloak-provider";
+import { getTrendingItems } from "@/services/getTrendingItems";
 
 export function MoviesSection() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [filterGenre, setFilterGenre] = useState("all")
-  const [filterRating, setFilterRating] = useState("all")
-  const [isCreateMovieModalOpen, setIsCreateMovieModalOpen] = useState(false)
+  const [movies, setMovies] = useState<MovieItem[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterGenre, setFilterGenre] = useState("all");
+  const [filterRating, setFilterRating] = useState("all");
+  const [isCreateMovieModalOpen, setIsCreateMovieModalOpen] = useState(false);
+  const axios = useAuthAxios();
+  const { initialized, authenticated } = useKeycloak();
 
-  const movies = [
-    {
-      id: "1",
-      title: "Dune: Part Two",
-      imageUrl: "/placeholder.svg?height=300&width=200",
-      rating: 4.8,
-      genre: "Sci-Fi",
-    },
-    {
-      id: "2",
-      title: "Oppenheimer",
-      imageUrl: "/placeholder.svg?height=300&width=200",
-      rating: 4.7,
-      genre: "Biography",
-    },
-    { id: "3", title: "Past Lives", imageUrl: "/placeholder.svg?height=300&width=200", rating: 4.5, genre: "Romance" },
-    {
-      id: "4",
-      title: "Spider-Man: Across the Spider-Verse",
-      imageUrl: "/placeholder.svg?height=300&width=200",
-      rating: 4.9,
-      genre: "Animation",
-    },
-    {
-      id: "5",
-      title: "Killers of the Flower Moon",
-      imageUrl: "/placeholder.svg?height=300&width=200",
-      rating: 4.6,
-      genre: "Crime",
-    },
-    { id: "6", title: "Poor Things", imageUrl: "/placeholder.svg?height=300&width=200", rating: 4.4, genre: "Sci-Fi" },
-    {
-      id: "7",
-      title: "Anatomy of a Fall",
-      imageUrl: "/placeholder.svg?height=300&width=200",
-      rating: 4.3,
-      genre: "Drama",
-    },
-    {
-      id: "8",
-      title: "Godzilla Minus One",
-      imageUrl: "/placeholder.svg?height=300&width=200",
-      rating: 4.2,
-      genre: "Action",
-    },
-  ]
-
-  const filteredMovies = movies.filter((movie) => {
-    const matchesSearch = movie.title.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesGenre = filterGenre === "all" || movie.genre === filterGenre
-    const matchesRating = filterRating === "all" || movie.rating >= Number.parseFloat(filterRating)
-    return matchesSearch && matchesGenre && matchesRating
-  })
-
+  useEffect(() => {
+    const fetchMovies = async () => {
+      if (initialized === false) return;
+      if (authenticated === false) return;
+      const response = await getTrendingItems(
+        {
+          type: "movie",
+        },
+        axios
+      );
+      setMovies(response.items as MovieItem[]);
+    };
+    fetchMovies();
+  }, [initialized, authenticated]);
   return (
     <div
       className={cn(
         "container mx-auto px-4 py-8 min-h-screen transition-colors duration-500",
-        "bg-dark-movie-bg text-dark-foreground",
+        "bg-dark-movie-bg text-dark-foreground"
       )}
     >
       <h1 className="text-4xl font-bold mb-8 text-movie-red">Películas</h1>
@@ -124,32 +97,39 @@ export function MoviesSection() {
             <SelectItem value="3.5">3.5+</SelectItem>
           </SelectContent>
         </Select>
-        <Button
-          onClick={() => setIsCreateMovieModalOpen(true)}
-          className="w-full sm:w-auto bg-movie-red text-dark-primary-foreground hover:bg-movie-red/90"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Añadir Película
-        </Button>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-        {filteredMovies.map((movie) => (
-          <ContentCard key={movie.id} content={{ ...movie, type: "movie" }} />
+        {movies.map((movie) => (
+          <ContentCard
+            key={movie.id}
+            content={{
+              ...movie,
+              imageUrl: movie.images.cover?.url || "/placeholder.svg",
+            }}
+          />
         ))}
       </div>
 
-      <Dialog open={isCreateMovieModalOpen} onOpenChange={setIsCreateMovieModalOpen}>
+      <Dialog
+        open={isCreateMovieModalOpen}
+        onOpenChange={setIsCreateMovieModalOpen}
+      >
         <DialogContent className="bg-dark-card border-dark-border text-dark-foreground">
           <DialogHeader>
-            <DialogTitle className="text-dark-primary">Añadir Nueva Película</DialogTitle>
+            <DialogTitle className="text-dark-primary">
+              Añadir Nueva Película
+            </DialogTitle>
             <DialogDescription className="text-dark-muted-foreground">
               Introduce los detalles de la película que quieres añadir.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="title" className="text-right text-dark-foreground">
+              <Label
+                htmlFor="title"
+                className="text-right text-dark-foreground"
+              >
                 Título
               </Label>
               <Input
@@ -159,7 +139,10 @@ export function MoviesSection() {
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="genre" className="text-right text-dark-foreground">
+              <Label
+                htmlFor="genre"
+                className="text-right text-dark-foreground"
+              >
                 Género
               </Label>
               <Input
@@ -169,7 +152,10 @@ export function MoviesSection() {
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="rating" className="text-right text-dark-foreground">
+              <Label
+                htmlFor="rating"
+                className="text-right text-dark-foreground"
+              >
                 Calificación
               </Label>
               <Input
@@ -183,7 +169,10 @@ export function MoviesSection() {
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="description" className="text-right text-dark-foreground">
+              <Label
+                htmlFor="description"
+                className="text-right text-dark-foreground"
+              >
                 Descripción
               </Label>
               <Textarea
@@ -200,12 +189,15 @@ export function MoviesSection() {
             >
               Cancelar
             </Button>
-            <Button type="submit" className="bg-movie-red text-dark-primary-foreground hover:bg-movie-red/90">
+            <Button
+              type="submit"
+              className="bg-movie-red text-dark-primary-foreground hover:bg-movie-red/90"
+            >
               Guardar Película
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }

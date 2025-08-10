@@ -2,13 +2,14 @@ import { Card } from "@/components/ui/card"
 import { Star } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
+import { ContentType } from "@/types"
 
 interface ContentCardProps {
   content: {
     id: string
     title: string
     imageUrl: string
-    type: "movie" | "book" | "series"
+    type: ContentType
     rating?: number
   }
 }
@@ -20,7 +21,7 @@ export function ContentCard({ content }: ContentCardProps) {
         return `/movies/${content.id}`
       case "book":
         return `/books/${content.id}`
-      case "series":
+      case "tv_serie":
         return `/series/${content.id}`
       default:
         return "#"
@@ -33,7 +34,7 @@ export function ContentCard({ content }: ContentCardProps) {
         return "text-movie-red"
       case "book":
         return "text-book-green"
-      case "series":
+      case "tv_serie":
         return "text-series-blue"
       default:
         return "text-dark-primary"

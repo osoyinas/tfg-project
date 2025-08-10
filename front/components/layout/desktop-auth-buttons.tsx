@@ -1,13 +1,14 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 
 interface DesktopAuthButtonsProps {
-  onLogin?: () => void
-  onRegister?: () => void
+  onLogin?: () => void;
 }
 
-export function DesktopAuthButtons({ onLogin, onRegister }: DesktopAuthButtonsProps) {
+export function DesktopAuthButtons({ onLogin 
+  
+}: DesktopAuthButtonsProps) {
   return (
     <div className="flex items-center gap-2">
       <Button
@@ -18,5 +19,5 @@ export function DesktopAuthButtons({ onLogin, onRegister }: DesktopAuthButtonsPr
         Iniciar Sesión
       </Button>
     </div>
-  )
+  );
 }
