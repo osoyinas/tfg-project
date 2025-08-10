@@ -1,13 +1,26 @@
 services:
+  # Frontend
+  # frontend:
+  #   build:
+  #     context: ./front
+  #     dockerfile: Dockerfile
+  #   env_file:
+  #     - front/.env.local
+  #   ports:
+  #     - "3000:3000"
+  #   depends_on:
+  #     - catalog-service
   # Gateway API
   gateway:
     build:
       context: ./gateway
       dockerfile: Dockerfile
     env_file:
-      - gateway/.env
+      - gateway/.env.prod
     ports:
       - "${GATEWAY_PORT}:${GATEWAY_PORT}"
+    depends_on:
+      - keycloak
 
   # Keycloak Auth
   keycloak-db:
@@ -54,9 +67,12 @@ services:
       context: ./catalog-service
       dockerfile: Dockerfile
     env_file:
-      - catalog-service/.env
+      - catalog-service/.env.prod
     ports:
       - "${CATALOG_SERVICE_PORT}:${CATALOG_SERVICE_PORT}"
+    depends_on:
+      - catalog-db
+      - rabbitmq
 
   # Rabbit MQ
   rabbitmq:
