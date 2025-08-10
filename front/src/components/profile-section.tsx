@@ -2,12 +2,12 @@
 
 import { useState } from 'react'
 import { Star, Heart, Users, BookOpen, Film, Tv, Settings, Edit, UserPlus, UserMinus } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ScrollArea } from '@/components/ui/scroll-area'
+import { Card, CardContent, CardHeader, CardTitle } from '@components/ui/card'
+import { Button } from '@components/ui/button'
+import { Avatar, AvatarFallback, AvatarImage } from '@components/ui/avatar'
+import { Badge } from '@components/ui/badge'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@components/ui/tabs'
+import { ScrollArea } from '@components/ui/scroll-area'
 
 const mockUserData = {
   name: "María García",

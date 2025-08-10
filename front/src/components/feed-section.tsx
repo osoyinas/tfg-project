@@ -1,8 +1,8 @@
 import { Heart, MessageCircle, Share, Star, User, Clock } from 'lucide-react'
-import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
+import { Card, CardContent } from '@components/ui/card'
+import { Button } from '@components/ui/button'
+import { Avatar, AvatarFallback, AvatarImage } from '@components/ui/avatar'
+import { Badge } from '@components/ui/badge'
 
 const mockFeedItems = [
   {

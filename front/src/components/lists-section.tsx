@@ -2,12 +2,12 @@
 
 import { useState } from 'react'
 import { Plus, List, Users, Globe, Share, Heart, MessageCircle, Eye, Lock } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { CreateListModal } from '@/components/create-list-modal'
+import { Button } from '@components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@components/ui/card'
+import { Badge } from '@components/ui/badge'
+import { Avatar, AvatarFallback, AvatarImage } from '@components/ui/avatar'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@components/ui/tabs'
+import { CreateListModal } from '@components/create-list-modal'
 
 const mockMyLists = [
   {

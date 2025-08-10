@@ -1,57 +1,55 @@
 'use client'
 
 import { useState } from 'react'
-import { ArrowLeft, Star, Heart, Bookmark, Share, Calendar, Tv, Users, Play } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Separator } from '@/components/ui/separator'
+import { ArrowLeft, Star, Heart, Bookmark, Share, Plus, Play, Calendar, Clock, Users } from 'lucide-react'
+import { Button } from '@components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@components/ui/card'
+import { Badge } from '@components/ui/badge'
+import { Avatar, AvatarFallback, AvatarImage } from '@components/ui/avatar'
+import { ScrollArea } from '@components/ui/scroll-area'
+import { Separator } from '@components/ui/separator'
 
-const mockSeriesData = {
+const mockMovieData = {
   id: 1,
-  title: "The Last of Us",
+  title: "Oppenheimer",
   year: 2023,
-  seasons: 1,
-  episodes: 9,
-  genre: ["Drama", "Post-apocalíptico", "Thriller"],
-  rating: 4.8,
+  duration: "3h 0min",
+  genre: ["Drama", "Historia", "Biografía"],
+  rating: 4.5,
   userRating: null,
-  creator: "Craig Mazin, Neil Druckmann",
-  network: "HBO",
-  cast: ["Pedro Pascal", "Bella Ramsey", "Anna Torv", "Lamar Johnson"],
-  synopsis: "Veinte años después de que una infección fúngica moderna destruyera la civilización, el superviviente endurecido Joel debe escoltar a Ellie, una adolescente de 14 años, fuera de una zona de cuarentena opresiva. Lo que comienza como un pequeño trabajo pronto se convierte en un viaje brutal y desgarrador a través de los EE.UU.",
-  image: "/placeholder.svg?height=600&width=400&text=The+Last+of+Us",
-  backdrop: "/placeholder.svg?height=300&width=800&text=TLOU+Backdrop",
+  director: "Christopher Nolan",
+  cast: ["Cillian Murphy", "Emily Blunt", "Robert Downey Jr.", "Matt Damon"],
+  synopsis: "La historia de J. Robert Oppenheimer, el físico teórico que dirigió el Proyecto Manhattan durante la Segunda Guerra Mundial, llevando al desarrollo de la primera bomba atómica.",
+  image: "/placeholder.svg?height=600&width=400&text=Oppenheimer",
+  backdrop: "/placeholder.svg?height=300&width=800&text=Oppenheimer+Backdrop",
   inLists: false,
   isLiked: false,
   isWatched: false
 }
 
 const mockSimilarItems = [
-  { id: 2, title: "The Walking Dead", type: "series", rating: 4.2, image: "/placeholder.svg?height=150&width=100&text=TWD" },
-  { id: 3, title: "Chernobyl", type: "series", rating: 4.7, image: "/placeholder.svg?height=150&width=100&text=Chernobyl" },
-  { id: 4, title: "The Road", type: "book", rating: 4.1, image: "/placeholder.svg?height=150&width=100&text=The+Road" },
-  { id: 5, title: "Station Eleven", type: "series", rating: 4.3, image: "/placeholder.svg?height=150&width=100&text=Station+11" }
+  { id: 2, title: "Dunkirk", type: "movie", rating: 4.3, image: "/placeholder.svg?height=150&width=100&text=Dunkirk" },
+  { id: 3, title: "Interstellar", type: "movie", rating: 4.6, image: "/placeholder.svg?height=150&width=100&text=Interstellar" },
+  { id: 4, title: "The Theory of Everything", type: "movie", rating: 4.2, image: "/placeholder.svg?height=150&width=100&text=Theory" },
+  { id: 5, title: "American Prometheus", type: "book", rating: 4.4, image: "/placeholder.svg?height=150&width=100&text=Prometheus" }
 ]
 
 const mockReviews = [
   {
     id: 1,
-    user: { name: "Ana Martín", username: "@ana_series", avatar: "/placeholder.svg?height=40&width=40&text=AM" },
+    user: { name: "Carlos López", username: "@carlos_cine", avatar: "/placeholder.svg?height=40&width=40&text=CL" },
     rating: 5,
-    comment: "Una obra maestra. La actuación de Pedro Pascal es excepcional y la adaptación respeta perfectamente el videojuego. Cada episodio es una montaña rusa emocional.",
-    date: "hace 1 día",
-    likes: 32
+    comment: "Una obra maestra cinematográfica. Nolan logra crear una experiencia visual y narrativa impresionante sobre uno de los momentos más importantes de la historia.",
+    date: "hace 2 días",
+    likes: 24
   },
   {
     id: 2,
-    user: { name: "Carlos López", username: "@carlos_tv", avatar: "/placeholder.svg?height=40&width=40&text=CL" },
-    rating: 5,
-    comment: "HBO ha creado algo especial. La química entre Joel y Ellie es el corazón de la serie. Los efectos prácticos de los infectados son impresionantes.",
-    date: "hace 4 días",
-    likes: 28
+    user: { name: "Ana Martín", username: "@ana_movies", avatar: "/placeholder.svg?height=40&width=40&text=AM" },
+    rating: 4,
+    comment: "Excelente actuación de Cillian Murphy. La cinematografía es espectacular, aunque a veces se siente un poco lenta.",
+    date: "hace 1 semana",
+    likes: 12
   }
 ]
 
@@ -61,16 +59,16 @@ const mockFriendsActivity = [
   { user: { name: "Elena Sánchez", avatar: "/placeholder.svg?height=32&width=32&text=ES" }, rating: 5, action: "agregó a su lista" }
 ]
 
-interface SeriesDetailProps {
-  seriesId: number
+interface MovieDetailProps {
+  movieId: number
   onBack: () => void
   className?: string
 }
 
-export function SeriesDetail({ seriesId, onBack, className }: SeriesDetailProps) {
-  const [userRating, setUserRating] = useState<number | null>(mockSeriesData.userRating)
-  const [isLiked, setIsLiked] = useState(mockSeriesData.isLiked)
-  const [inLists, setInLists] = useState(mockSeriesData.inLists)
+export function MovieDetail({ movieId, onBack, className }: MovieDetailProps) {
+  const [userRating, setUserRating] = useState<number | null>(mockMovieData.userRating)
+  const [isLiked, setIsLiked] = useState(mockMovieData.isLiked)
+  const [inLists, setInLists] = useState(mockMovieData.inLists)
 
   const handleRating = (rating: number) => {
     setUserRating(rating === userRating ? null : rating)
@@ -88,8 +86,8 @@ export function SeriesDetail({ seriesId, onBack, className }: SeriesDetailProps)
       <div className="relative">
         <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden mb-4">
           <img 
-            src={mockSeriesData.backdrop || "/placeholder.svg"} 
-            alt={mockSeriesData.title}
+            src={mockMovieData.backdrop || "/placeholder.svg"} 
+            alt={mockMovieData.title}
             className="w-full h-full object-cover"
           />
         </div>
@@ -97,31 +95,30 @@ export function SeriesDetail({ seriesId, onBack, className }: SeriesDetailProps)
         <div className="flex flex-col sm:flex-row gap-6">
           <div className="w-full sm:w-48 aspect-[2/3] bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
             <img 
-              src={mockSeriesData.image || "/placeholder.svg"} 
-              alt={mockSeriesData.title}
+              src={mockMovieData.image || "/placeholder.svg"} 
+              alt={mockMovieData.title}
               className="w-full h-full object-cover"
             />
           </div>
           
           <div className="flex-1 space-y-4">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-blue-700 mb-2">{mockSeriesData.title}</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-red-700 mb-2">{mockMovieData.title}</h1>
               <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600 mb-3">
                 <span className="flex items-center gap-1">
                   <Calendar className="w-4 h-4" />
-                  {mockSeriesData.year}
+                  {mockMovieData.year}
                 </span>
                 <span className="flex items-center gap-1">
-                  <Tv className="w-4 h-4" />
-                  {mockSeriesData.seasons} temporada{mockSeriesData.seasons > 1 ? 's' : ''}, {mockSeriesData.episodes} episodios
+                  <Clock className="w-4 h-4" />
+                  {mockMovieData.duration}
                 </span>
-                <span>{mockSeriesData.network}</span>
+                <span>Dir. {mockMovieData.director}</span>
               </div>
-              <p className="text-sm text-gray-600 mb-3">Creado por {mockSeriesData.creator}</p>
               
               <div className="flex flex-wrap gap-2 mb-4">
-                {mockSeriesData.genre.map((g) => (
-                  <Badge key={g} variant="secondary" className="bg-blue-100 text-blue-700">
+                {mockMovieData.genre.map((g) => (
+                  <Badge key={g} variant="secondary" className="bg-red-100 text-red-700">
                     {g}
                   </Badge>
                 ))}
@@ -133,8 +130,8 @@ export function SeriesDetail({ seriesId, onBack, className }: SeriesDetailProps)
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
                   <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                  <span className="text-lg font-semibold">{mockSeriesData.rating}</span>
-                  <span className="text-sm text-gray-500">(3,456 ratings)</span>
+                  <span className="text-lg font-semibold">{mockMovieData.rating}</span>
+                  <span className="text-sm text-gray-500">(1,234 ratings)</span>
                 </div>
               </div>
               
@@ -148,7 +145,7 @@ export function SeriesDetail({ seriesId, onBack, className }: SeriesDetailProps)
                       className="transition-colors"
                     >
                       <Star 
-                        className={`w-6 h-6 ${star <= (userRating || 0) ? 'fill-blue-400 text-blue-400' : 'text-gray-300 hover:text-blue-300'}`}
+                        className={`w-6 h-6 ${star <= (userRating || 0) ? 'fill-red-400 text-red-400' : 'text-gray-300 hover:text-red-300'}`}
                       />
                     </button>
                   ))}
@@ -162,7 +159,7 @@ export function SeriesDetail({ seriesId, onBack, className }: SeriesDetailProps)
                 variant={isLiked ? "default" : "outline"} 
                 size="sm" 
                 onClick={() => setIsLiked(!isLiked)}
-                className={isLiked ? "bg-blue-600 hover:bg-blue-700" : "border-blue-200 text-blue-600 hover:bg-blue-50"}
+                className={isLiked ? "bg-red-600 hover:bg-red-700" : "border-red-200 text-red-600 hover:bg-red-50"}
               >
                 <Heart className={`w-4 h-4 mr-2 ${isLiked ? 'fill-current' : ''}`} />
                 {isLiked ? 'Te gusta' : 'Me gusta'}
@@ -171,12 +168,12 @@ export function SeriesDetail({ seriesId, onBack, className }: SeriesDetailProps)
                 variant={inLists ? "default" : "outline"} 
                 size="sm"
                 onClick={() => setInLists(!inLists)}
-                className={inLists ? "bg-blue-600 hover:bg-blue-700" : "border-blue-200 text-blue-600 hover:bg-blue-50"}
+                className={inLists ? "bg-red-600 hover:bg-red-700" : "border-red-200 text-red-600 hover:bg-red-50"}
               >
                 <Bookmark className={`w-4 h-4 mr-2 ${inLists ? 'fill-current' : ''}`} />
-                {inLists ? 'En lista' : 'Ver después'}
+                {inLists ? 'En lista' : 'Agregar a lista'}
               </Button>
-              <Button variant="outline" size="sm" className="border-blue-200 text-blue-600 hover:bg-blue-50">
+              <Button variant="outline" size="sm" className="border-red-200 text-red-600 hover:bg-red-50">
                 <Share className="w-4 h-4 mr-2" />
                 Compartir
               </Button>
@@ -186,23 +183,23 @@ export function SeriesDetail({ seriesId, onBack, className }: SeriesDetailProps)
       </div>
 
       {/* Synopsis */}
-      <Card className="border-blue-100">
+      <Card className="border-red-100">
         <CardHeader>
-          <CardTitle className="text-blue-700">Sinopsis</CardTitle>
+          <CardTitle className="text-red-700">Sinopsis</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-gray-700 leading-relaxed">{mockSeriesData.synopsis}</p>
+          <p className="text-gray-700 leading-relaxed">{mockMovieData.synopsis}</p>
           <div className="mt-4">
-            <p className="text-sm font-medium text-gray-700 mb-2">Reparto principal:</p>
-            <p className="text-sm text-gray-600">{mockSeriesData.cast.join(', ')}</p>
+            <p className="text-sm font-medium text-gray-700 mb-2">Reparto:</p>
+            <p className="text-sm text-gray-600">{mockMovieData.cast.join(', ')}</p>
           </div>
         </CardContent>
       </Card>
 
       {/* Friends Activity */}
-      <Card className="border-blue-100">
+      <Card className="border-red-100">
         <CardHeader>
-          <CardTitle className="text-blue-700 flex items-center gap-2">
+          <CardTitle className="text-red-700 flex items-center gap-2">
             <Users className="w-5 h-5" />
             Actividad de Amigos
           </CardTitle>
@@ -236,9 +233,9 @@ export function SeriesDetail({ seriesId, onBack, className }: SeriesDetailProps)
       </Card>
 
       {/* Similar Content */}
-      <Card className="border-blue-100">
+      <Card className="border-red-100">
         <CardHeader>
-          <CardTitle className="text-blue-700">Contenido Similar</CardTitle>
+          <CardTitle className="text-red-700">Contenido Similar</CardTitle>
         </CardHeader>
         <CardContent>
           <ScrollArea className="w-full">
@@ -258,7 +255,7 @@ export function SeriesDetail({ seriesId, onBack, className }: SeriesDetailProps)
                     <span className="text-xs font-medium">{item.rating}</span>
                   </div>
                   <Badge variant="outline" className="text-xs mt-1">
-                    {item.type === 'series' ? 'Serie' : 'Libro'}
+                    {item.type === 'movie' ? 'Película' : 'Libro'}
                   </Badge>
                 </div>
               ))}
@@ -268,9 +265,9 @@ export function SeriesDetail({ seriesId, onBack, className }: SeriesDetailProps)
       </Card>
 
       {/* Reviews */}
-      <Card className="border-blue-100">
+      <Card className="border-red-100">
         <CardHeader>
-          <CardTitle className="text-blue-700">Reseñas</CardTitle>
+          <CardTitle className="text-red-700">Reseñas</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {mockReviews.map((review) => (
@@ -296,7 +293,7 @@ export function SeriesDetail({ seriesId, onBack, className }: SeriesDetailProps)
                     ))}
                   </div>
                   <p className="text-sm text-gray-700 leading-relaxed mb-2">{review.comment}</p>
-                  <Button variant="ghost" size="sm" className="text-gray-500 hover:text-blue-600 p-0 h-auto">
+                  <Button variant="ghost" size="sm" className="text-gray-500 hover:text-red-600 p-0 h-auto">
                     <Heart className="w-4 h-4 mr-1" />
                     {review.likes}
                   </Button>

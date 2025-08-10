@@ -2,14 +2,14 @@
 
 import { useState } from 'react'
 import { ArrowLeft, Heart, MessageCircle, Share, Plus, Users, Globe, Lock, Edit, UserPlus, MoreVertical } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Separator } from '@/components/ui/separator'
-import { Textarea } from '@/components/ui/textarea'
-import { InviteFriendsModal } from '@/components/invite-friends-modal'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { Button } from '@components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@components/ui/card'
+import { Badge } from '@components/ui/badge'
+import { Avatar, AvatarFallback, AvatarImage } from '@components/ui/avatar'
+import { Separator } from '@components/ui/separator'
+import { Textarea } from '@components/ui/textarea'
+import { InviteFriendsModal } from '@components/invite-friends-modal'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@components/ui/dropdown-menu'
 
 const mockListData = {
   id: 1,
