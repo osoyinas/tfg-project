@@ -1,7 +1,7 @@
 networks:
   app: {}
 services:
-  # Frontend
+  # Frontend:
   # frontend:
   #   build:
   #     context: ./front
@@ -10,9 +10,7 @@ services:
   #     - front/.env.local
   #   ports:
   #     - "3000:3000"
-  #   depends_on:
-  #     - catalog-service
-  # networks: [app]
+  #   networks: [app]
   # Gateway API
   gateway:
     build:
@@ -87,6 +85,22 @@ services:
       - rabbitmq
     networks: [app]
 
+  reviews-db:
+    image: postgres:16
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: reviewsdb
+      POSTGRES_USER: reviewsuser
+      POSTGRES_PASSWORD: reviewspass
+    volumes:
+      - reviews_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U reviewsuser -d reviewsdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks: [app]
   # Rabbit MQ
   rabbitmq:
     image: rabbitmq:3-management
@@ -100,3 +114,4 @@ services:
 volumes:
   pgdata:
   mongodb_data:
+  reviews_pgdata:
