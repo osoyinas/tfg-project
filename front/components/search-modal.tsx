@@ -132,11 +132,7 @@ export function SearchModal({ open, onOpenChange }: SearchModalProps) {
         <DialogContent
           className={`sm:max-w-[600px] p-0 bg-dark-card border-dark-border text-dark-foreground transition-all duration-200 ease-in-out
             ${open ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}
-            mt-8 sm:mt-0 max-h-[90dvh] sm:max-h-[80vh]'
           `}
-          style={{
-            top: 'env(safe-area-inset-top, 0px)',
-          }}
         >
           <DialogHeader className="p-4 border-b border-dark-border">
             <DialogTitle className="text-dark-primary">Buscar</DialogTitle>
