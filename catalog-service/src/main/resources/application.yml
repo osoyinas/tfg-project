@@ -1,9 +1,6 @@
 spring:
   application:
     name: Catalog Service
-  profiles:
-    active: dev
-
   security:
     oauth2:
       resourceserver:
