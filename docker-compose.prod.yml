@@ -2,8 +2,10 @@
 
 networks:
   web:
+    name: project_web
     driver: bridge
   app:
+    name: project_app
     driver: bridge
 
 volumes:
@@ -63,9 +65,9 @@ services:
       - "${GATEWAY_PORT}"            # p.ej. 8000
     depends_on:
       keycloak:
-        condition: service_healthy
+        condition: service_started
       catalog-service:
-        condition: service_healthy
+        condition: service_started
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://localhost:${GATEWAY_PORT}/actuator/health | grep -q '\"status\":\"UP\"'"]
@@ -92,53 +94,40 @@ services:
     networks: [app]
 
   keycloak:
-    image: quay.io/keycloak/keycloak:24.0.1
-    command: >
-      start --optimized
-      --hostname-strict=false
+    build:
+      context: ./keycloak-image
+      dockerfile: Containerfile
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
-      KC_DB: postgres
-      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/authdb
+      KC_DB_URL: "jdbc:postgresql://keycloak-db:5432/authdb"
       KC_DB_USERNAME: authuser
       KC_DB_PASSWORD: authpass
-
-      # Caddy termina TLS; Keycloak sirve HTTP y confía en el proxy:
       KC_HTTP_ENABLED: "true"
       KC_PROXY: edge
       KC_HOSTNAME: auth.pablopinas.com
-
-      KC_HEALTH_ENABLED: "true"
-      JAVA_OPTS: "-XX:MaxRAMPercentage=50"
+    command: ["start", "--optimized", "--import-realm"]
     volumes:
-      - ./keycloak:/opt/keycloak/data/import
-    expose:
-      - "8080"
+      - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
     depends_on:
       keycloak-db:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/health/ready | grep -q '\"status\":\"UP\"'"]
-      interval: 15s
-      timeout: 5s
-      retries: 30
-    restart: unless-stopped
     networks: [app]
 
   # -------- CATALOG (Mongo + servicio) ----------
   catalog-db:
-    image: mongo:7
+    image: mongo:8
+    command: ["--wiredTigerCacheSizeGB","1"]
     volumes:
       - mongodb_data:/data/db
-    command: ["--wiredTigerCacheSizeGB", "1"]
     healthcheck:
-      test: ["CMD-SHELL", "mongosh --quiet --eval 'db.adminCommand({ ping: 1 }).ok' | grep -q 1 || exit 1"]
+      test: ["CMD-SHELL","mongosh --quiet --eval 'db.adminCommand({ ping: 1 }).ok' | grep -q 1 || exit 1"]
       interval: 20s
       timeout: 5s
       retries: 15
     restart: unless-stopped
     networks: [app]
+
 
   catalog-service:
     build:
@@ -154,11 +143,11 @@ services:
     expose:
       - "${CATALOG_SERVICE_PORT}"
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost:${CATALOG_SERVICE_PORT}/actuator/health | grep -q '\"status\":\"UP\"'"]
-      interval: 15s
-      timeout: 5s
-      retries: 30
+    # healthcheck:
+    #   test: ["CMD-SHELL", "curl -fsS http://localhost:${CATALOG_SERVICE_PORT}/actuator/health | grep -q '\"status\":\"UP\"'"]
+    #   interval: 15s
+    #   timeout: 5s
+    #   retries: 30
     networks: [app]
 
   # -------- REVIEWS DB ----------
