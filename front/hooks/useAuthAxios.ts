@@ -13,7 +13,6 @@ export function useAuthAxios(): AxiosInstance {
     // Interceptor para añadir el access_token
     authAxios.interceptors.request.use(
       async (config) => {
-        console.log("Adding Authorization header with token:", keycloak.token);
         if (authenticated && keycloak.token) {
             
           config.headers = config.headers || {};

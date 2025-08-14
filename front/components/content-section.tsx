@@ -73,7 +73,7 @@ export function ContentSection(props: ContentSectionProps) {
     enabled: initialized && authenticated,
     queryFn: async ({ pageParam = 1 }) => {
       // Puedes añadir filtros aquí si tu API los soporta
-  const response = await getTrendingItems({ type: props.type, page: pageParam }, axios);
+      const response = await getTrendingItems({ type: props.type, page: pageParam }, axios);
       return response;
     },
     getNextPageParam: (lastPage, allPages) => {
@@ -104,13 +104,10 @@ export function ContentSection(props: ContentSectionProps) {
     };
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
+  // El fondo ocupa toda la pantalla, el contenido sigue centrado y con max ancho
   return (
-    <div
-      className={cn(
-        "container mx-auto px-4 py-8 min-h-screen transition-colors duration-500",
-        props.bgClass + " text-dark-foreground"
-      )}
-    >
+    <div className={cn("w-full min-h-screen transition-colors duration-500", props.bgClass, "text-dark-foreground")}> 
+      <div className="container mx-auto px-4 py-8">
       <h1 className={cn("text-4xl font-bold mb-8", props.colorClass)}>
         {props.title}
       </h1>
@@ -153,7 +150,7 @@ export function ContentSection(props: ContentSectionProps) {
         </Select>
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-  {status === "pending"
+        {status === "pending"
           ? Array.from({ length: 12 }).map((_, i) => (
               <Skeleton key={i} className="w-full aspect-[2/3] rounded-lg" />
             ))
@@ -239,6 +236,7 @@ export function ContentSection(props: ContentSectionProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      </div>
     </div>
   );
 }

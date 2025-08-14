@@ -5,7 +5,7 @@ export interface Pagination<T> {
   items: T[];
 }
 
-export type ContentType = "movie" | "book" | "tv_serie";
+export type ContentType = "MOVIE" | "BOOK" | "TV_SERIE";
 
 export interface ImageInfo {
   url: string;
@@ -58,22 +58,22 @@ export interface SeriesDetails {
 }
 
 export interface BookItem extends BaseContentItem {
-  type: "book";
+  type: "BOOK";
   details: BookDetails;
 }
 
 export interface MovieItem extends BaseContentItem {
-  type: "movie";
+  type: "MOVIE";
   details: MovieDetails;
 }
 
 export interface SeriesItem extends BaseContentItem {
-  type: "tv_serie";
+  type: "TV_SERIE";
   details: SeriesDetails;
 }
 
 export interface ListItem extends BaseContentItem {
-  type: "book";
+  type: "BOOK";
   details: List;
 }
 

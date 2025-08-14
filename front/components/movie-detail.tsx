@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
-import { Star } from "lucide-react"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Star } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -11,46 +11,47 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
-import { ActionButtonsRow } from "@/components/content/action-buttons-row"
-import { ReviewCard } from "@/components/content/review-card"
-import { cn } from "@/lib/utils"
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import { ActionButtonsRow } from "@/components/content/action-buttons-row";
+import { ReviewCard } from "@/components/content/review-card";
+import { cn } from "@/lib/utils";
+import { MovieItem } from "@/types";
 
 interface MovieDetailProps {
-  movie: {
-    id: string
-    title: string
-    imageUrl: string
-    rating: number
-    genre: string
-    director: string
-    cast: string[]
-    description: string
-    releaseDate: string
-    reviews: { id: string; user: string; rating: number; text: string; date: string }[]
-  }
+  movie: MovieItem;
 }
 
 export function MovieDetail({ movie }: MovieDetailProps) {
-  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false)
-  const [isAddToListModalOpen, setIsAddToListModalOpen] = useState(false)
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [isAddToListModalOpen, setIsAddToListModalOpen] = useState(false);
 
   const userLists = [
     { id: "1", name: "Películas Favoritas" },
     { id: "2", name: "Películas para Ver" },
     { id: "3", name: "Clásicos del Cine" },
-  ]
+  ];
 
+  const image = movie.images.cover?.url;
   return (
-    <div className={cn("container mx-auto px-4 py-8 bg-dark-movie-bg text-dark-foreground min-h-screen")}>
+    <div
+      className={cn(
+        "container mx-auto px-4 py-8 bg-dark-movie-bg text-dark-foreground min-h-screen"
+      )}
+    >
       <div className="grid md:grid-cols-3 gap-8">
         <div className="md:col-span-1 flex justify-center">
           <img
-            src={movie.imageUrl || "/placeholder.svg"}
+            src={image || "/placeholder.svg"}
             alt={movie.title}
             width={300}
             height={450}
@@ -58,9 +59,11 @@ export function MovieDetail({ movie }: MovieDetailProps) {
           />
         </div>
         <div className="md:col-span-2">
-          <h1 className="text-4xl font-bold text-movie-red mb-2">{movie.title}</h1>
+          <h1 className="text-4xl font-bold text-movie-red mb-2">
+            {movie.title}
+          </h1>
           <p className="text-dark-muted-foreground text-lg mb-4">
-            {movie.genre} • {movie.releaseDate}
+            {movie.genres.join(", ")} • {movie.releaseDate}
           </p>
 
           <div className="flex items-center gap-4 mb-6">
@@ -78,31 +81,24 @@ export function MovieDetail({ movie }: MovieDetailProps) {
             />
           </div>
 
-          <p className="text-dark-foreground leading-relaxed mb-6">{movie.description}</p>
+          <p className="text-dark-foreground leading-relaxed mb-6">
+            {movie.description}
+          </p>
 
           <div className="grid grid-cols-2 gap-4 text-dark-foreground mb-6">
             <div>
               <h3 className="font-semibold text-dark-primary">Director:</h3>
-              <p>{movie.director}</p>
-            </div>
-            <div>
-              <h3 className="font-semibold text-dark-primary">Reparto Principal:</h3>
-              <p>{movie.cast.join(", ")}</p>
+              <p>{movie.creators[0]}</p>
             </div>
           </div>
 
           <Separator className="my-8 bg-dark-border" />
 
           <h2 className="text-3xl font-bold text-movie-red mb-6">Reseñas</h2>
-          {movie.reviews.length > 0 ? (
-            <div className="grid gap-6">
-              {movie.reviews.map((review) => (
-                <ReviewCard key={review.id} review={{ ...review, contentType: "movie", contentTitle: movie.title }} />
-              ))}
-            </div>
-          ) : (
-            <p className="text-dark-muted-foreground">No hay reseñas todavía. ¡Sé el primero en escribir una!</p>
-          )}
+
+          <p className="text-dark-muted-foreground">
+            No hay reseñas todavía. ¡Sé el primero en escribir una!
+          </p>
         </div>
       </div>
 
@@ -110,14 +106,19 @@ export function MovieDetail({ movie }: MovieDetailProps) {
       <Dialog open={isReviewModalOpen} onOpenChange={setIsReviewModalOpen}>
         <DialogContent className="bg-dark-card border-dark-border text-dark-foreground">
           <DialogHeader>
-            <DialogTitle className="text-dark-primary">Escribir una Reseña para {movie.title}</DialogTitle>
+            <DialogTitle className="text-dark-primary">
+              Escribir una Reseña para {movie.title}
+            </DialogTitle>
             <DialogDescription className="text-dark-muted-foreground">
               Comparte tus pensamientos y califica esta película.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="rating" className="text-right text-dark-foreground">
+              <Label
+                htmlFor="rating"
+                className="text-right text-dark-foreground"
+              >
                 Calificación
               </Label>
               <Input
@@ -131,7 +132,10 @@ export function MovieDetail({ movie }: MovieDetailProps) {
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="review" className="text-right text-dark-foreground">
+              <Label
+                htmlFor="review"
+                className="text-right text-dark-foreground"
+              >
                 Reseña
               </Label>
               <Textarea
@@ -149,7 +153,10 @@ export function MovieDetail({ movie }: MovieDetailProps) {
             >
               Cancelar
             </Button>
-            <Button type="submit" className="bg-movie-red text-dark-primary-foreground hover:bg-movie-red/90">
+            <Button
+              type="submit"
+              className="bg-movie-red text-dark-primary-foreground hover:bg-movie-red/90"
+            >
               Enviar Reseña
             </Button>
           </DialogFooter>
@@ -157,10 +164,15 @@ export function MovieDetail({ movie }: MovieDetailProps) {
       </Dialog>
 
       {/* Add to List Modal */}
-      <Dialog open={isAddToListModalOpen} onOpenChange={setIsAddToListModalOpen}>
+      <Dialog
+        open={isAddToListModalOpen}
+        onOpenChange={setIsAddToListModalOpen}
+      >
         <DialogContent className="bg-dark-card border-dark-border text-dark-foreground">
           <DialogHeader>
-            <DialogTitle className="text-dark-primary">Añadir {movie.title} a una Lista</DialogTitle>
+            <DialogTitle className="text-dark-primary">
+              Añadir {movie.title} a una Lista
+            </DialogTitle>
             <DialogDescription className="text-dark-muted-foreground">
               Selecciona una lista existente o crea una nueva.
             </DialogDescription>
@@ -180,7 +192,10 @@ export function MovieDetail({ movie }: MovieDetailProps) {
                       {list.name}
                     </SelectItem>
                   ))}
-                  <SelectItem value="new-list" className="font-semibold text-dark-primary">
+                  <SelectItem
+                    value="new-list"
+                    className="font-semibold text-dark-primary"
+                  >
                     + Crear Nueva Lista
                   </SelectItem>
                 </SelectContent>
@@ -202,12 +217,15 @@ export function MovieDetail({ movie }: MovieDetailProps) {
             >
               Cancelar
             </Button>
-            <Button type="submit" className="bg-movie-red text-dark-primary-foreground hover:bg-movie-red/90">
+            <Button
+              type="submit"
+              className="bg-movie-red text-dark-primary-foreground hover:bg-movie-red/90"
+            >
               Añadir a Lista
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }

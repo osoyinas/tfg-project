@@ -24,7 +24,7 @@ export function BottomNavigation() {
       <div className="fixed inset-x-0 bottom-0 z-50 bg-dark-card border-t border-dark-border shadow-lg">
         <nav className="flex h-16 items-center justify-around px-2 max-w-2xl m-auto">
           {navItems.map((item) => {
-            const isActive = pathname === item.href;
+            const isActive = pathname.includes(item.href);
             return (
               <Button
                 key={item.href}

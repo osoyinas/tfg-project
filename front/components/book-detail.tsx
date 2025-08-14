@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
-import { Star } from "lucide-react"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Star } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -11,143 +11,48 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
-import { ActionButtonsRow } from "@/components/content/action-buttons-row"
-import { ReviewCard } from "@/components/content/review-card"
-import type { Content, UserActivity, Review } from "@/types"
-import { cn } from "@/lib/utils"
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import { ActionButtonsRow } from "@/components/content/action-buttons-row";
+import { ReviewCard } from "@/components/content/review-card";
+import type { Content, UserActivity, Review, BookItem } from "@/types";
+import { cn } from "@/lib/utils";
 
 interface BookDetailProps {
-  book: {
-    id: string
-    title: string
-    imageUrl: string
-    rating: number
-    genre: string
-    author: string
-    pages: number
-    description: string
-    publicationDate: string
-    reviews: { id: string; user: string; rating: number; text: string; date: string }[]
-  }
+  book: BookItem;
 }
 
-// Placeholder data for related content, activity, and reviews
-const relatedBooks: Content[] = [
-  {
-    id: "rb1",
-    title: "A Man Called Ove",
-    type: "BOOK",
-    genre: "Fiction",
-    imageUrl: "/placeholder.svg?height=300&width=200",
-    rating: 4.6,
-    releaseYear: 2012,
-  },
-  {
-    id: "rb2",
-    title: "Eleanor Oliphant Is Completely Fine",
-    type: "BOOK",
-    genre: "Fiction",
-    imageUrl: "/placeholder.svg?height=300&width=200",
-    rating: 4.4,
-    releaseYear: 2017,
-  },
-]
-
-const bookActivity: UserActivity[] = [
-  {
-    id: "ba1",
-    type: "RATING",
-    content: {
-      id: "2",
-      title: "The Midnight Library",
-      type: "book",
-      imageUrl: "/placeholder.svg?height=100&width=70",
-    },
-    rating: 4.8,
-    timestamp: "1 day ago",
-    user: {
-      id: "u2",
-      name: "Bob",
-      avatar: "/placeholder-user.jpg",
-    },
-  },
-  {
-    id: "ba2",
-    type: "REVIEW",
-    content: {
-      id: "2",
-      title: "The Midnight Library",
-      type: "book",
-      imageUrl: "/placeholder.svg?height=100&width=70",
-    },
-    review: "A truly thought-provoking and heartwarming read. Highly recommend!",
-    timestamp: "2 days ago",
-    user: {
-      id: "u1",
-      name: "Alice",
-      avatar: "/placeholder-user.jpg",
-    },
-  },
-]
-
-const bookReviews: Review[] = [
-  {
-    id: "br1",
-    content: {
-      id: "2",
-      title: "The Midnight Library",
-      type: "BOOK",
-      imageUrl: "/placeholder.svg?height=100&width=70",
-    },
-    rating: 4.8,
-    text: "A truly thought-provoking and heartwarming read. It makes you reflect on life choices and possibilities.",
-    timestamp: "1 day ago",
-    user: {
-      id: "u2",
-      name: "Bob",
-      avatar: "/placeholder-user.jpg",
-    },
-  },
-  {
-    id: "br2",
-    content: {
-      id: "2",
-      title: "The Midnight Library",
-      type: "BOOK",
-      imageUrl: "/placeholder.svg?height=100&width=70",
-    },
-    rating: 5,
-    text: "An absolute masterpiece! This book changed my perspective on so many things. A must-read!",
-    timestamp: "3 days ago",
-    user: {
-      id: "u3",
-      name: "Charlie",
-      avatar: "/placeholder-user.jpg",
-    },
-  },
-]
 
 export function BookDetail({ book }: BookDetailProps) {
-  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false)
-  const [isAddToListModalOpen, setIsAddToListModalOpen] = useState(false)
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [isAddToListModalOpen, setIsAddToListModalOpen] = useState(false);
 
   const userLists = [
     { id: "1", name: "Libros Favoritos" },
     { id: "2", name: "Libros para Leer" },
     { id: "3", name: "Novelas Clásicas" },
-  ]
+  ];
 
+  const image = book.images.cover?.url;
   return (
-    <div className={cn("container mx-auto px-4 py-8 bg-dark-book-bg text-dark-foreground min-h-screen")}>
-      <div className="grid md:grid-cols-3 gap-8">
+    <div
+      className={cn(
+        "mx-auto px-4 py-8 bg-dark-book-bg text-dark-foreground min-h-screen"
+      )}
+    >
+      <div className="grid md:grid-cols-3 gap-8 container">
         <div className="md:col-span-1 flex justify-center">
           <img
-            src={book.imageUrl || "/placeholder.svg"}
+            src={image || "/placeholder.svg"}
             alt={book.title}
             width={300}
             height={450}
@@ -155,15 +60,18 @@ export function BookDetail({ book }: BookDetailProps) {
           />
         </div>
         <div className="md:col-span-2">
-          <h1 className="text-4xl font-bold text-book-green mb-2">{book.title}</h1>
+          <h1 className="text-4xl font-bold text-book-green mb-2">
+            {book.title}
+          </h1>
           <p className="text-dark-muted-foreground text-lg mb-4">
-            {book.author} • {book.genre} • {book.publicationDate}
+            {book.creators.join(", ")} • {book.genres.join(", ")} •{" "}
+            {book.releaseDate}
           </p>
 
           <div className="flex items-center gap-4 mb-6">
             <div className="flex items-center gap-1 text-yellow-500">
               <Star className="h-6 w-6 fill-yellow-500" />
-              <span className="text-2xl font-bold">{book.rating}</span>
+              <span className="text-2xl font-bold">{book.rating / 2}</span>
             </div>
             <Separator orientation="vertical" className="h-6 bg-dark-border" />
             <ActionButtonsRow
@@ -175,31 +83,27 @@ export function BookDetail({ book }: BookDetailProps) {
             />
           </div>
 
-          <p className="text-dark-foreground leading-relaxed mb-6">{book.description}</p>
+          <p className="text-dark-foreground leading-relaxed mb-6">
+            {book.description}
+          </p>
 
           <div className="grid grid-cols-2 gap-4 text-dark-foreground mb-6">
             <div>
               <h3 className="font-semibold text-dark-primary">Páginas:</h3>
-              <p>{book.pages}</p>
+              <p>{book.details.pageCount}</p>
             </div>
             <div>
-              <h3 className="font-semibold text-dark-primary">Autor:</h3>
-              <p>{book.author}</p>
+              <h3 className="font-semibold text-dark-primary">Publisher:</h3>
+              <p>{book.details.publisher}</p>
             </div>
           </div>
 
           <Separator className="my-8 bg-dark-border" />
 
           <h2 className="text-3xl font-bold text-book-green mb-6">Reseñas</h2>
-          {book.reviews.length > 0 ? (
-            <div className="grid gap-6">
-              {book.reviews.map((review) => (
-                <ReviewCard key={review.id} review={{ ...review, contentType: "book", contentTitle: book.title }} />
-              ))}
-            </div>
-          ) : (
-            <p className="text-dark-muted-foreground">No hay reseñas todavía. ¡Sé el primero en escribir una!</p>
-          )}
+            <p className="text-dark-muted-foreground">
+              No hay reseñas todavía. ¡Sé el primero en escribir una!
+            </p>
         </div>
       </div>
 
@@ -207,14 +111,19 @@ export function BookDetail({ book }: BookDetailProps) {
       <Dialog open={isReviewModalOpen} onOpenChange={setIsReviewModalOpen}>
         <DialogContent className="bg-dark-card border-dark-border text-dark-foreground">
           <DialogHeader>
-            <DialogTitle className="text-dark-primary">Escribir una Reseña para {book.title}</DialogTitle>
+            <DialogTitle className="text-dark-primary">
+              Escribir una Reseña para {book.title}
+            </DialogTitle>
             <DialogDescription className="text-dark-muted-foreground">
               Comparte tus pensamientos y califica este libro.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="rating" className="text-right text-dark-foreground">
+              <Label
+                htmlFor="rating"
+                className="text-right text-dark-foreground"
+              >
                 Calificación
               </Label>
               <Input
@@ -228,7 +137,10 @@ export function BookDetail({ book }: BookDetailProps) {
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="review" className="text-right text-dark-foreground">
+              <Label
+                htmlFor="review"
+                className="text-right text-dark-foreground"
+              >
                 Reseña
               </Label>
               <Textarea
@@ -246,7 +158,10 @@ export function BookDetail({ book }: BookDetailProps) {
             >
               Cancelar
             </Button>
-            <Button type="submit" className="bg-book-green text-dark-primary-foreground hover:bg-book-green/90">
+            <Button
+              type="submit"
+              className="bg-book-green text-dark-primary-foreground hover:bg-book-green/90"
+            >
               Enviar Reseña
             </Button>
           </DialogFooter>
@@ -254,10 +169,15 @@ export function BookDetail({ book }: BookDetailProps) {
       </Dialog>
 
       {/* Add to List Modal */}
-      <Dialog open={isAddToListModalOpen} onOpenChange={setIsAddToListModalOpen}>
+      <Dialog
+        open={isAddToListModalOpen}
+        onOpenChange={setIsAddToListModalOpen}
+      >
         <DialogContent className="bg-dark-card border-dark-border text-dark-foreground">
           <DialogHeader>
-            <DialogTitle className="text-dark-primary">Añadir {book.title} a una Lista</DialogTitle>
+            <DialogTitle className="text-dark-primary">
+              Añadir {book.title} a una Lista
+            </DialogTitle>
             <DialogDescription className="text-dark-muted-foreground">
               Selecciona una lista existente o crea una nueva.
             </DialogDescription>
@@ -277,7 +197,10 @@ export function BookDetail({ book }: BookDetailProps) {
                       {list.name}
                     </SelectItem>
                   ))}
-                  <SelectItem value="new-list" className="font-semibold text-dark-primary">
+                  <SelectItem
+                    value="new-list"
+                    className="font-semibold text-dark-primary"
+                  >
                     + Crear Nueva Lista
                   </SelectItem>
                 </SelectContent>
@@ -292,12 +215,15 @@ export function BookDetail({ book }: BookDetailProps) {
             >
               Cancelar
             </Button>
-            <Button type="submit" className="bg-book-green text-dark-primary-foreground hover:bg-book-green/90">
+            <Button
+              type="submit"
+              className="bg-book-green text-dark-primary-foreground hover:bg-book-green/90"
+            >
               Añadir a Lista
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }

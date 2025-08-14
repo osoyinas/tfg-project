@@ -5,7 +5,7 @@ import { ContentSection } from "@/components/content-section";
 export default function BooksPage() {
   return (
     <ContentSection
-      type="book"
+      type="BOOK"
       title="Libros"
       colorClass="text-book-green"
       bgClass="bg-dark-book-bg"
