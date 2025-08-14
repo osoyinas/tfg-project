@@ -24,7 +24,7 @@ public class OpenLibraryBookMapper {
 
     public CatalogItem fromSearchDoc(OpenLibraryDoc doc) {
         CatalogItem base = CatalogItem.builder()
-                .id("open_library:" + doc.key())
+                .id("open_library:" + extractExternalId(doc.key()))
                 .title(doc.title())
                 .description("No description available.") // Temporaly, async enrichment will be added later
                 .type(CatalogType.BOOK)
@@ -42,12 +42,17 @@ public class OpenLibraryBookMapper {
                 )
                 .externalSource(ExternalSourceInfo.builder()
                         .sourceName(SOURCE_NAME)
-                        .externalId(doc.key())
+                        .externalId(extractExternalId(doc.key()))
                         .externalUrl("https://openlibrary.org" + doc.key())
                         .build())
                 .build();
 
         return base;
+    }
+
+    private String extractExternalId(String key) {
+        if (key == null || !key.startsWith("/works/OL")) return key;
+        return key.split("/")[2]; // OL1234567
     }
 
     private List<String> limitSubjects(List<String> subjects) {

@@ -85,7 +85,7 @@ public class OpenLibraryBookProvider implements ExternalProviderStrategy {
     private void enrichAsync(CatalogItem item) {
         executor.submit(() -> {
             try {
-                var detail = searchClient.fetchWorkDetail(item.getExternalSource().getExternalId());
+                var detail = searchClient.fetchWorkDetail("/works/" + item.getExternalSource().getExternalId());
                 var enriched = bookMapper.enrichWithWorkDetail(item, detail);
                 catalogItemRepository.save(enriched);
                 log.debug("Enriched and saved item: {}", item.getTitle());
