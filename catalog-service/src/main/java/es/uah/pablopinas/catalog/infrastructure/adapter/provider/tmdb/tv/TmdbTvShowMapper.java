@@ -37,6 +37,7 @@ public class TmdbTvShowMapper {
         return ExternalSourceInfo.builder()
                 .sourceName(SOURCE_NAME)
                 .externalId(String.valueOf(tmdbId))
+                .externalUrl("https://www.themoviedb.org/tv/" + tmdbId)
                 .build();
     }
 

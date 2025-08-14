@@ -18,10 +18,9 @@ public class GoogleBooksBookProvider implements ExternalProviderStrategy {
 
     private final GoogleBooksSearchClient client;
     private final GoogleBooksBookMapper mapper;
-    
+
     private static final List<String> BASE_TRENDING_QUERIES = List.of(
-            "bestseller books", "fantasy novels", "romance books",
-            "science fiction", "young adult", "historical fiction"
+            "bestseller books"
     );
 
     private volatile List<String> trendingQueries = new ArrayList<>(BASE_TRENDING_QUERIES);

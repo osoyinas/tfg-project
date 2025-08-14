@@ -16,7 +16,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class TrendingSubjectsProvider {
+public class OpenLibraryTrendingSubjectsProvider {
 
     private final OpenLibrarySearchClient searchClient;
 

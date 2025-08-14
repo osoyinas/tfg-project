@@ -37,11 +37,13 @@ public class GenresProvider {
     }
 
     public String getGenreName(int genreId) {
-        return genreCache.getOrDefault(genreId, UNKNOWN_GENRE);
+        return genreCache.get(genreId);
     }
 
     public List<String> getGenreNames(List<Integer> genreIds) {
-        return genreIds.stream().map(this::getGenreName).toList();
+        return genreIds.stream().map(this::getGenreName).filter(
+                genreName -> genreName != null && !genreName.isEmpty() && !genreName.equals(UNKNOWN_GENRE)
+        ).toList();
     }
 
     public List<String> getGenres(Movie movie) {

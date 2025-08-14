@@ -3,16 +3,29 @@ package es.uah.pablopinas.catalog.infrastructure.adapter;
 import es.uah.pablopinas.catalog.application.port.out.ExternalCatalogRepositoryPort;
 import es.uah.pablopinas.catalog.domain.model.*;
 import es.uah.pablopinas.catalog.infrastructure.adapter.provider.ExternalProviderStrategy;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @Component
-@RequiredArgsConstructor
 public class ExternalCatalogRepositoryImpl implements ExternalCatalogRepositoryPort {
 
     private final List<ExternalProviderStrategy> strategies;
+
+    public ExternalCatalogRepositoryImpl(Map<String, ExternalProviderStrategy> providers) {
+        var allowedProviders = List.of(
+                "tmdbMovieProvider",
+                "tmdbTvShowProvider",
+                "openLibraryBookProvider"
+        );
+
+        this.strategies = allowedProviders.stream()
+                .map(providers::get)
+                .filter(Objects::nonNull)
+                .toList();
+    }
 
     @Override
     public PageResult<CatalogItem> fetch(CatalogSearchFilter filter, Pagination pagination) {

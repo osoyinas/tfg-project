@@ -1,6 +1,7 @@
 package es.uah.pablopinas.catalog.infrastructure.adapter.provider.openlibrary;
 
-import com.nimbusds.jose.shaded.gson.Gson;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import es.uah.pablopinas.catalog.domain.model.Pagination;
 import es.uah.pablopinas.catalog.infrastructure.adapter.provider.openlibrary.dto.OpenLibrarySearchResult;
 import es.uah.pablopinas.catalog.infrastructure.adapter.provider.openlibrary.dto.OpenLibrarySubjectResult;
@@ -18,17 +19,63 @@ import java.nio.charset.StandardCharsets;
 public class OpenLibrarySearchClient {
 
     private final OkHttpClient client = new OkHttpClient();
-    private final Gson gson = new Gson();
-    
+    private final Gson gson = new GsonBuilder().create();
+
     public OpenLibrarySearchResult searchBooks(String query, Pagination pagination) throws IOException {
+        // Construimos q combinando el término del usuario + filtro de idioma
+        String q = String.format("%s language:spa", query);
+
         String url = String.format(
-                "https://openlibrary.org/search.json?q=%s&page=%d&limit=%d",
-                URLEncoder.encode(query, StandardCharsets.UTF_8),
+                "https://openlibrary.org/search.json?q=%s&page=%d&limit=%d&fields=%s",
+                URLEncoder.encode(q, StandardCharsets.UTF_8),
                 pagination.getPage() + 1,
-                pagination.getSize()
+                pagination.getSize(),
+                URLEncoder.encode(String.join(",",
+                        "key",                       // /works/OL...
+                        "title",
+                        "description",
+                        "author_name",               // lista => creators
+                        "first_publish_year",        // => releaseDate (YYYY)
+                        "cover_i",                   // => ImageSet via Covers API
+                        "isbn",                      // lista, útil para BookDetails
+                        "publisher",                 // lista => BookDetails.publisher (primero)
+                        "number_of_pages_median",    // => BookDetails.pageCount
+                        "subject",                   // lista => genres
+                        "ratings_average",           // puede venir nulo
+                        "ratings_count"              // puede venir nulo
+                ), StandardCharsets.UTF_8)
         );
+
         return doRequest(url, OpenLibrarySearchResult.class);
     }
+
+    public OpenLibrarySearchResult searchWeeklyTrendingBooks(Pagination pagination) throws IOException {
+        String fields = String.join(",",
+                "key",
+                "title",
+                "author_name",
+                "first_publish_year",
+                "cover_i",
+                "isbn",
+                "publisher",
+                "number_of_pages_median",
+                "subject",
+                "ratings_average",
+                "ratings_count"
+        );
+
+        String url = String.format(
+                "https://openlibrary.org/search.json?q=%s&sort=trending&lang=es&page=%d&limit=%d&fields=%s",
+                // trending_z_score > 0 (Lucene syntax); %7B0%%20TO%%20*%%5D == {0 TO *]
+                URLEncoder.encode("trending_z_score:{0 TO *]", StandardCharsets.UTF_8),
+                pagination.getPage() + 1,
+                pagination.getSize(),
+                URLEncoder.encode(fields, StandardCharsets.UTF_8)
+        );
+
+        return doRequest(url, OpenLibrarySearchResult.class);
+    }
+
 
     public OpenLibrarySubjectResult fetchFromSubject(String subject, Pagination pagination) throws IOException {
         String url = String.format(
@@ -43,7 +90,7 @@ public class OpenLibrarySearchClient {
     private <T> T doRequest(String url, Class<T> type) throws IOException {
         Request request = new Request.Builder()
                 .url(url)
-                .header("User-Agent", "CatalogApp/1.0 contact@example.com")
+                .header("User-Agent", "CatalogApp/1.0")
                 .build();
 
         try (Response response = client.newCall(request).execute()) {

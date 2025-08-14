@@ -19,7 +19,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -86,28 +89,51 @@ public class TmdbTvShowProvider implements ExternalProviderStrategy {
         });
     }
 
-    private void asyncUpdateWithCreators(CatalogItem item, int tmdbId) {
+    /**
+     * Asynchronously enriches a catalog item with its directors by calling TMDB credits API.
+     * Once directors are retrieved, updates the catalog item in the database.
+     *
+     * @param item   the catalog item to enrich
+     * @param tmdbId the TMDB movie ID
+     */
+    protected void asyncUpdateWithCreators(CatalogItem item, int tmdbId) {
         executor.submit(() -> {
             try {
-                Credits credits = tmdbTvSeries.getCredits(tmdbId, TmdbConfig.LANGUAGE);
-
-                var creators = credits.getCrew().stream()
-                        .filter(c -> "Director".equalsIgnoreCase(c.getJob())
-                                || "Executive Producer".equalsIgnoreCase(c.getJob())
-                                || "Creator".equalsIgnoreCase(c.getJob()))
-                        .map(NamedIdElement::getName)
-                        .distinct()
-                        .toList();
+                var creators = extractCreatorsFromCredits(tmdbTvSeries.getCredits(tmdbId, TmdbConfig.LANGUAGE));
 
                 if (!creators.isEmpty()) {
                     item.setCreators(creators);
                     catalogItemRepository.update(item.getId(), item);
-                    log.info("Enriched TV show '{}' with creators: {}", item.getTitle(), creators);
+                    log.info("Enriched '{}' with directors: {}", item.getTitle(), creators);
                 }
             } catch (Exception e) {
-                log.warn("Failed to enrich series '{}' with creators: {}", item.getTitle(), e.getMessage());
+                log.warn("Failed to enrich '{}' with creators: {}", item.getTitle(), e.getMessage());
             }
         });
+    }
+
+    private List<String> extractCreatorsFromCredits(Credits credits) {
+        // Define the order of relevance
+        List<String> relevanceOrder = List.of(
+                "Director",
+                "Screenplay", // sometimes listed instead of "Writer"
+                "Writer",
+                "Executive Producer",
+                "Producer",
+                "Original Music Composer"
+        );
+
+        // Use LinkedHashSet to preserve order and avoid duplicates
+        Set<String> creators = new LinkedHashSet<>();
+
+        for (String role : relevanceOrder) {
+            credits.getCrew().stream()
+                    .filter(c -> role.equalsIgnoreCase(c.getJob()))
+                    .map(NamedIdElement::getName)
+                    .forEach(creators::add);
+        }
+
+        return new ArrayList<>(creators);
     }
 
     private void asyncUpdateWithDetails(CatalogItem item, int tmdbId) {
