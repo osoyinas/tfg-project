@@ -1,48 +1,29 @@
 {
-  # Email para Let's Encrypt (avisos de renovación/expiración)
   email pablo.pinas@edu.uah.es
-  # mejores logs (opcional):
-  # debug
+  # debug   # (opcional)
 }
 
-# --- API GATEWAY ---
+# --- API (gateway) ---
 api.pablopinas.com {
   @health path /health /healthz /actuator/health
   handle @health {
-    reverse_proxy gateway:${GATEWAY_PORT}
+    reverse_proxy gateway:{$GATEWAY_PORT}
   }
 
-  reverse_proxy gateway:${GATEWAY_PORT} {
-    header_up Host {host}
-    header_up X-Real-IP {remote_host}
-    header_up X-Forwarded-For {remote_host}
-    header_up X-Forwarded-Proto {scheme}
-  }
+  reverse_proxy gateway:{$GATEWAY_PORT}
 }
 
-# --- KEYCLOAK ---
+# --- Keycloak ---
 auth.pablopinas.com {
-  reverse_proxy keycloak:8080 {
-    header_up Host {host}
-    header_up X-Real-IP {remote_host}
-    header_up X-Forwarded-For {remote_host}
-    header_up X-Forwarded-Proto {scheme}
-    # WebSocket/streaming ya lo maneja Caddy automáticamente
-  }
+  reverse_proxy keycloak:8080
 }
 
---- FRONTEND (opcional) ---
-pablopinas.com, www.pablopinas.com {
-  @root path /
-  handle @root {
-    reverse_proxy frontend:3000
-  }
-  handle {
-    reverse_proxy frontend:3000
-  }
+# --- Frontend ---
+pablopinas.com {
+  reverse_proxy frontend:3000
 }
 
---- Redirect www -> root (si sirves root) ---
+# --- Redirección www -> root ---
 www.pablopinas.com {
   redir https://pablopinas.com{uri}
 }
