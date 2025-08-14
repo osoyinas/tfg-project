@@ -130,12 +130,9 @@ services:
 
 
   catalog-service:
-    dns: [1.1.1.1, 8.8.8.8]
     build:
       context: ./catalog-service
       dockerfile: Dockerfile
-    environment:
-        JAVA_TOOL_OPTIONS: "-Djava.net.preferIPv4Stack=true -Dsun.net.inetaddr.ttl=60"
     env_file:
       - catalog-service/.env.prod
     depends_on:
