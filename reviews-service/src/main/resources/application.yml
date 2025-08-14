@@ -8,8 +8,8 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: "${KEYCLOAK_BASE_URL:http://localhost:8080}/realms/${KEYCLOAK_REALM:TrustedFeedbackGateway}"
-          jwk-set-uri: "${KEYCLOAK_BASE_URL:http://localhost:8080}/realms/${KEYCLOAK_REALM:TrustedFeedbackGateway}/protocol/openid-connect/certs"
+          issuer-uri: "${KEYCLOAK_BASE_URL:http://localhost:8080}/realms/${KEYCLOAK_REALM:ReviewIt}"
+          jwk-set-uri: "${KEYCLOAK_BASE_URL:http://localhost:8080}/realms/${KEYCLOAK_REALM:ReviewIt}/protocol/openid-connect/certs"
           principal-claim-name: preferred_username
   rabbitmq:
     host: ${RABBITMQ_HOST:localhost}
