@@ -18,7 +18,13 @@ import java.nio.charset.StandardCharsets;
 @Component
 public class OpenLibrarySearchClient {
 
-    private final OkHttpClient client = new OkHttpClient();
+    private final OkHttpClient client = new OkHttpClient.Builder()
+            .connectTimeout(java.time.Duration.ofSeconds(5))
+            .readTimeout(java.time.Duration.ofSeconds(10))
+            .writeTimeout(java.time.Duration.ofSeconds(10))
+            .callTimeout(java.time.Duration.ofSeconds(15))
+            .retryOnConnectionFailure(true)
+            .build();
     private final Gson gson = new GsonBuilder().create();
 
     public OpenLibrarySearchResult searchBooks(String query, Pagination pagination) throws IOException {
