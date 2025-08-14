@@ -103,9 +103,16 @@ services:
       KC_DB_URL: "jdbc:postgresql://keycloak-db:5432/authdb"
       KC_DB_USERNAME: authuser
       KC_DB_PASSWORD: authpass
+
       KC_HTTP_ENABLED: "true"
-      KC_PROXY: edge
       KC_HOSTNAME: auth.pablopinas.com
+
+      # NUEVO: haz que confíe en X-Forwarded-*
+      KC_PROXY_HEADERS: xforwarded
+
+      # Opcional pero muy útil: fija URLs que Keycloak anunciará/validará
+      KC_HOSTNAME_URL: https://auth.pablopinas.com
+      KC_HOSTNAME_ADMIN_URL: https://auth.pablopinas.com
     command: ["start", "--optimized", "--import-realm"]
     volumes:
       - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
