@@ -1,0 +1,196 @@
+# ¡OJO! Quita "version:" (Compose v2 lo ignora y avisa).
+
+networks:
+  web:
+    driver: bridge
+  app:
+    driver: bridge
+
+volumes:
+  caddy_data:
+  caddy_config:
+  pgdata:
+  reviews_pgdata:
+  mongodb_data:
+
+services:
+  # -------- REVERSE PROXY + TLS ----------
+  caddy:
+    image: caddy:2.8
+    container_name: caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      # para los avisos de Let's Encrypt
+      ACME_AGREE: "true"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks: [web, app]
+    depends_on:
+      gateway:
+        condition: service_started
+      keycloak:
+        condition: service_started
+      # (opcional) frontend:
+      #   condition: service_started
+
+  # -------- FRONTEND (opcional, añade host si lo usarás) ----------
+  frontend:
+    build:
+      context: ./front
+      dockerfile: Dockerfile
+    env_file:
+      - front/.env.prod
+    expose:
+      - "3000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:3000/ >/dev/null || exit 1"]
+    networks: [app]
+
+  # -------- GATEWAY ----------
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    env_file:
+      - gateway/.env.prod
+    expose:
+      - "${GATEWAY_PORT}"            # p.ej. 8000
+    depends_on:
+      keycloak:
+        condition: service_healthy
+      catalog-service:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:${GATEWAY_PORT}/actuator/health | grep -q '\"status\":\"UP\"'"]
+      interval: 15s
+      timeout: 5s
+      retries: 30
+    networks: [app]
+
+  # -------- KEYCLOAK + DB ----------
+  keycloak-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: authdb
+      POSTGRES_USER: authuser
+      POSTGRES_PASSWORD: authpass
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U authuser -d authdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+    networks: [app]
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0.1
+    command: >
+      start --optimized
+      --hostname-strict=false
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/authdb
+      KC_DB_USERNAME: authuser
+      KC_DB_PASSWORD: authpass
+
+      # Caddy termina TLS; Keycloak sirve HTTP y confía en el proxy:
+      KC_HTTP_ENABLED: "true"
+      KC_PROXY: edge
+      KC_HOSTNAME: auth.pablopinas.com
+
+      KC_HEALTH_ENABLED: "true"
+      JAVA_OPTS: "-XX:MaxRAMPercentage=50"
+    volumes:
+      - ./keycloak:/opt/keycloak/data/import
+    expose:
+      - "8080"
+    depends_on:
+      keycloak-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/health/ready | grep -q '\"status\":\"UP\"'"]
+      interval: 15s
+      timeout: 5s
+      retries: 30
+    restart: unless-stopped
+    networks: [app]
+
+  # -------- CATALOG (Mongo + servicio) ----------
+  catalog-db:
+    image: mongo:7
+    volumes:
+      - mongodb_data:/data/db
+    command: ["--wiredTigerCacheSizeGB", "1"]
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --quiet --eval 'db.adminCommand({ ping: 1 }).ok' | grep -q 1 || exit 1"]
+      interval: 20s
+      timeout: 5s
+      retries: 15
+    restart: unless-stopped
+    networks: [app]
+
+  catalog-service:
+    build:
+      context: ./catalog-service
+      dockerfile: Dockerfile
+    env_file:
+      - catalog-service/.env.prod
+    depends_on:
+      catalog-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    expose:
+      - "${CATALOG_SERVICE_PORT}"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:${CATALOG_SERVICE_PORT}/actuator/health | grep -q '\"status\":\"UP\"'"]
+      interval: 15s
+      timeout: 5s
+      retries: 30
+    networks: [app]
+
+  # -------- REVIEWS DB ----------
+  reviews-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: reviewsdb
+      POSTGRES_USER: reviewsuser
+      POSTGRES_PASSWORD: reviewspass
+    volumes:
+      - reviews_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U reviewsuser -d reviewsdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+    networks: [app]
+
+  # -------- RabbitMQ (solo loopback via caddy no es necesario) ----------
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    expose:
+      - "5672"
+      - "15672"
+    healthcheck:
+      test: ["CMD-SHELL", "rabbitmq-diagnostics -q ping"]
+      interval: 20s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    networks: [app]

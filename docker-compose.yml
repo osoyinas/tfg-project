@@ -1,16 +1,16 @@
 networks:
   app: {}
 services:
-  # Frontend:
-  # frontend:
-  #   build:
-  #     context: ./front
-  #     dockerfile: Dockerfile
-  #   env_file:
-  #     - front/.env.local
-  #   ports:
-  #     - "3000:3000"
-  #   networks: [app]
+  # Frontend
+  frontend:
+    build:
+      context: ./front
+      dockerfile: Dockerfile
+    env_file:
+      - front/.env.local
+    ports:
+      - "3000:3000"
+    networks: [app]
   # Gateway API
   gateway:
     build:
