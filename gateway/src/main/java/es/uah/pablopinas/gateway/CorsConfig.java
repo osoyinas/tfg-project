@@ -15,7 +15,7 @@ public class CorsConfig {
         this.props = props;
     }
 
-    @Bean
+//    @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration cfg = new CorsConfiguration();
 
