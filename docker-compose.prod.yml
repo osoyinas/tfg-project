@@ -46,7 +46,7 @@ services:
       context: ./front
       dockerfile: Dockerfile
     env_file:
-      - front/.env.prod
+      - front/.env.production
     expose:
       - "3000"
     restart: unless-stopped
