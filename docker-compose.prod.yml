@@ -25,8 +25,8 @@ services:
       - "80:80"
       - "443:443"
     environment:
-      # para los avisos de Let's Encrypt
-      ACME_AGREE: "true"
+      - ACME_AGREE=true
+      - GATEWAY_PORT=${GATEWAY_PORT}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
@@ -45,11 +45,6 @@ services:
     build:
       context: ./front
       dockerfile: Dockerfile
-      args:
-        NEXT_PUBLIC_KEYCLOAK_URL: https://auth.pablopinas.com
-        NEXT_PUBLIC_KEYCLOAK_REALM: ReviewIt
-        NEXT_PUBLIC_KEYCLOAK_CLIENT_ID: nextjs-web
-        NEXT_PUBLIC_API_URL: https://pablopinas.com
     env_file:
       - front/.env.prod
     expose:
