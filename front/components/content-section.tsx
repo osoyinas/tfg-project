@@ -81,7 +81,7 @@ export function ContentSection(props: ContentSectionProps) {
       if (!lastPage.items || lastPage.items.length === 0) return undefined;
       return lastPage.page + 1;
     },
-    initialPageParam: 1,
+    initialPageParam: 0,
   });
 
   // Unir todos los items de las páginas
