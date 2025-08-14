@@ -2,16 +2,10 @@ import { Card } from "@/components/ui/card";
 import { Star } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { ContentType } from "@/types";
+import { BaseContentItem, ContentType } from "@/types";
 
 interface ContentCardProps {
-  content: {
-    id: string;
-    title: string;
-    imageUrl: string;
-    type: ContentType;
-    rating?: number;
-  };
+  content: BaseContentItem;
 }
 
 export function ContentCard({ content }: ContentCardProps) {
@@ -54,11 +48,12 @@ export function ContentCard({ content }: ContentCardProps) {
     }
   };
 
+  const image = content.images?.poster?.url || "/placeholder.svg";
   return (
     <Link href={getLinkPath()} className="block bg-red-700">
       <Card className="relative w-full aspect-[2/3] rounded-lg overflow-hidden shadow-lg group bg-dark-card border-dark-border hover:border-dark-primary transition-all duration-200">
         <img
-          src={content.imageUrl || "/placeholder.svg"}
+          src={image}
           alt={content.title}
           width={200}
           height={300}

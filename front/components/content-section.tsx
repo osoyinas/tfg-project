@@ -104,14 +104,16 @@ export function ContentSection(props: ContentSectionProps) {
     };
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  // El fondo ocupa toda la pantalla, el contenido sigue centrado y con max ancho
   return (
     <div className={cn("w-full min-h-screen transition-colors duration-500", props.bgClass, "text-dark-foreground")}> 
       <div className="container mx-auto px-4 py-8">
       <h1 className={cn("text-4xl font-bold mb-8", props.colorClass)}>
         {props.title}
       </h1>
-      <div className="flex flex-col sm:flex-row gap-4 mb-8">
+      <h2 className="text-2xl font-semibold mb-4">
+        Más relevantes
+      </h2>
+      {/* <div className="flex flex-col sm:flex-row gap-4 mb-8">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-dark-muted-foreground" />
           <Input
@@ -148,7 +150,7 @@ export function ContentSection(props: ContentSectionProps) {
             ))}
           </SelectContent>
         </Select>
-      </div>
+      </div> */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
         {status === "pending"
           ? Array.from({ length: 12 }).map((_, i) => (
@@ -157,13 +159,7 @@ export function ContentSection(props: ContentSectionProps) {
           : items.map((item) => (
               <ContentCard
                 key={item.id}
-                content={{
-                  id: item.id,
-                  title: item.title,
-                  imageUrl: props.getImageUrl(item) || "/placeholder.svg",
-                  type: item.type,
-                  rating: item.rating,
-                }}
+                content={item}
               />
             ))}
         {/* Skeletons para fetchNextPage (scroll infinito) */}

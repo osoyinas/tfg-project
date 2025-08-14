@@ -13,6 +13,7 @@ interface Filters {
   title?: string;
   genre?: string;
   type?: ContentType;
+  page?: number;
 }
 
 export async function getItems(
@@ -20,6 +21,10 @@ export async function getItems(
   axios: AxiosInstance
 ): Promise<Pagination<MovieItem | BookItem | SeriesItem>> {
   try {
+    if (filters.page === undefined || filters.page < 0) {
+      filters.page = 0;
+    }
+
     const response = await axios.get("/api/catalog/items", { params: filters });
     return response.data;
   } catch (error) {
