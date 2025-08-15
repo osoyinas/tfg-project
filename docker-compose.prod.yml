@@ -65,7 +65,7 @@ services:
       catalog-service:
         condition: service_healthy
     restart: unless-stopped
-    networks: [app]
+    networks: [app, egress]
 
   # -------- KEYCLOAK + DB ----------
   keycloak-db:
