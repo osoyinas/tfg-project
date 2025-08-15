@@ -7,9 +7,7 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: "${KEYCLOAK_BASE_URL:http://localhost:8080}/realms/${KEYCLOAK_REALM:ReviewIt}"
-          jwk-set-uri: "${KEYCLOAK_BASE_URL:http://localhost:8080}/realms/${KEYCLOAK_REALM:ReviewIt}/protocol/openid-connect/certs"
           principal-claim-name: preferred_username
-
   cloud:
     gateway:
       server:
@@ -38,3 +36,11 @@ app:
     allowed-headers: ${CORS_ALLOWED_HEADERS:*}
     allow-credentials: ${CORS_ALLOW_CREDENTIALS:true}
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always

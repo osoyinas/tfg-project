@@ -15,11 +15,10 @@ public class CorsConfig {
         this.props = props;
     }
 
-//    @Bean
+    @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration cfg = new CorsConfiguration();
 
-        // Orígenes, métodos y cabeceras desde application.yml / .env
         cfg.setAllowedOrigins(props.getAllowedOrigins());
         cfg.setAllowedMethods(props.getAllowedMethods());
         cfg.setAllowedHeaders(props.getAllowedHeaders());

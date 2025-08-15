@@ -4,57 +4,54 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
+@Component
 public class KeycloakJwtRolesConverter implements Converter<Jwt, Collection<GrantedAuthority>> {
-
-    private static final String PREFIX_REALM_ROLE = "ROLE_realm_";
-    private static final String PREFIX_RESOURCE_ROLE = "ROLE_";
 
     private static final String CLAIM_REALM_ACCESS = "realm_access";
     private static final String CLAIM_RESOURCE_ACCESS = "resource_access";
     private static final String CLAIM_ROLES = "roles";
 
-    private static final String LOCAL_CLIENT = "catalog-service";
-
     @Override
     public Collection<GrantedAuthority> convert(Jwt jwt) {
-        Collection<GrantedAuthority> grantedAuthorities = new ArrayList<>();
+        List<GrantedAuthority> out = new ArrayList<>();
 
-        // Realm roles
-        Map<String, Collection<String>> realmAccess = jwt.getClaim(CLAIM_REALM_ACCESS);
-        if (realmAccess != null && !realmAccess.isEmpty()) {
-            Collection<String> roles = realmAccess.get(CLAIM_ROLES);
-            if (roles != null && !roles.isEmpty()) {
-                grantedAuthorities.addAll(roles.stream()
-                        .map(role -> new SimpleGrantedAuthority(PREFIX_REALM_ROLE + role)).toList());
+        Map<String, Object> realmAccess = jwt.getClaim(CLAIM_REALM_ACCESS);
+        if (realmAccess != null) {
+            Object roles = realmAccess.get(CLAIM_ROLES);
+            if (roles instanceof Collection<?> r) {
+                out.addAll(r.stream()
+                        .map(Object::toString)
+                        .map(this::normalize)
+                        .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
+                        .collect(Collectors.toList()));
             }
         }
 
-        // Resource (client) roles
-        Map<String, Map<String, Collection<String>>> resourceAccess = jwt.getClaim(CLAIM_RESOURCE_ACCESS);
-        if (resourceAccess != null && !resourceAccess.isEmpty()) {
-            resourceAccess.forEach((resource, resourceClaims) -> {
-                Collection<String> roles = resourceClaims.get(CLAIM_ROLES);
-                if (roles != null && !roles.isEmpty()) {
-                    roles.forEach(role -> {
-                        String authority;
-                        if (LOCAL_CLIENT.equals(resource)) {
-                            // if the resource is the local client, use a specific prefix
-                            authority = PREFIX_RESOURCE_ROLE + role.toUpperCase().replace("-", "_");
-                        } else {
-                            // Prefix with resource name
-                            authority = PREFIX_RESOURCE_ROLE + resource + "_" + role;
+        Map<String, Object> resourceAccess = jwt.getClaim(CLAIM_RESOURCE_ACCESS);
+        if (resourceAccess != null) {
+            for (Map.Entry<String, Object> e : resourceAccess.entrySet()) {
+                String clientId = normalize(e.getKey());
+                Object client = e.getValue();
+                if (client instanceof Map<?, ?> m) {
+                    Object roles = m.get(CLAIM_ROLES);
+                    if (roles instanceof Collection<?> r) {
+                        for (Object roleObj : r) {
+                            String role = normalize(String.valueOf(roleObj));
+                            out.add(new SimpleGrantedAuthority("ROLE_" + clientId + "_" + role));
                         }
-                        grantedAuthorities.add(new SimpleGrantedAuthority(authority));
-                    });
+                    }
                 }
-            });
+            }
         }
+        return out;
+    }
 
-        return grantedAuthorities;
+    private String normalize(String s) {
+        return s == null ? "" : s.trim().toUpperCase().replace('-', '_');
     }
 }

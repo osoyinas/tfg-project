@@ -13,7 +13,6 @@ public class CorsProps {
     private List<String> allowedHeaders;
     private boolean allowCredentials = true;
 
-    // getters/setters
     public List<String> getAllowedOrigins() {
         return allowedOrigins;
     }
