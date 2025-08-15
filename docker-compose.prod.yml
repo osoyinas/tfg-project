@@ -6,7 +6,9 @@ networks:
     name: project_app
     driver: bridge
     internal: true
-
+  egress: # Egress network for external access
+    name: project_egress
+    driver: bridge
 volumes:
   caddy_data:
   caddy_config:
@@ -36,7 +38,7 @@ services:
       gateway:
         condition: service_healthy
       keycloak:
-        condition: service_healthy
+        condition: service_started
       frontend:
         condition: service_healthy
 
@@ -65,7 +67,7 @@ services:
       - "${GATEWAY_PORT}"            # p.ej. 8000
     depends_on:
       keycloak:
-        condition: service_healthy
+        condition: service_started
       catalog-service:
         condition: service_healthy
     restart: unless-stopped
@@ -104,17 +106,11 @@ services:
       KC_DB_PASSWORD: authpass
       KC_HTTP_ENABLED: "true"
       KC_PROXY: edge
-      KC_HOSTNAME: auth.pablopinas.com
+      KC_HOSTNAME: ${KEYCLOAK_HOST}
       KC_HEALTH_ENABLED: "true"
     volumes:
       - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
     command: ["start", "--optimized", "--import-realm"]
-    healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/health/ready >/dev/null || exit 1"]
-      interval: 15s
-      timeout: 5s
-      retries: 30
-      start_period: 40s
     depends_on:
       keycloak-db:
         condition: service_healthy
@@ -140,6 +136,8 @@ services:
       dockerfile: Dockerfile
     env_file:
       - catalog-service/.env.prod
+    environment:
+      SERVER_PORT: "${CATALOG_SERVICE_PORT}"
     depends_on:
       catalog-db:
         condition: service_healthy
@@ -153,7 +151,7 @@ services:
       interval: 15s
       timeout: 5s
       retries: 30
-    networks: [app]
+    networks: [app, egress]
 
   # -------- REVIEWS DB ----------
   reviews-db:
