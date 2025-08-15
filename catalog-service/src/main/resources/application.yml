@@ -6,7 +6,6 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: "${KEYCLOAK_BASE_URL:http://localhost:8080}/realms/${KEYCLOAK_REALM:ReviewIt}"
-          jwk-set-uri: "${KEYCLOAK_BASE_URL:http://localhost:8080}/realms/${KEYCLOAK_REALM:ReviewIt}/protocol/openid-connect/certs"
           principal-claim-name: preferred_username
   rabbitmq:
     host: ${RABBITMQ_HOST:localhost}
@@ -32,3 +31,12 @@ server:
 springdoc:
   swagger-ui:
     path: /swagger
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always
