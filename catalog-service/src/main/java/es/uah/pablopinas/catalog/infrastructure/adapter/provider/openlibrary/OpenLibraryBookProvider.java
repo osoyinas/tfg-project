@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -22,14 +21,9 @@ public class OpenLibraryBookProvider implements ExternalProviderStrategy {
     private final OpenLibrarySearchClient searchClient;
     private final OpenLibraryBookMapper bookMapper;
     private final CatalogItemRepositoryPort catalogItemRepository;
-    private final OpenLibraryTrendingSubjectsProvider trendingSubjectsProvider;
 
     private final ExecutorService executor = Executors.newFixedThreadPool(5);
-
-    private static final List<String> TRENDING_SUBJECTS = List.of(
-            "bestsellers", "popular", "fantasy", "romance", "science_fiction", "mystery", "historical_fiction", "young_adult"
-    );
-
+    
     @Override
     public boolean supports(CatalogType type) {
         return type == CatalogType.BOOK;
