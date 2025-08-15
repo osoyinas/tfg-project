@@ -1,5 +1,3 @@
-# ¡OJO! Quita "version:" (Compose v2 lo ignora y avisa).
-
 networks:
   web:
     name: project_web
@@ -7,6 +5,7 @@ networks:
   app:
     name: project_app
     driver: bridge
+    internal: true
 
 volumes:
   caddy_data:
@@ -25,6 +24,7 @@ services:
       - "80:80"
       - "443:443"
     environment:
+      - TZ=Europe/Madrid
       - ACME_AGREE=true
       - GATEWAY_PORT=${GATEWAY_PORT}
     volumes:
@@ -34,11 +34,11 @@ services:
     networks: [web, app]
     depends_on:
       gateway:
-        condition: service_started
+        condition: service_healthy
       keycloak:
-        condition: service_started
-      # (opcional) frontend:
-      #   condition: service_started
+        condition: service_healthy
+      frontend:
+        condition: service_healthy
 
   # -------- FRONTEND (opcional, añade host si lo usarás) ----------
   frontend:
@@ -65,9 +65,9 @@ services:
       - "${GATEWAY_PORT}"            # p.ej. 8000
     depends_on:
       keycloak:
-        condition: service_started
+        condition: service_healthy
       catalog-service:
-        condition: service_started
+        condition: service_healthy
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://localhost:${GATEWAY_PORT}/actuator/health | grep -q '\"status\":\"UP\"'"]
@@ -92,7 +92,6 @@ services:
       retries: 20
     restart: unless-stopped
     networks: [app]
-
   keycloak:
     build:
       context: ./keycloak-image
@@ -106,9 +105,16 @@ services:
       KC_HTTP_ENABLED: "true"
       KC_PROXY: edge
       KC_HOSTNAME: auth.pablopinas.com
-    command: ["start", "--optimized", "--import-realm"]
+      KC_HEALTH_ENABLED: "true"
     volumes:
       - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
+    command: ["start", "--optimized", "--import-realm"]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/health/ready >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 30
+      start_period: 40s
     depends_on:
       keycloak-db:
         condition: service_healthy
@@ -128,7 +134,6 @@ services:
     restart: unless-stopped
     networks: [app]
 
-
   catalog-service:
     build:
       context: ./catalog-service
@@ -143,11 +148,11 @@ services:
     expose:
       - "${CATALOG_SERVICE_PORT}"
     restart: unless-stopped
-    # healthcheck:
-    #   test: ["CMD-SHELL", "curl -fsS http://localhost:${CATALOG_SERVICE_PORT}/actuator/health | grep -q '\"status\":\"UP\"'"]
-    #   interval: 15s
-    #   timeout: 5s
-    #   retries: 30
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:${CATALOG_SERVICE_PORT}/actuator/health | grep -q '\"status\":\"UP\"'"]
+      interval: 15s
+      timeout: 5s
+      retries: 30
     networks: [app]
 
   # -------- REVIEWS DB ----------
@@ -167,7 +172,7 @@ services:
     restart: unless-stopped
     networks: [app]
 
-  # -------- RabbitMQ (solo loopback via caddy no es necesario) ----------
+  # -------- RabbitMQ ----------
   rabbitmq:
     image: rabbitmq:3.13-management
     environment:
