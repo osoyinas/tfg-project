@@ -10,14 +10,10 @@ WORKDIR /app
 RUN apk add --no-cache curl
 COPY --from=builder /app/target/*.jar app.jar
 
-
-# Puerto configurable
-ARG GATEWAY_PORT=8000
-ENV GATEWAY_PORT=${GATEWAY_PORT}
-EXPOSE ${GATEWAY_PORT}
+EXPOSE ${SERVER_PORT}
 
 # Healthcheck para comprobar que el servicio está UP
 HEALTHCHECK --interval=1s --timeout=5s --retries=30 \
-	CMD curl -fsS http://localhost:${GATEWAY_PORT}/actuator/health | grep -q '"status":"UP"'
+	CMD curl -fsS http://localhost:${SERVER_PORT}/actuator/health | grep -q '"status":"UP"'
 
 ENTRYPOINT ["java", "-jar", "app.jar"]

@@ -47,8 +47,6 @@ services:
     build:
       context: ./front
       dockerfile: Dockerfile
-      args:
-        NEXTJS_PORT: 3000
     env_file:
       - front/.env.production
     restart: unless-stopped
@@ -59,8 +57,6 @@ services:
     build:
       context: ./gateway
       dockerfile: Dockerfile
-      args:
-        GATEWAY_PORT: "${GATEWAY_PORT}"
     env_file:
       - gateway/.env.prod
     depends_on:
@@ -127,8 +123,6 @@ services:
     build:
       context: ./catalog-service
       dockerfile: Dockerfile
-      args:
-        CATALOG_SERVICE_PORT: "${CATALOG_SERVICE_PORT}"
     env_file:
       - catalog-service/.env.prod
     environment:

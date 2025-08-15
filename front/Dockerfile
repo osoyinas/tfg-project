@@ -60,17 +60,11 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 USER nextjs
 
-
-# Puerto configurable
-ARG NEXTJS_PORT=3000
-ENV NEXTJS_PORT=${NEXTJS_PORT}
-EXPOSE ${NEXTJS_PORT}
-
-ENV PORT=${NEXTJS_PORT}
+EXPOSE ${PORT}
 
 # Healthcheck para comprobar que el servicio está UP
 HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
-  CMD curl -f http://localhost:${NEXTJS_PORT}/ || exit 1
+  CMD curl -f http://localhost:${PORT}/ || exit 1
 
 # server.js is created by next build from the standalone output
 # https://nextjs.org/docs/pages/api-reference/config/next-config-js/output

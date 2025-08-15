@@ -1,17 +1,25 @@
 networks:
   app: {}
+volumes:
+  caddy_config:
+  pgdata:
+  reviews_pgdata:
+  mongodb_data:
+
 services:
-  # Frontend
+  # -------- FRONTEND (opcional, añade host si lo usarás) ----------
   frontend:
     build:
       context: ./front
       dockerfile: Dockerfile
-    env_file:
-      - front/.env.local
     ports:
       - "3000:3000"
+    env_file:
+      - front/.env.production
+    restart: unless-stopped
     networks: [app]
-  # Gateway API
+
+  # -------- GATEWAY ----------
   gateway:
     build:
       context: ./gateway
@@ -19,22 +27,30 @@ services:
     env_file:
       - gateway/.env.prod
     ports:
-      - "${GATEWAY_PORT}:${GATEWAY_PORT}"
+    - "${GATEWAY_PORT:-8000}:${GATEWAY_PORT:-8000}"
     depends_on:
-      - keycloak
+      keycloak:
+        condition: service_started
+      catalog-service:
+        condition: service_healthy
+    restart: unless-stopped
     networks: [app]
 
-  # Keycloak Auth
+  # -------- KEYCLOAK + DB ----------
   keycloak-db:
     image: postgres:16
-    ports:
-      - "5432:5432"
     environment:
       POSTGRES_DB: authdb
       POSTGRES_USER: authuser
       POSTGRES_PASSWORD: authpass
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U authuser -d authdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
     networks: [app]
   keycloak:
     image: quay.io/keycloak/keycloak:24.0.1
@@ -59,14 +75,21 @@ services:
         aliases:
           - auth.local.test
 
-  # Catalog Service
+  # -------- CATALOG (Mongo + servicio) ----------
   catalog-db:
-    image: mongo:latest
-    container_name: catalog-db
-    ports:
-      - "27017:27017"
+    image: mongo:8
+    command: ["--wiredTigerCacheSizeGB", "1"]
     volumes:
       - mongodb_data:/data/db
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mongosh --quiet --eval 'db.adminCommand({ ping: 1 }).ok' | grep -q 1 || exit 1",
+        ]
+      interval: 20s
+      timeout: 5s
+      retries: 15
     restart: unless-stopped
     networks: [app]
 
@@ -76,17 +99,21 @@ services:
       dockerfile: Dockerfile
     env_file:
       - catalog-service/.env.prod
-    ports:
-      - "SERVER_PORT:${CATALOG_SERVICE_PORT}"
+    environment:
+      SERVER_PORT: "${CATALOG_SERVICE_PORT}"
     depends_on:
-      - catalog-db
-      - rabbitmq
+      catalog-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    ports:
+      - "${CATALOG_SERVICE_PORT:-8081}:${CATALOG_SERVICE_PORT:-8081}"
+    restart: unless-stopped
     networks: [app]
 
+  # -------- REVIEWS DB ----------
   reviews-db:
     image: postgres:16
-    ports:
-      - "5433:5432"
     environment:
       POSTGRES_DB: reviewsdb
       POSTGRES_USER: reviewsuser
@@ -97,19 +124,23 @@ services:
       test: ["CMD-SHELL", "pg_isready -U reviewsuser -d reviewsdb"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 20
+    restart: unless-stopped
     networks: [app]
-  # Rabbit MQ
+
+  # -------- RabbitMQ ----------
   rabbitmq:
-    image: rabbitmq:3-management
-    ports:
-      - "5672:5672"
-      - "15672:15672"
+    image: rabbitmq:3.13-management
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
+    expose:
+      - "5672"
+      - "15672"
+    healthcheck:
+      test: ["CMD-SHELL", "rabbitmq-diagnostics -q ping"]
+      interval: 20s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
     networks: [app]
-volumes:
-  pgdata:
-  mongodb_data:
-  reviews_pgdata:
