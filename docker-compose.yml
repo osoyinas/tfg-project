@@ -77,7 +77,7 @@ services:
     env_file:
       - catalog-service/.env.prod
     ports:
-      - "${CATALOG_SERVICE_PORT}:${CATALOG_SERVICE_PORT}"
+      - "SERVER_PORT:${CATALOG_SERVICE_PORT}"
     depends_on:
       - catalog-db
       - rabbitmq

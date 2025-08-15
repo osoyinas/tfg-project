@@ -47,13 +47,11 @@ services:
     build:
       context: ./front
       dockerfile: Dockerfile
+      args:
+        NEXTJS_PORT: 3000
     env_file:
       - front/.env.production
-    expose:
-      - "3000"
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost:3000/ >/dev/null || exit 1"]
     networks: [app]
 
   # -------- GATEWAY ----------
@@ -61,21 +59,16 @@ services:
     build:
       context: ./gateway
       dockerfile: Dockerfile
+      args:
+        GATEWAY_PORT: "${GATEWAY_PORT}"
     env_file:
       - gateway/.env.prod
-    expose:
-      - "${GATEWAY_PORT}"            # p.ej. 8000
     depends_on:
       keycloak:
         condition: service_started
       catalog-service:
         condition: service_healthy
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost:${GATEWAY_PORT}/actuator/health | grep -q '\"status\":\"UP\"'"]
-      interval: 15s
-      timeout: 5s
-      retries: 30
     networks: [app]
 
   # -------- KEYCLOAK + DB ----------
@@ -134,6 +127,8 @@ services:
     build:
       context: ./catalog-service
       dockerfile: Dockerfile
+      args:
+        CATALOG_SERVICE_PORT: "${CATALOG_SERVICE_PORT}"
     env_file:
       - catalog-service/.env.prod
     environment:
@@ -143,14 +138,7 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-    expose:
-      - "${CATALOG_SERVICE_PORT}"
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost:${CATALOG_SERVICE_PORT}/actuator/health | grep -q '\"status\":\"UP\"'"]
-      interval: 15s
-      timeout: 5s
-      retries: 30
     networks: [app, egress]
 
   # -------- REVIEWS DB ----------

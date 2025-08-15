@@ -38,9 +38,13 @@ RUN \
 
 # Production image, copy all the files and run next
 FROM base AS runner
+
 WORKDIR /app
 
 ENV NODE_ENV=production
+
+# Install curl for health checks
+RUN apk add --no-cache curl
 # Uncomment the following line in case you want to disable telemetry during runtime.
 # ENV NEXT_TELEMETRY_DISABLED=1
 
@@ -56,9 +60,17 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 USER nextjs
 
-EXPOSE 3000
 
-ENV PORT=3000
+# Puerto configurable
+ARG NEXTJS_PORT=3000
+ENV NEXTJS_PORT=${NEXTJS_PORT}
+EXPOSE ${NEXTJS_PORT}
+
+ENV PORT=${NEXTJS_PORT}
+
+# Healthcheck para comprobar que el servicio está UP
+HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
+  CMD curl -f http://localhost:${NEXTJS_PORT}/ || exit 1
 
 # server.js is created by next build from the standalone output
 # https://nextjs.org/docs/pages/api-reference/config/next-config-js/output
