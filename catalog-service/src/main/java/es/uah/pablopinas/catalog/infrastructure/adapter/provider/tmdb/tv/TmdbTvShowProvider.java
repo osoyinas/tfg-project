@@ -15,14 +15,13 @@ import info.movito.themoviedbapi.model.core.TvSeriesResultsPage;
 import info.movito.themoviedbapi.model.tv.core.credits.Credits;
 import info.movito.themoviedbapi.model.tv.series.TvSeriesDb;
 import info.movito.themoviedbapi.tools.model.time.TimeWindow;
+import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -39,6 +38,11 @@ public class TmdbTvShowProvider implements ExternalProviderStrategy {
 
     private final ExecutorService executor = Executors.newFixedThreadPool(5);
 
+    @PreDestroy
+    public void shutdown() {
+        executor.shutdown();
+    }
+
     @Override
     public boolean supports(CatalogType type) {
         return type == CatalogType.TV_SERIE;
@@ -53,8 +57,7 @@ public class TmdbTvShowProvider implements ExternalProviderStrategy {
 
                 return results.getResults().stream().map(tv -> {
                     var item = tvShowMapper.toDomain(tv);
-                    asyncUpdateWithCreators(item, tv.getId());
-                    asyncUpdateWithDetails(item, tv.getId());
+                    asyncEnrichAndUpsert(item, tv.getId()); // único save (upsert)
                     return item;
                 }).toList();
 
@@ -74,13 +77,11 @@ public class TmdbTvShowProvider implements ExternalProviderStrategy {
                 TvSeriesResultsPage results = trending.getTv(TimeWindow.WEEK, TmdbConfig.LANGUAGE, tmdbPage);
                 if (results == null || results.getResults() == null) return List.of();
 
-                return results.getResults().stream()
-                        .map(tv -> {
-                            var item = tvShowMapper.toDomain(tv);
-                            asyncUpdateWithCreators(item, tv.getId());
-                            asyncUpdateWithDetails(item, tv.getId());
-                            return item;
-                        }).toList();
+                return results.getResults().stream().map(tv -> {
+                    var item = tvShowMapper.toDomain(tv);
+                    asyncEnrichAndUpsert(item, tv.getId()); // único save (upsert)
+                    return item;
+                }).toList();
 
             } catch (Exception e) {
                 log.warn("Error fetching TMDB trending TV page {}: {}", tmdbPage, e.getMessage());
@@ -90,86 +91,105 @@ public class TmdbTvShowProvider implements ExternalProviderStrategy {
     }
 
     /**
-     * Asynchronously enriches a catalog item with its directors by calling TMDB credits API.
-     * Once directors are retrieved, updates the catalog item in the database.
-     *
-     * @param item   the catalog item to enrich
-     * @param tmdbId the TMDB movie ID
+     * Enriquecimiento asíncrono: obtiene en paralelo "creators" y "details" y realiza un único save (upsert).
      */
-    protected void asyncUpdateWithCreators(CatalogItem item, int tmdbId) {
-        executor.submit(() -> {
+    private void asyncEnrichAndUpsert(CatalogItem item, int tmdbId) {
+        // 1) Créditos (creators)
+        CompletableFuture<List<String>> creatorsFuture = CompletableFuture.supplyAsync(() -> {
             try {
-                var creators = extractCreatorsFromCredits(tmdbTvSeries.getCredits(tmdbId, TmdbConfig.LANGUAGE));
-
-                if (!creators.isEmpty()) {
-                    item.setCreators(creators);
-                    catalogItemRepository.update(item.getId(), item);
-                    log.info("Enriched '{}' with directors: {}", item.getTitle(), creators);
-                }
+                Credits credits = tmdbTvSeries.getCredits(tmdbId, TmdbConfig.LANGUAGE);
+                return extractCreatorsFromCredits(credits);
             } catch (Exception e) {
-                log.warn("Failed to enrich '{}' with creators: {}", item.getTitle(), e.getMessage());
+                log.warn("Failed to fetch TV credits for '{}' (tmdbId={}): {}", item.getTitle(), tmdbId, e.getMessage());
+                return List.of();
             }
-        });
-    }
+        }, executor);
 
-    private List<String> extractCreatorsFromCredits(Credits credits) {
-        // Define the order of relevance
-        List<String> relevanceOrder = List.of(
-                "Director",
-                "Screenplay", // sometimes listed instead of "Writer"
-                "Writer",
-                "Executive Producer",
-                "Producer",
-                "Original Music Composer"
-        );
-
-        // Use LinkedHashSet to preserve order and avoid duplicates
-        Set<String> creators = new LinkedHashSet<>();
-
-        for (String role : relevanceOrder) {
-            credits.getCrew().stream()
-                    .filter(c -> role.equalsIgnoreCase(c.getJob()))
-                    .map(NamedIdElement::getName)
-                    .forEach(creators::add);
-        }
-
-        return new ArrayList<>(creators);
-    }
-
-    private void asyncUpdateWithDetails(CatalogItem item, int tmdbId) {
-        executor.submit(() -> {
+        // 2) Detalles (seasons/episodes/avgRuntime/originalLanguage)
+        CompletableFuture<TvShowDetails> detailsFuture = CompletableFuture.supplyAsync(() -> {
             try {
                 TvSeriesDb details = tmdbTvSeries.getDetails(tmdbId, TmdbConfig.LANGUAGE);
+                if (details == null) return null;
 
                 Integer seasons = details.getNumberOfSeasons();
                 Integer episodes = details.getNumberOfEpisodes();
                 List<Integer> runtimes = details.getEpisodeRunTime();
                 String originalLanguage = details.getOriginalLanguage();
 
-                boolean hasDetails = (seasons != null || episodes != null || (runtimes != null && !runtimes.isEmpty()));
+                boolean hasAny = (seasons != null) || (episodes != null) || (runtimes != null && !runtimes.isEmpty());
+                if (!hasAny) return null;
 
-                if (hasDetails) {
-                    int avgRuntime = runtimes != null && !runtimes.isEmpty()
-                            ? (int) runtimes.stream().mapToInt(Integer::intValue).average().orElse(0)
-                            : 0;
+                int avgRuntime = (runtimes != null && !runtimes.isEmpty())
+                        ? (int) runtimes.stream().mapToInt(Integer::intValue).average().orElse(0)
+                        : 0;
 
-                    TvShowDetails tvShowDetails = TvShowDetails.builder()
-                            .seasonCount(seasons)
-                            .episodeCount(episodes)
-                            .averageRuntime(avgRuntime)
-                            .originalLanguage(originalLanguage)
-                            .build();
-
-                    item.setDetails(tvShowDetails);
-                    catalogItemRepository.update(item.getId(), item);
-
-                    log.info("Enriched TV show '{}' with details: {} seasons, {} episodes, {} min",
-                            item.getTitle(), seasons, episodes, avgRuntime);
-                }
+                return TvShowDetails.builder()
+                        .seasonCount(seasons)
+                        .episodeCount(episodes)
+                        .averageRuntime(avgRuntime)
+                        .originalLanguage(originalLanguage)
+                        .build();
 
             } catch (Exception e) {
-                log.warn("Failed to enrich series '{}' with details: {}", item.getTitle(), e.getMessage());
+                log.warn("Failed to fetch TV details for '{}' (tmdbId={}): {}", item.getTitle(), tmdbId, e.getMessage());
+                return null;
             }
+        }, executor);
+
+        // 3) Combinar y hacer un único save (UPsert en tu repo)
+        creatorsFuture.thenCombine(detailsFuture, (creators, details) -> {
+            boolean changed = false;
+
+            if (creators != null && !creators.isEmpty()) {
+                item.setCreators(creators);
+                changed = true;
+            }
+            if (details != null) {
+                item.setDetails(details);
+                changed = true;
+            }
+            return changed ? item : null;
+        }).thenAccept(updated -> {
+            if (updated != null) {
+                try {
+                    catalogItemRepository.save(updated); // tu save implementa upsert
+                    log.debug("Upserted TV enrichment for '{}': creators={}, details={}",
+                            updated.getTitle(),
+                            Optional.ofNullable(updated.getCreators()).orElse(List.of()),
+                            Optional.ofNullable(updated.getDetails()).map(Object::toString).orElse("null"));
+                } catch (Exception e) {
+                    log.warn("Failed to upsert TV enrichment for '{}': {}", item.getTitle(), e.getMessage());
+                }
+            } else {
+                log.debug("No TV enrichment changes for '{}', skipping save.", item.getTitle());
+            }
+        }).exceptionally(ex -> {
+            log.warn("Unexpected error enriching TV show '{}': {}", item.getTitle(), ex.getMessage(), ex);
+            return null;
         });
+    }
+
+    private List<String> extractCreatorsFromCredits(Credits credits) {
+        if (credits == null || credits.getCrew() == null) return List.of();
+
+        List<String> relevanceOrder = List.of(
+                "Director",
+                "Screenplay",
+                "Writer",
+                "Executive Producer",
+                "Producer",
+                "Original Music Composer"
+        );
+
+        Set<String> creators = new LinkedHashSet<>();
+        for (String role : relevanceOrder) {
+            credits.getCrew().stream()
+                    .filter(Objects::nonNull)
+                    .filter(c -> c.getJob() != null && role.equalsIgnoreCase(c.getJob()))
+                    .map(NamedIdElement::getName)
+                    .filter(Objects::nonNull)
+                    .forEach(creators::add);
+        }
+        return new ArrayList<>(creators);
     }
 }

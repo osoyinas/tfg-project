@@ -1,6 +1,5 @@
 package es.uah.pablopinas.catalog.infrastructure.adapter.provider.openlibrary;
 
-import com.google.gson.JsonElement;
 import es.uah.pablopinas.catalog.domain.model.*;
 import es.uah.pablopinas.catalog.domain.model.details.BookDetails;
 import es.uah.pablopinas.catalog.infrastructure.adapter.provider.openlibrary.dto.OpenLibraryDoc;
@@ -19,6 +18,7 @@ public class OpenLibraryBookMapper {
 
     private static final String SOURCE_NAME = "OPEN_LIBRARY";
     private static final String COVER_BASE_URL = "https://covers.openlibrary.org/b/id/";
+    private static final String COVER_BASE_URL_ISBN = "https://covers.openlibrary.org/b/isbn/";
     private static final Logger log = LoggerFactory.getLogger(OpenLibraryBookMapper.class);
 
 
@@ -31,7 +31,13 @@ public class OpenLibraryBookMapper {
                 .releaseDate(parseYear(doc.first_publish_year()))
                 .creators(doc.author_name() != null ? doc.author_name() : List.of())
                 .genres(limitSubjects(doc.subject()))
-                .images(getImageSetFromCoverI(doc.cover_i()))
+                .images(
+                        doc.cover_i() != null
+                                ? getImageSetFromCoverI(doc.cover_i())
+                                : (doc.isbn() != null && !doc.isbn().isEmpty())
+                                ? getImageSetFromIsbn(doc.isbn().get(0))
+                                : null
+                )
                 .rating(scaleTo10(doc.ratings_average()))
                 .ratingCount(doc.ratings_count())
                 .details(BookDetails.builder()
@@ -64,6 +70,16 @@ public class OpenLibraryBookMapper {
         return ImageSet.builder()
                 .cover(new Image(COVER_BASE_URL + coverI + "-L.jpg", "Cover"))
                 .poster(new Image(COVER_BASE_URL + coverI + "-M.jpg", "Poster"))
+                .thumbnail(new Image(COVER_BASE_URL + coverI + "-S.jpg", "Thumbnail"))
+                .build();
+    }
+
+    private ImageSet getImageSetFromIsbn(String isbn) {
+
+        return ImageSet.builder()
+                .cover(new Image(COVER_BASE_URL_ISBN + isbn + "-L.jpg", "Cover"))
+                .poster(new Image(COVER_BASE_URL_ISBN + isbn + "-M.jpg", "Poster"))
+                .thumbnail(new Image(COVER_BASE_URL_ISBN + isbn + "-S.jpg", "Thumbnail"))
                 .build();
     }
 
@@ -82,17 +98,6 @@ public class OpenLibraryBookMapper {
         // Si quieres confiar en 0..5 -> 0..10:
         double scaled = ratingsAverage * 2.0;
         return Math.min(10.0, Math.max(0.0, scaled));
-    }
-
-    // Si ya no usas JsonElement/parseDescription puedes borrar esto y el import
-    @SuppressWarnings("unused")
-    private String parseDescription(JsonElement descriptionElement) {
-        if (descriptionElement == null || descriptionElement.isJsonNull()) return "No description available.";
-        if (descriptionElement.isJsonPrimitive()) return descriptionElement.getAsString();
-        if (descriptionElement.isJsonObject() && descriptionElement.getAsJsonObject().has("value")) {
-            return descriptionElement.getAsJsonObject().get("value").getAsString();
-        }
-        return "No description available.";
     }
 
     public CatalogItem enrichWithWorkDetail(CatalogItem item, OpenLibraryWorkDetail doc) {

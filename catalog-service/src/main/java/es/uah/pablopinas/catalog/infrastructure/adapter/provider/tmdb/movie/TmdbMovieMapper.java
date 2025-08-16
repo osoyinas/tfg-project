@@ -1,6 +1,7 @@
 package es.uah.pablopinas.catalog.infrastructure.adapter.provider.tmdb.movie;
 
 import es.uah.pablopinas.catalog.domain.model.*;
+import es.uah.pablopinas.catalog.domain.util.CatalogItemIdGenerator;
 import es.uah.pablopinas.catalog.infrastructure.adapter.provider.tmdb.GenresProvider;
 import info.movito.themoviedbapi.model.core.Movie;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +21,9 @@ public class TmdbMovieMapper {
     private final GenresProvider genresProvider;
 
     public CatalogItem toDomain(Movie movie) {
+
         return CatalogItem.builder()
+                .id(CatalogItemIdGenerator.fromExternalSource(getExternalSourceInfoFrom(movie.getId())))
                 .title(movie.getTitle())
                 .description(movie.getOverview())
                 .rating(movie.getVoteAverage() != null ? movie.getVoteAverage() : 0.0)
