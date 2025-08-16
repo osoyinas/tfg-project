@@ -2,6 +2,7 @@ package es.uah.pablopinas.catalog.infrastructure.adapter.repository;
 
 import es.uah.pablopinas.catalog.application.port.out.CatalogItemRepositoryPort;
 import es.uah.pablopinas.catalog.domain.model.*;
+import es.uah.pablopinas.catalog.domain.util.CatalogItemIdGenerator;
 import es.uah.pablopinas.catalog.infrastructure.adapter.repository.mapper.CatalogItemMapper;
 import es.uah.pablopinas.catalog.infrastructure.adapter.repository.model.CatalogItemDocument;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,19 @@ public class CatalogItemRepositoryAdapter implements CatalogItemRepositoryPort {
 
     @Override
     public CatalogItem save(CatalogItem item) {
+        if (item == null) {
+            throw new IllegalArgumentException("CatalogItem cannot be null");
+        }
+
+        String id = CatalogItemIdGenerator.fromExternalSource(item.getExternalSource());
+        item.setId(id);
+        // Update q field with old queries if the item already exists
+        repository.findById(id).ifPresent(existing -> {
+            for (String q : existing.getQ()) {
+                item.recordQueryHit(q);
+            }
+        });
+
         CatalogItemDocument saved = repository.save(CatalogItemMapper.toDocument(item));
         return CatalogItemMapper.toDomain(saved);
     }
@@ -69,8 +83,18 @@ public class CatalogItemRepositoryAdapter implements CatalogItemRepositoryPort {
     public PageResult<CatalogItem> search(CatalogSearchFilter filter, Pagination pagination) {
         Query query = new Query();
 
-        if (filter.getTitleContains() != null) {
-            query.addCriteria(Criteria.where("title").regex(".*" + filter.getTitleContains() + ".*", "i"));
+        if (filter.getTitleContains() != null && !filter.getTitleContains().isBlank()) {
+            String raw = filter.getTitleContains();
+            String normalized = CatalogItem.normalize(raw);
+
+            Criteria titleRegex = Criteria.where("title").regex(".*" + java.util.regex.Pattern.quote(raw) + ".*", "i");
+
+            // q: exact match (elem igual a normalized) o prefix match (^normalized)
+            // Nota: Mongo permite usar $regex sobre arrays y matchea contra cualquiera de sus elementos
+            Criteria qExact = Criteria.where("q").in(normalized);
+            Criteria qPrefix = Criteria.where("q").regex("^" + java.util.regex.Pattern.quote(normalized));
+
+            query.addCriteria(new Criteria().orOperator(titleRegex, qExact, qPrefix));
         }
         if (filter.getType() != null) {
             query.addCriteria(Criteria.where("type").is(filter.getType().toString()));

@@ -22,6 +22,12 @@ public class CatalogItemDocument {
     private String id;
 
     private String title;
+
+    /**
+     * Original/editorial title (usually in English)
+     */
+    private String originalTitle;
+
     private String description;
     private String type;
     private Date releaseDate;
@@ -32,7 +38,6 @@ public class CatalogItemDocument {
     private Integer ratingCount;
 
     private ImageSet images;
-
     private ExternalSourceInfo externalSource;
 
     private boolean isRelevant;
@@ -40,4 +45,8 @@ public class CatalogItemDocument {
 
     private CatalogItemDetailsDocument details;
 
+    /**
+     * Normalized user queries that previously matched this item
+     */
+    private List<String> q;
 }

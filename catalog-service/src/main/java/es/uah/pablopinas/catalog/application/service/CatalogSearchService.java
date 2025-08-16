@@ -58,7 +58,7 @@ public class CatalogSearchService implements SearchCatalogItemsUseCase {
         }
 
         if (isStale) {
-            // Stale pero no vacío → actualizar en segundo plano
+            // Results are stale, enqueue a background fetch
             fetcherService.enqueueFetch(filter, pagination);
         }
 

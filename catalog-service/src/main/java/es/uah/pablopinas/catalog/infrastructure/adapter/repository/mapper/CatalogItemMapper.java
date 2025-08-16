@@ -6,7 +6,6 @@ import es.uah.pablopinas.catalog.domain.model.details.BookDetails;
 import es.uah.pablopinas.catalog.domain.model.details.CatalogItemDetails;
 import es.uah.pablopinas.catalog.domain.model.details.MovieDetails;
 import es.uah.pablopinas.catalog.domain.model.details.TvShowDetails;
-import es.uah.pablopinas.catalog.domain.util.CatalogItemIdGenerator;
 import es.uah.pablopinas.catalog.infrastructure.adapter.repository.model.CatalogItemDocument;
 import es.uah.pablopinas.catalog.infrastructure.adapter.repository.model.details.BookDetailsDocument;
 import es.uah.pablopinas.catalog.infrastructure.adapter.repository.model.details.CatalogItemDetailsDocument;
@@ -20,13 +19,10 @@ import java.util.Date;
 public class CatalogItemMapper {
 
     public static CatalogItemDocument toDocument(CatalogItem item) {
-        if (item.getId() == null && item.getExternalSource() != null) {
-            item.setId(CatalogItemIdGenerator.fromExternalSource(item.getExternalSource()));
-        }
-
         return CatalogItemDocument.builder()
                 .id(item.getId())
                 .title(item.getTitle())
+                .originalTitle(item.getOriginalTitle())
                 .description(item.getDescription())
                 .type(item.getType().toString().toLowerCase())
                 .releaseDate(toDate(item.getReleaseDate()))
@@ -37,8 +33,11 @@ public class CatalogItemMapper {
                 .images(item.getImages())
                 .externalSource(item.getExternalSource())
                 .isRelevant(item.isRelevant())
-                .relevantUntil(item.getRelevantUntil() != null ? Date.from(item.getRelevantUntil().atZone(ZoneId.systemDefault()).toInstant()) : null)
+                .relevantUntil(item.getRelevantUntil() != null
+                        ? Date.from(item.getRelevantUntil().atZone(ZoneId.systemDefault()).toInstant())
+                        : null)
                 .details(toDocumentDetails(item.getDetails()))
+                .q(item.getQ())
                 .build();
     }
 
@@ -46,6 +45,7 @@ public class CatalogItemMapper {
         return CatalogItem.builder()
                 .id(doc.getId())
                 .title(doc.getTitle())
+                .originalTitle(doc.getOriginalTitle())
                 .description(doc.getDescription())
                 .rating(doc.getRating())
                 .ratingCount(doc.getRatingCount())
@@ -56,8 +56,11 @@ public class CatalogItemMapper {
                 .images(doc.getImages())
                 .externalSource(doc.getExternalSource())
                 .isRelevant(doc.isRelevant())
-                .relevantUntil(doc.getRelevantUntil() != null ? doc.getRelevantUntil().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime() : null)
+                .relevantUntil(doc.getRelevantUntil() != null
+                        ? doc.getRelevantUntil().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()
+                        : null)
                 .details(toDomainDetails(doc.getDetails()))
+                .q(doc.getQ())
                 .build();
     }
 

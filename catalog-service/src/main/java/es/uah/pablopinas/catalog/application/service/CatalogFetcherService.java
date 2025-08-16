@@ -81,6 +81,7 @@ public class CatalogFetcherService implements ExternalCatalogFetchQueuePort {
         PageResult<CatalogItem> previousResult = externalCatalogRepository.fetch(filter, pagination);
 
         previousResult.items().forEach(item -> {
+            item.recordQueryHit(filter.getTitleContains());
             catalogRepository.save(item);
         });
 
