@@ -96,9 +96,9 @@ export function ContentSection(props: ContentSectionProps) {
           fetchNextPage();
         }
       },
-      { threshold: 0,
-        rootMargin: "0px 0px -300px 0px",
-       }
+      { threshold: 0.1,
+        rootMargin: "0px 0px 300px 0px",
+      }
     );
     if (loaderRef.current) observer.observe(loaderRef.current);
     return () => {
