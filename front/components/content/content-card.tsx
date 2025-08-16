@@ -63,6 +63,16 @@ export function ContentCard({ content }: ContentCardProps) {
           <h3 className="text-white text-base font-semibold line-clamp-2 mb-1">
             {content.title}
           </h3>
+          {(content.releaseDate || content.creators?.[0]) && (
+            <div className="text-xs text-dark-muted-foreground mb-1 flex gap-2 items-center">
+              {content.releaseDate && (
+                <span>{new Date(content.releaseDate).getFullYear()}</span>
+              )}
+              {content.creators?.[0] && (
+                <span className="truncate max-w-[80%]">{content.creators[0]}</span>
+              )}
+            </div>
+          )}
           <div className="flex items-center justify-between">
             <span
               className={cn(
