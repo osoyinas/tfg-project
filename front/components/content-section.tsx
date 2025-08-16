@@ -73,7 +73,7 @@ export function ContentSection(props: ContentSectionProps) {
     enabled: initialized && authenticated,
     queryFn: async ({ pageParam = 1 }) => {
       // Puedes añadir filtros aquí si tu API los soporta
-      const response = await getTrendingItems({ type: props.type, page: pageParam }, axios);
+      const response = await getTrendingItems({ type: props.type, page: pageParam, size: 40 }, axios);
       return response;
     },
     getNextPageParam: (lastPage, allPages) => {
@@ -96,7 +96,9 @@ export function ContentSection(props: ContentSectionProps) {
           fetchNextPage();
         }
       },
-      { threshold: 1 }
+      { threshold: 0,
+        rootMargin: "0px 0px -300px 0px",
+       }
     );
     if (loaderRef.current) observer.observe(loaderRef.current);
     return () => {
@@ -113,44 +115,6 @@ export function ContentSection(props: ContentSectionProps) {
       <h2 className="text-2xl font-semibold mb-4">
         Más relevantes
       </h2>
-      {/* <div className="flex flex-col sm:flex-row gap-4 mb-8">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-dark-muted-foreground" />
-          <Input
-            type="text"
-            placeholder={`Buscar ${props.title.toLowerCase()}...`}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full rounded-lg bg-dark-input pl-9 pr-4 py-2 text-sm border-dark-border focus:border focus:ring text-dark-foreground placeholder:text-dark-muted-foreground"
-          />
-        </div>
-        <Select value={filterGenre} onValueChange={setFilterGenre}>
-          <SelectTrigger className="w-full sm:w-[180px] bg-dark-input border-dark-border text-dark-foreground">
-            <SelectValue placeholder="Género" />
-          </SelectTrigger>
-          <SelectContent className="bg-dark-card border-dark-border text-dark-foreground">
-            <SelectItem value="all">Todos los géneros</SelectItem>
-            {props.genres.map((genre) => (
-              <SelectItem key={genre} value={genre}>
-                {genre}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select value={filterRating} onValueChange={setFilterRating}>
-          <SelectTrigger className="w-full sm:w-[180px] bg-dark-input border-dark-border text-dark-foreground">
-            <SelectValue placeholder="Calificación" />
-          </SelectTrigger>
-          <SelectContent className="bg-dark-card border-dark-border text-dark-foreground">
-            <SelectItem value="all">Todas las calificaciones</SelectItem>
-            {props.ratings.map((rating) => (
-              <SelectItem key={rating} value={rating}>
-                {rating}+
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div> */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
         {status === "pending"
           ? Array.from({ length: 12 }).map((_, i) => (
@@ -162,7 +126,6 @@ export function ContentSection(props: ContentSectionProps) {
                 content={item}
               />
             ))}
-        {/* Skeletons para fetchNextPage (scroll infinito) */}
         {isFetchingNextPage &&
           Array.from({ length: 6 }).map((_, i) => (
             <Skeleton key={"next-" + i} className="w-full aspect-[2/3] rounded-lg" />
