@@ -6,6 +6,7 @@ import es.uah.pablopinas.catalog.infrastructure.adapter.repository.mapper.Catalo
 import es.uah.pablopinas.catalog.infrastructure.adapter.repository.model.CatalogItemDocument;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -74,16 +75,63 @@ public class CatalogItemRepositoryAdapter implements CatalogItemRepositoryPort {
         if (filter.getType() != null) {
             query.addCriteria(Criteria.where("type").is(filter.getType().toString()));
         }
-        if (filter.getGenre() != null) {
-            query.addCriteria(Criteria.where("genres").in(filter.getGenre()));
-        }
-        if (filter.getReleaseYear() != null) {
-            query.addCriteria(Criteria.where("releaseYear").is(filter.getReleaseYear()));
-        }
         if (filter.getIds() != null && !filter.getIds().isEmpty()) {
             query.addCriteria(Criteria.where("id").in(filter.getIds()));
         }
+        // Filtros combinados para rating
+        Criteria ratingCriteria = null;
+        if (filter.getMinRating() != null || filter.getMaxRating() != null) {
+            Criteria minMaxRatingCriteria = Criteria.where("rating");
+            if (filter.getMinRating() != null) {
+                minMaxRatingCriteria = minMaxRatingCriteria.gte(filter.getMinRating());
+            }
+            if (filter.getMaxRating() != null) {
+                minMaxRatingCriteria = minMaxRatingCriteria.lte(filter.getMaxRating());
+            }
+            ratingCriteria = minMaxRatingCriteria;
+        }
+        if (ratingCriteria != null) {
+            query.addCriteria(ratingCriteria);
+        }
+        Criteria genresCriteria = null;
+        if (filter.getGenres() != null && !filter.getGenres().isEmpty()) {
+            genresCriteria = Criteria.where("genres").in(filter.getGenres());
+        }
+        if (genresCriteria != null) {
+            query.addCriteria(genresCriteria);
+        }
 
+        // Filtros combinados para minReleaseDate y maxReleaseDate
+        Criteria releaseDateCriteria = null;
+        if (filter.getMinReleaseDate() != null || filter.getMaxReleaseDate() != null) {
+            Criteria minMaxReleaseDateCriteria = Criteria.where("releaseDate");
+            if (filter.getMinReleaseDate() != null) {
+                minMaxReleaseDateCriteria = minMaxReleaseDateCriteria.gte(filter.getMinReleaseDate());
+            }
+            if (filter.getMaxReleaseDate() != null) {
+                minMaxReleaseDateCriteria = minMaxReleaseDateCriteria.lte(filter.getMaxReleaseDate());
+            }
+            releaseDateCriteria = minMaxReleaseDateCriteria;
+        }
+        if (releaseDateCriteria != null) {
+            query.addCriteria(releaseDateCriteria);
+        }
+        // Ordenamiento
+        if (filter.getSortBy() != null) {
+            switch (filter.getSortBy()) {
+                case RATING_DESC:
+                    query.with(Sort.by(Sort.Direction.DESC, "rating"));
+                    break;
+                case RATING_ASC:
+                    query.with(Sort.by(Sort.Direction.ASC, "rating"));
+                    break;
+                case RELEASE_DATE_DESC:
+                    query.with(Sort.by(Sort.Direction.DESC, "releaseDate"));
+                case RELEASE_DATE_ASC:
+                    query.with(Sort.by(Sort.Direction.ASC, "releaseDate"));
+                    break;
+            }
+        }
         return getCatalogItemPageResult(pagination, query);
     }
 

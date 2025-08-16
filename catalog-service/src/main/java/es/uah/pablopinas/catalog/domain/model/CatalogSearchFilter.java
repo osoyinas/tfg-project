@@ -3,6 +3,7 @@ package es.uah.pablopinas.catalog.domain.model;
 import lombok.Builder;
 import lombok.Value;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Value
@@ -10,20 +11,24 @@ import java.util.List;
 public class CatalogSearchFilter {
     String titleContains;
     CatalogType type;
-    String genre;
-    Integer releaseYear;
     List<String> ids;
+    LocalDate minReleaseDate;
+    LocalDate maxReleaseDate;
+    Double minRating;
+    Double maxRating;
+    List<String> genres;
 
-    /**
-     * Checks if the filter is empty, meaning no search criteria is set.
-     *
-     * @return true if all fields except type are null, false otherwise
-     */
+    SortBy sortBy;
+
     public boolean isEmpty() {
         return titleContains == null &&
-                genre == null &&
-                releaseYear == null &&
                 (ids == null || ids.isEmpty()) &&
-                type == null;
+                type == null &&
+                minReleaseDate == null &&
+                maxReleaseDate == null &&
+                minRating == null &&
+                maxRating == null &&
+                (genres == null || genres.isEmpty()) &&
+                sortBy == null;
     }
 }
