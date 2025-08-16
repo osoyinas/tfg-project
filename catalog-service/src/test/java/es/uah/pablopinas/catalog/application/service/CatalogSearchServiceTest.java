@@ -39,23 +39,27 @@ class CatalogSearchServiceTest {
         CatalogSearchFilter filter = CatalogSearchFilter.builder()
                 .titleContains("Test")
                 .type(CatalogType.MOVIE)
+                .minReleaseDate(null)
+                .maxReleaseDate(null)
                 .build();
         Pagination pagination = new Pagination(0, 10);
 
         PageResult<CatalogItem> expectedPage = new PageResult<>(Collections.emptyList(), 0, 10);
 
         when(catalogRepository.search(filter, pagination)).thenReturn(expectedPage);
-        when(searchStatusRepository.findByFilterAndPagination(filter, pagination)).thenReturn(Optional.of(
+        when(searchStatusRepository.findByQueryKey(anyString())).thenReturn(Optional.of(
                 CatalogSearchStatus.builder()
                         .fetchedPages(1)
                         .lastFetchedAt(LocalDateTime.now())
                         .build()
         ));
+        // Mock fetchAndCache to return expectedPage when local is empty
+        when(externalFetchQueue.fetchAndCache(filter, pagination)).thenReturn(expectedPage);
 
         PageResult<CatalogItem> result = service.search(filter, pagination);
 
         assertEquals(expectedPage, result);
-        verify(externalFetchQueue, never()).fetchAndCache(any(), any());
+        verify(externalFetchQueue).fetchAndCache(filter, pagination);
         verify(externalFetchQueue, never()).enqueueFetch(any(), any());
     }
 
@@ -64,13 +68,15 @@ class CatalogSearchServiceTest {
         CatalogSearchFilter filter = CatalogSearchFilter.builder()
                 .titleContains("Test")
                 .type(CatalogType.MOVIE)
+                .minReleaseDate(null)
+                .maxReleaseDate(null)
                 .build();
         Pagination pagination = new Pagination(0, 10);
 
         PageResult<CatalogItem> fetchedPage = new PageResult<>(Collections.emptyList(), 0, 10);
 
         when(catalogRepository.search(filter, pagination)).thenReturn(new PageResult<>(Collections.emptyList(), 0, 10));
-        when(searchStatusRepository.findByFilterAndPagination(filter, pagination)).thenReturn(Optional.empty());
+        when(searchStatusRepository.findByQueryKey(anyString())).thenReturn(Optional.empty());
         when(externalFetchQueue.fetchAndCache(filter, pagination)).thenReturn(fetchedPage);
 
         PageResult<CatalogItem> result = service.search(filter, pagination);
@@ -85,6 +91,8 @@ class CatalogSearchServiceTest {
         CatalogSearchFilter filter = CatalogSearchFilter.builder()
                 .titleContains("Test")
                 .type(CatalogType.MOVIE)
+                .minReleaseDate(null)
+                .maxReleaseDate(null)
                 .build();
         Pagination pagination = new Pagination(2, 10);
 
@@ -92,7 +100,7 @@ class CatalogSearchServiceTest {
                 CatalogItem.builder().id("123").type(CatalogType.MOVIE).title("X").build()
         ), 2, 10));
 
-        when(searchStatusRepository.findByFilterAndPagination(filter, pagination)).thenReturn(Optional.of(
+        when(searchStatusRepository.findByQueryKey(anyString())).thenReturn(Optional.of(
                 CatalogSearchStatus.builder()
                         .fetchedPages(1)
                         .lastFetchedAt(LocalDateTime.now().minusDays(8))
@@ -110,6 +118,8 @@ class CatalogSearchServiceTest {
         CatalogSearchFilter filter = CatalogSearchFilter.builder()
                 .titleContains("Test")
                 .type(CatalogType.MOVIE)
+                .minReleaseDate(null)
+                .maxReleaseDate(null)
                 .build();
         Pagination pagination = new Pagination(0, 10);
 
@@ -117,7 +127,7 @@ class CatalogSearchServiceTest {
                 CatalogItem.builder().id("abc").type(CatalogType.MOVIE).title("Cached").build()
         ), 0, 10));
 
-        when(searchStatusRepository.findByFilterAndPagination(filter, pagination)).thenReturn(Optional.of(
+        when(searchStatusRepository.findByQueryKey(anyString())).thenReturn(Optional.of(
                 CatalogSearchStatus.builder()
                         .fetchedPages(5)
                         .lastFetchedAt(LocalDateTime.now())
