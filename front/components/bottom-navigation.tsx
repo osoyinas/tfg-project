@@ -6,11 +6,11 @@ import { Home, Film, Book, Tv, List, Search, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
-import { SearchModal } from "./search-modal";
+import { useRouter } from "next/navigation";
 
 export function BottomNavigation() {
   const pathname = usePathname();
-  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const router = useRouter();
 
   const navItems = [
     { href: "/movies", icon: Film, label: "Películas" },
@@ -43,12 +43,22 @@ export function BottomNavigation() {
               </Button>
             );
           })}
+          {/* Botón de búsqueda */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className={cn(
+              "flex h-full flex-col items-center justify-center gap-1 text-dark-muted-foreground hover:bg-dark-accent hover:text-dark-primary px-10",
+              pathname === "/search" && "text-dark-primary"
+            )}
+            onClick={() => router.push("/search")}
+            aria-label="Buscar"
+          >
+            <Search className="h-5 w-5" />
+            <span className="text-xs">Buscar</span>
+          </Button>
         </nav>
       </div>
-      <SearchModal
-        open={isSearchModalOpen}
-        onOpenChange={setIsSearchModalOpen}
-      />
     </>
   );
 }

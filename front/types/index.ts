@@ -1,3 +1,22 @@
+// Filtros y orden globales para búsquedas avanzadas
+export type Sort =
+  | "RELEASE_DATE_ASC"
+  | "RELEASE_DATE_DESC"
+  | "RATING_ASC"
+  | "RATING_DESC";
+
+export interface Filters {
+  title?: string;
+  type?: ContentType | "Todos";
+  min_year?: number;
+  max_year?: number;
+  min_rating?: number;
+  max_rating?: number;
+  genres?: string[];
+  sort_by?: Sort;
+  page?: number;
+  size?: number;
+}
 // types/index.ts
 export interface Pagination<T> {
   page: number;
