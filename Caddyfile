@@ -19,11 +19,6 @@ auth.pablopinas.com {
 }
 
 # --- Frontend ---
-pablopinas.com {
+tfg.pablopinas.com {
   reverse_proxy frontend:3000
-}
-
-# --- Redirección www -> root ---
-www.pablopinas.com {
-  redir https://pablopinas.com{uri}
 }
