@@ -22,7 +22,6 @@ export async function getItems(
     if (filters.min_rating !== undefined) params.min_rating = filters.min_rating;
     if (filters.max_rating !== undefined) params.max_rating = filters.max_rating;
     if (filters.genres && filters.genres.length > 0) params.genres = filters.genres.join(",");
-    if (filters.sort_by) params.sort_by = filters.sort_by;
     params.page = filters.page ?? 0;
     params.size = filters.size ?? 20;
 

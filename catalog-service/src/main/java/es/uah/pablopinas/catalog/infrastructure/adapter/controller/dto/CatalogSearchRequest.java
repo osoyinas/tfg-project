@@ -2,7 +2,6 @@ package es.uah.pablopinas.catalog.infrastructure.adapter.controller.dto;
 
 import es.uah.pablopinas.catalog.domain.model.CatalogSearchFilter;
 import es.uah.pablopinas.catalog.domain.model.CatalogType;
-import es.uah.pablopinas.catalog.domain.model.SortBy;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
@@ -39,35 +38,31 @@ public class CatalogSearchRequest {
     @Max(value = 5, message = "La calificación máxima no puede ser mayor a 5.")
     private Double max_rating;
     private List<String> genres;
-    private SortBy sort_by;
 
     private String min_release_date;
     private String max_release_date;
-
-    /**
-     * Mapea este DTO de request al filtro de dominio CatalogSearchFilter
-     */
+    
     public CatalogSearchFilter toFilter() {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         LocalDate minDate = null;
         LocalDate maxDate = null;
+
+        // Check year first, then release date
+        if (min_year != null) {
+            minDate = LocalDate.of(min_year, 1, 1);
+        }
+        if (max_year != null) {
+            maxDate = LocalDate.of(max_year, 12, 31);
+        }
+
         if (min_release_date != null && !min_release_date.isBlank()) {
             minDate = LocalDate.parse(min_release_date, formatter);
         }
         if (max_release_date != null && !max_release_date.isBlank()) {
             maxDate = LocalDate.parse(max_release_date, formatter);
         }
-        return CatalogSearchFilter.builder()
-                .titleContains(title)
-                .type(type)
-                .ids(ids)
-                .minReleaseDate(minDate)
-                .maxReleaseDate(maxDate)
-                .minRating(getMinRating())
-                .maxRating(getMaxRating())
-                .genres(genres)
-                .sortBy(sort_by)
-                .build();
+
+        return CatalogSearchFilter.builder().titleContains(title).type(type).ids(ids).minReleaseDate(minDate).maxReleaseDate(maxDate).minRating(getMinRating()).maxRating(getMaxRating()).genres(genres).build();
     }
 
     private Double getMinRating() {

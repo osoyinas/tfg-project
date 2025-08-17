@@ -18,8 +18,6 @@ public class CatalogSearchFilter {
     Double maxRating;
     List<String> genres;
 
-    SortBy sortBy;
-
     public boolean isEmpty() {
         return titleContains == null &&
                 (ids == null || ids.isEmpty()) &&
@@ -28,7 +26,6 @@ public class CatalogSearchFilter {
                 maxReleaseDate == null &&
                 minRating == null &&
                 maxRating == null &&
-                (genres == null || genres.isEmpty()) &&
-                sortBy == null;
+                (genres == null || genres.isEmpty());
     }
 }

@@ -1,41 +1,25 @@
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 
+
 interface SearchFiltersSummaryProps {
-  orderBy: string;
   minScore: number;
   maxScore: number;
-  minDate: string;
-  maxDate: string;
+  minYear: string;
+  maxYear: string;
   onClear: (key: string) => void;
 }
 
-export function SearchFiltersSummary({ orderBy, minScore, maxScore, minDate, maxDate, onClear }: SearchFiltersSummaryProps) {
-  function formatDateLocal(dateStr: string) {
-    if (!dateStr) return "";
-    const d = new Date(dateStr);
-    if (isNaN(d.getTime())) return dateStr;
-    return d.toLocaleDateString();
-  }
+
+export function SearchFiltersSummary({ minScore, maxScore, minYear, maxYear, onClear }: SearchFiltersSummaryProps) {
 
 
   const filters = [];
   // Mostrar ordenación legible
-  if (orderBy && orderBy !== "" && orderBy !== "relevance") {
-    let label = "";
-    if (orderBy.startsWith("date")) {
-      label = `Fecha ${orderBy.endsWith("asc") ? "↑" : "↓"}`;
-    } else if (orderBy.startsWith("RATING")) {
-      label = `Puntuación ${orderBy.endsWith("asc") ? "↑" : "↓"}`;
-    } else {
-      label = orderBy;
-    }
-    filters.push({ key: "orderBy", label });
-  }
   if (minScore > 0) filters.push({ key: "minScore", label: `Puntuación ≥ ${minScore}` });
   if (maxScore < 5) filters.push({ key: "maxScore", label: `Puntuación ≤ ${maxScore}` });
-  if (minDate) filters.push({ key: "minDate", label: `Desde ${formatDateLocal(minDate)}` });
-  if (maxDate) filters.push({ key: "maxDate", label: `Hasta ${formatDateLocal(maxDate)}` });
+  if (minYear) filters.push({ key: "minYear", label: `Año desde ${minYear}` });
+  if (maxYear) filters.push({ key: "maxYear", label: `Año hasta ${maxYear}` });
 
   if (filters.length === 0) return null;
 

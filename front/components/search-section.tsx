@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useDebounce } from "use-debounce";
@@ -8,18 +8,15 @@ import { Input } from "@/components/ui/input";
 import { Drawer, DrawerTrigger, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter } from "@/components/ui/drawer";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { SearchFiltersSummary } from "@/components/search-filters-summary";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Loader } from "@/components/ai-elements/loader";
 import { ContentCard } from "@/components/content/content-card";
 // import { Badge } from "@/components/ui/badge";
 import { getItems } from "@/services/getItems";
-import type { Filters, Sort } from "@/types";
+import type { Filters } from "@/types";
 import { useAuthAxios } from "@/hooks/useAuthAxios";
 import { useKeycloak } from "@/components/keycloak-provider";
-import Loading from "@/app/loading";
 
 
 
@@ -50,8 +47,10 @@ export default function SearchPage() {
   const [orderDir, setOrderDir] = useState<"asc" | "desc">(initialOrderDir);
   const [minScore, setMinScore] = useState<number>(0);
   const [maxScore, setMaxScore] = useState<number>(5);
-  const [minDate, setMinDate] = useState("");
-  const [maxDate, setMaxDate] = useState("");
+  const [minYear, setMinYear] = useState("");
+  const [maxYear, setMaxYear] = useState("");
+  const [minYearError, setMinYearError] = useState<string | null>(null);
+  const [maxYearError, setMaxYearError] = useState<string | null>(null);
   // Si agregas géneros, aquí puedes añadir un estado para ellos
 
   const axios = useAuthAxios();
@@ -78,23 +77,56 @@ export default function SearchPage() {
     }
     if (minScore > 0) params.set("minScore", String(minScore)); else params.delete("minScore");
     if (maxScore < 5) params.set("maxScore", String(maxScore)); else params.delete("maxScore");
-    if (minDate) params.set("minDate", minDate); else params.delete("minDate");
-    if (maxDate) params.set("maxDate", maxDate); else params.delete("maxDate");
+    if (minYear) params.set("minYear", minYear); else params.delete("minYear");
+    if (maxYear) params.set("maxYear", maxYear); else params.delete("maxYear");
     const newUrl = `${window.location.pathname}?${params.toString()}`;
     if (window.location.search !== `?${params.toString()}`) {
       router.replace(newUrl, { scroll: false });
     }
-  }, [searchTerm, type, orderField, orderDir, minScore, maxScore, minDate, maxDate, router]);
-
-  // useEffect(() => {
-  //   if (typeof window !== "undefined") {
-  //     localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(recentSearches));
-  //   }
-  // }, [recentSearches]);
+  }, [searchTerm, type, orderField, orderDir, minScore, maxScore, minYear, maxYear, router]);
 
   const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
 
   const PAGE_SIZE = 20;
+  const isValidSearch =
+    initialized &&
+    authenticated &&
+    debouncedSearchTerm.length >= 3 &&
+    (!minYearError && !maxYearError) &&
+    (
+      (minYear === "" || maxYear === "") ||
+      (minYear !== "" && maxYear !== "" && Number(minYear) < Number(maxYear))
+    );
+
+  useEffect(() => {
+    let minErr: string | null = null;
+    let maxErr: string | null = null;
+    const min = minYear ? Number(minYear) : null;
+    const max = maxYear ? Number(maxYear) : null;
+    if (minYear && (isNaN(Number(minYear)) || Number(minYear) < 1800)) {
+      minErr = "El año mínimo debe ser 1800 o mayor";
+    } else if (min && min > 2100) {
+      minErr = "El año mínimo no puede ser mayor que 2100";
+    }
+    if (maxYear && (isNaN(Number(maxYear)) || Number(maxYear) > 2100)) {
+      maxErr = "El año máximo debe ser 2100 o menor";
+    } else if (max && max < 1800) {
+      maxErr = "El año máximo debe ser 1800 o mayor";
+    }
+    if (
+      min !== null &&
+      max !== null &&
+      !minErr &&
+      !maxErr &&
+      min >= max
+    ) {
+      minErr = "El año mínimo debe ser menor que el máximo";
+      maxErr = "El año máximo debe ser mayor que el mínimo";
+    }
+    setMinYearError(minErr);
+    setMaxYearError(maxErr);
+  }, [minYear, maxYear]);
+
   const {
     data,
     fetchNextPage,
@@ -104,8 +136,8 @@ export default function SearchPage() {
     isFetching,
     refetch,
   } = useInfiniteQuery({
-    queryKey: ["search", debouncedSearchTerm, type, orderField, orderDir, minScore, maxScore, minDate, maxDate],
-    enabled: initialized && authenticated && debouncedSearchTerm.length >= 3,
+    queryKey: ["search", debouncedSearchTerm, type, orderField, orderDir, minScore, maxScore, minYear, maxYear],
+    enabled: isValidSearch,
     queryFn: async ({ pageParam = 0 }) => {
       // Mapear los filtros locales al tipo Filters global
       const filters: Filters = {
@@ -113,17 +145,8 @@ export default function SearchPage() {
         type: type === "Todos" ? undefined : (type.toUpperCase() as Filters["type"]),
         min_rating: minScore > 0 ? minScore : undefined,
         max_rating: maxScore < 5 ? maxScore : undefined,
-        min_year: minDate ? Number(minDate.split("-")[0]) : undefined,
-        max_year: maxDate ? Number(maxDate.split("-")[0]) : undefined,
-        // géneros: aquí puedes mapear si tienes estado de géneros
-        sort_by:
-          orderField === "relevance"
-            ? undefined
-            : orderField === "date"
-            ? (orderDir === "asc" ? "RELEASE_DATE_ASC" : "RELEASE_DATE_DESC")
-            : orderField === "score"
-            ? (orderDir === "asc" ? "RATING_ASC" : "RATING_DESC")
-            : undefined,
+        min_year: minYear ? Number(minYear) : undefined,
+        max_year: maxYear ? Number(maxYear) : undefined,
         page: pageParam,
         size: PAGE_SIZE,
       };
@@ -209,32 +232,6 @@ export default function SearchPage() {
                   <DrawerTitle>Filtros avanzados</DrawerTitle>
                 </DrawerHeader>
                 <div className="grid gap-4 p-4">
-                  <div>
-                    <Label>Ordenar por</Label>
-                    <div className="flex gap-2">
-                      <Select value={orderField} onValueChange={v => setOrderField(v as "relevance" | "date" | "score")}> 
-                        <SelectTrigger className="w-full bg-dark-input border-dark-border text-dark-foreground mt-1">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="bg-dark-card border-dark-border text-dark-foreground">
-                          <SelectItem value="relevance">Relevancia</SelectItem>
-                          <SelectItem value="date">Fecha</SelectItem>
-                          <SelectItem value="score">Puntuación</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      {orderField !== "relevance" && (
-                        <Select value={orderDir} onValueChange={v => setOrderDir(v as "asc" | "desc")}> 
-                          <SelectTrigger className="w-24 bg-dark-input border-dark-border text-dark-foreground mt-1">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent className="bg-dark-card border-dark-border text-dark-foreground">
-                            <SelectItem value="desc">↓</SelectItem>
-                            <SelectItem value="asc">↑</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      )}
-                    </div>
-                  </div>
                   <div className="flex gap-2">
                     <div className="flex-1">
                       <Label>Puntuación mínima</Label>
@@ -247,18 +244,58 @@ export default function SearchPage() {
                   </div>
                   <div className="flex gap-2">
                     <div className="flex-1">
-                      <Label>Fecha mínima</Label>
-                      <Input type="date" value={minDate} onChange={e => setMinDate(e.target.value)} className="bg-dark-input border-dark-border text-dark-foreground mt-1" />
+                      <Label>Año mínimo</Label>
+                      <Input
+                        type="number"
+                        min={1800}
+                        max={2100}
+                        value={minYear}
+                        onChange={e => setMinYear(e.target.value)}
+                        onKeyDown={e => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            if (!minYearError && !maxYearError && minYear !== "" && maxYear !== "" && Number(minYear) < Number(maxYear)) refetch();
+                          }
+                        }}
+                        className={
+                          "bg-dark-input border-dark-border text-dark-foreground mt-1" +
+                          (minYearError ? " border-red-500 focus:border-red-500" : "")
+                        }
+                        placeholder="Ej: 2000"
+                      />
+                      {minYearError && (
+                        <span className="text-xs text-red-500">{minYearError}</span>
+                      )}
                     </div>
                     <div className="flex-1">
-                      <Label>Fecha máxima</Label>
-                      <Input type="date" value={maxDate} onChange={e => setMaxDate(e.target.value)} className="bg-dark-input border-dark-border text-dark-foreground mt-1" />
+                      <Label>Año máximo</Label>
+                      <Input
+                        type="number"
+                        min={1800}
+                        max={2100}
+                        value={maxYear}
+                        onChange={e => setMaxYear(e.target.value)}
+                        onKeyDown={e => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            if (!minYearError && !maxYearError && minYear !== "" && maxYear !== "" && Number(minYear) < Number(maxYear)) refetch();
+                          }
+                        }}
+                        className={
+                          "bg-dark-input border-dark-border text-dark-foreground mt-1" +
+                          (maxYearError ? " border-red-500 focus:border-red-500" : "")
+                        }
+                        placeholder="Ej: 2024"
+                      />
+                      {maxYearError && (
+                        <span className="text-xs text-red-500">{maxYearError}</span>
+                      )}
                     </div>
                   </div>
                 </div>
                 <DrawerFooter>
                   <Button variant="outline" onClick={() => {
-                    setOrderField("relevance"); setOrderDir("desc"); setMinScore(0); setMaxScore(5); setMinDate(""); setMaxDate("");
+                    setOrderField("relevance"); setOrderDir("desc"); setMinScore(0); setMaxScore(5); setMinYear(""); setMaxYear("");
                   }}>Limpiar filtros</Button>
                 </DrawerFooter>
               </DrawerContent>
@@ -271,32 +308,6 @@ export default function SearchPage() {
               </PopoverTrigger>
               <PopoverContent className="bg-dark-card border-dark-border text-dark-foreground w-96">
                 <div className="grid gap-4">
-                  <div>
-                    <Label>Ordenar por</Label>
-                    <div className="flex gap-2">
-                      <Select value={orderField} onValueChange={v => setOrderField(v as "relevance" | "date" | "score")}> 
-                        <SelectTrigger className="w-full bg-dark-input border-dark-border text-dark-foreground mt-1">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="bg-dark-card border-dark-border text-dark-foreground">
-                          <SelectItem value="relevance">Relevancia</SelectItem>
-                          <SelectItem value="date">Fecha</SelectItem>
-                          <SelectItem value="score">Puntuación</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      {orderField !== "relevance" && (
-                        <Select value={orderDir} onValueChange={v => setOrderDir(v as "asc" | "desc")}> 
-                          <SelectTrigger className="w-24 bg-dark-input border-dark-border text-dark-foreground mt-1">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent className="bg-dark-card border-dark-border text-dark-foreground">
-                            <SelectItem value="desc">↓</SelectItem>
-                            <SelectItem value="asc">↑</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      )}
-                    </div>
-                  </div>
                   <div className="flex gap-2">
                     <div className="flex-1">
                       <Label>Puntuación mínima</Label>
@@ -309,16 +320,56 @@ export default function SearchPage() {
                   </div>
                   <div className="flex gap-2">
                     <div className="flex-1">
-                      <Label>Fecha mínima</Label>
-                      <Input type="date" value={minDate} onChange={e => setMinDate(e.target.value)} className="bg-dark-input border-dark-border text-dark-foreground mt-1" />
+                      <Label>Año mínimo</Label>
+                      <Input
+                        type="number"
+                        min={1800}
+                        max={2100}
+                        value={minYear}
+                        onChange={e => setMinYear(e.target.value)}
+                        onKeyDown={e => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            if (!minYearError && !maxYearError && minYear !== "" && maxYear !== "" && Number(minYear) < Number(maxYear)) refetch();
+                          }
+                        }}
+                        className={
+                          "bg-dark-input border-dark-border text-dark-foreground mt-1" +
+                          (minYearError ? " border-red-500 focus:border-red-500" : "")
+                        }
+                        placeholder="Ej: 2000"
+                      />
+                      {minYearError && (
+                        <span className="text-xs text-red-500">{minYearError}</span>
+                      )}
                     </div>
                     <div className="flex-1">
-                      <Label>Fecha máxima</Label>
-                      <Input type="date" value={maxDate} onChange={e => setMaxDate(e.target.value)} className="bg-dark-input border-dark-border text-dark-foreground mt-1" />
+                      <Label>Año máximo</Label>
+                      <Input
+                        type="number"
+                        min={1800}
+                        max={2100}
+                        value={maxYear}
+                        onChange={e => setMaxYear(e.target.value)}
+                        onKeyDown={e => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            if (!minYearError && !maxYearError && minYear !== "" && maxYear !== "" && Number(minYear) < Number(maxYear)) refetch();
+                          }
+                        }}
+                        className={
+                          "bg-dark-input border-dark-border text-dark-foreground mt-1" +
+                          (maxYearError ? " border-red-500 focus:border-red-500" : "")
+                        }
+                        placeholder="Ej: 2024"
+                      />
+                      {maxYearError && (
+                        <span className="text-xs text-red-500">{maxYearError}</span>
+                      )}
                     </div>
                   </div>
                   <Button variant="outline" onClick={() => {
-                    setOrderField("relevance"); setOrderDir("desc"); setMinScore(0); setMaxScore(10); setMinDate(""); setMaxDate("");
+                    setOrderField("relevance"); setOrderDir("desc"); setMinScore(0); setMaxScore(10); setMinYear(""); setMaxYear("");
                   }}>Limpiar filtros</Button>
                 </div>
               </PopoverContent>
@@ -328,17 +379,15 @@ export default function SearchPage() {
 
         {/* Filtros activos resumen */}
         <SearchFiltersSummary
-          orderBy={orderField !== "relevance" ? `${orderField}_${orderDir}` : ""}
           minScore={minScore}
           maxScore={maxScore}
-          minDate={minDate}
-          maxDate={maxDate}
+          minYear={minYear}
+          maxYear={maxYear}
           onClear={(key) => {
-            if (key === "orderBy") { setOrderField("relevance"); setOrderDir("desc"); }
             if (key === "minScore") setMinScore(0);
             if (key === "maxScore") setMaxScore(5);
-            if (key === "minDate") setMinDate("");
-            if (key === "maxDate") setMaxDate("");
+            if (key === "minYear") setMinYear("");
+            if (key === "maxYear") setMaxYear("");
           }}
         />
 
@@ -359,7 +408,6 @@ export default function SearchPage() {
             ))}
         </div>
   <div ref={loaderRef} style={{ height: 40 }} />
-        {isFetching && <div className="text-center py-4">Cargando más...</div>}
         {!isFetching && !isLoading && results.length === 0 && searchTerm.length >= 3 && (
           <div className="mt-6 text-center text-dark-muted-foreground">
             No se encontraron resultados para "{searchTerm}".

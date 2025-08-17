@@ -7,7 +7,6 @@ import es.uah.pablopinas.catalog.infrastructure.adapter.repository.mapper.Catalo
 import es.uah.pablopinas.catalog.infrastructure.adapter.repository.model.CatalogItemDocument;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -139,22 +138,6 @@ public class CatalogItemRepositoryAdapter implements CatalogItemRepositoryPort {
         }
         if (releaseDateCriteria != null) {
             query.addCriteria(releaseDateCriteria);
-        }
-        // Ordenamiento
-        if (filter.getSortBy() != null) {
-            switch (filter.getSortBy()) {
-                case RATING_DESC:
-                    query.with(Sort.by(Sort.Direction.DESC, "rating"));
-                    break;
-                case RATING_ASC:
-                    query.with(Sort.by(Sort.Direction.ASC, "rating"));
-                    break;
-                case RELEASE_DATE_DESC:
-                    query.with(Sort.by(Sort.Direction.DESC, "releaseDate"));
-                case RELEASE_DATE_ASC:
-                    query.with(Sort.by(Sort.Direction.ASC, "releaseDate"));
-                    break;
-            }
         }
         return getCatalogItemPageResult(pagination, query);
     }
