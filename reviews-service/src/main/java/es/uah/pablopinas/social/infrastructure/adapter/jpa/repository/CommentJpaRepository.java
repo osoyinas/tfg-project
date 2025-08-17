@@ -1,0 +1,14 @@
+package es.uah.pablopinas.social.infrastructure.adapter.jpa.repository;
+
+import es.uah.pablopinas.social.domain.Comment;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+import java.util.UUID;
+
+public interface CommentJpaRepository extends JpaRepository<Comment, UUID> {
+    List<Comment> findByReviewId(UUID reviewId, PageRequest page);
+    List<Comment> findByUserId(UUID userId, PageRequest page);
+}
+

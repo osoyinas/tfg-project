@@ -1,0 +1,27 @@
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASS}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate  # <-- no crea nada en prod; exige que ya existan
+    show-sql: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+
+  flyway:
+    enabled: true               # <-- cuando tengas migraciones
+    locations: classpath:db/migration
+    schemas: ${DB_SCHEMA:public}
+    default-schema: ${DB_SCHEMA:public}
+    create-schemas: true
+    validate-on-migrate: true
+    clean-disabled: true
+    # Si llegas a prod SIN migraciones pero con tablas ya creadas en dev:
+    baseline-on-migrate: true   # engancha Flyway a un esquema existente
