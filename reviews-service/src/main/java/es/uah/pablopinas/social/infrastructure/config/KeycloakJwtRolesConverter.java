@@ -1,4 +1,4 @@
-package es.uah.pablopinas.reviews.infrastructure.config;
+package es.uah.pablopinas.social.infrastructure.config;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.core.GrantedAuthority;
@@ -18,7 +18,7 @@ public class KeycloakJwtRolesConverter implements Converter<Jwt, Collection<Gran
     private static final String CLAIM_RESOURCE_ACCESS = "resource_access";
     private static final String CLAIM_ROLES = "roles";
 
-    private static final String LOCAL_CLIENT = "reviews-service";
+    private static final String LOCAL_CLIENT = "social-service";
 
     @Override
     public Collection<GrantedAuthority> convert(Jwt jwt) {
