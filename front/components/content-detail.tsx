@@ -13,40 +13,21 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { ReviewDialog } from "@/components/review-dialog";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
 import { ActionButtonsRow } from "@/components/content/action-buttons-row";
 import { cn } from "@/lib/utils";
-import { ContentImages } from "@/types";
-import axios from "axios";
 import { createReview } from "@/services/reviews";
 import { toast } from "@/hooks/use-toast";
 
-interface UserList {
-  id: string;
-  name: string;
-}
 
 interface ContentDetailProps {
-    id: string;
+  id: string;
   title: string;
   creators?: string[];
   genres?: string[];
   releaseDate?: string;
   rating: number; // 0-5
+  images: ContentImages;
   description?: string;
-  images?: ContentImages;
-//   userLists: UserList[];
-  onReview?: (rating: number, review: string) => void;
-  onAddToList?: (listId: string) => void;
   onShare?: () => void;
   onBookmark?: () => void;
   contentType: "book" | "movie" | "series";
@@ -58,6 +39,11 @@ interface ContentDetailProps {
   children?: ReactNode; // For further extension
 }
 
+import { useSavedItems } from "./saved-items-provider";
+import { useAuthAxios } from "@/hooks/useAuthAxios";
+import { ContentImages } from "@/types";
+import { ReviewsList } from "./content/reviews-list";
+
 export function ContentDetail({
     id,
   title,
@@ -68,7 +54,6 @@ export function ContentDetail({
   description = "",
   images,
 //   userLists,
-  onAddToList,
   onShare,
   onBookmark,
   contentType,
@@ -76,17 +61,30 @@ export function ContentDetail({
   accentColorClass,
   focusColorClass,
   details,
-  reviewsSection,
   children,
 }: ContentDetailProps) {
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [isAddToListModalOpen, setIsAddToListModalOpen] = useState(false);
-  const [selectedList, setSelectedList] = useState<string | undefined>(undefined);
-  const [reviewRating, setReviewRating] = useState(0);
-  const [reviewText, setReviewText] = useState("");
 
+  const { addItem, removeItem, isSaved } = useSavedItems();
+  const saved = isSaved(id);
   const isPanoramic = Boolean(images?.cover?.url);
   const thumbnailUrl = images?.thumbnail?.url || images?.poster?.url || "/placeholder.svg";
+
+  const axios = useAuthAxios();
+  const handleOnBookmark = () => {
+    if (saved) {
+      removeItem(id);
+    } else {
+      addItem({
+        id,
+        type: contentType,
+        title,
+        image: images?.thumbnail?.url || images?.poster?.url || images?.cover?.url || "/placeholder.svg",
+      });
+    }
+    onBookmark?.();
+  };
 
   const handleOnReview = async (rating: number, review: string, spoilers: boolean) => {
     if (rating && review) {
@@ -97,6 +95,11 @@ export function ContentDetail({
           text: review,
           spoilers
         }, axios);
+        toast({
+          title: "Reseña enviada",
+          description: "Tu reseña ha sido enviada con éxito.",
+          variant: "default"
+        });
       } catch (error: any) {
         toast({
           title: "Error al enviar reseña",
@@ -106,9 +109,9 @@ export function ContentDetail({
       }
     }
   };
-  
+
   return (
-    <div className={cn(`w-full min-h-screen ${bgClass} text-dark-foreground`)}>
+    <div className={cn(`w-full min-h-screen ${bgClass} text-dark-foreground mb-16`)}>
       <div className="container mx-auto px-4 py-8">
         {isPanoramic && (
           <div className="w-full mb-8 relative hidden md:block">
@@ -121,11 +124,12 @@ export function ContentDetail({
           </div>
         )}
         <div className="grid md:grid-cols-3 gap-8">
-          <div className="md:col-span-1 flex justify-center sm:block lg:block">
+          <div className="md:col-span-1 flex justify-center items-start">
             <img
               src={thumbnailUrl}
               alt={title}
-              className="shadow-lg object-cover max-w-xs w-auto h-auto sm:max-h-[450px]"
+              className="shadow-lg object-cover w-full h-auto max-w-xs max-h-[60vh] sm:max-h-[450px] rounded-lg"
+              style={{ objectFit: 'contain', width: '100%', height: 'auto', maxHeight: '60vh' }}
             />
           </div>
           <div className="md:col-span-2">
@@ -157,8 +161,9 @@ export function ContentDetail({
                 onReviewClick={() => setIsReviewModalOpen(true)}
                 // onAddToListClick={() => setIsAddToListModalOpen(true)}
                 onShareClick={() => onShare?.()}
-                onBookmarkClick={() => onBookmark?.()}
+                onBookmarkClick={handleOnBookmark}
                 contentType={contentType}
+                isBookmarked={saved}
               />
             </div>
             <p className="text-dark-foreground leading-relaxed mb-6">{description}</p>
@@ -166,16 +171,7 @@ export function ContentDetail({
               {details}
             </div>
             <Separator className="my-8 bg-dark-border" />
-            {reviewsSection ? (
-              reviewsSection
-            ) : (
-              <>
-                <h2 className={`text-3xl font-bold mb-6 ${accentColorClass}`}>Reseñas</h2>
-                <p className="text-dark-muted-foreground">
-                  No hay reseñas todavía. ¡Sé el primero en escribir una!
-                </p>
-              </>
-            )}
+            <ReviewsList itemId={id} />
           </div>
         </div>
         {children}
@@ -221,26 +217,6 @@ export function ContentDetail({
               </Select>
             </div>
           </div> */}
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsAddToListModalOpen(false)}
-              className="border-dark-border text-dark-foreground hover:bg-dark-accent hover:text-dark-primary"
-            >
-              Cancelar
-            </Button>
-            <Button
-              type="button"
-              className={`${accentColorClass.replace("text-", "bg-")} text-dark-primary-foreground hover:opacity-90`}
-              onClick={() => {
-                if (selectedList) onAddToList?.(selectedList);
-                setIsAddToListModalOpen(false);
-                setSelectedList(undefined);
-              }}
-            >
-              Añadir a Lista
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

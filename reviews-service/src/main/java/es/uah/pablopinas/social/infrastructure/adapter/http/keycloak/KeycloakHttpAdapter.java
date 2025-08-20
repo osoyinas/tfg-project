@@ -4,7 +4,6 @@ import es.uah.pablopinas.social.application.ports.out.UsersPort;
 import es.uah.pablopinas.social.domain.User;
 import es.uah.pablopinas.social.infrastructure.adapter.http.AuthHttpClient;
 import es.uah.pablopinas.social.infrastructure.adapter.http.keycloak.dto.KeycloakUserDto;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
@@ -15,7 +14,6 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 @Slf4j
@@ -26,8 +24,8 @@ public class KeycloakHttpAdapter extends AuthHttpClient implements UsersPort {
     }
 
     @Override
-    public Optional<User> findById(UUID userId) {
-        if (userId == null) return null;
+    public Optional<User> findById(String userId) {
+        if (userId == null) return Optional.empty();
         try {
             KeycloakUserDto dto = send(
                     HttpMethod.GET,
@@ -50,7 +48,7 @@ public class KeycloakHttpAdapter extends AuthHttpClient implements UsersPort {
 
 
     @Override
-    public List<User> findAllByIds(List<UUID> userIds) {
+    public List<User> findAllByIds(List<String> userIds) {
         if (userIds == null || userIds.isEmpty()) return List.of();
         int concurrency = 8; // ajustable
         return Flux.fromIterable(userIds)
@@ -72,7 +70,7 @@ public class KeycloakHttpAdapter extends AuthHttpClient implements UsersPort {
 
     private User toDomain(KeycloakUserDto kc) {
         User u = new User();
-        u.setId(UUID.fromString(kc.id()));
+        u.setId(kc.id());
         u.setUsername(kc.username());
         u.setEmail(kc.email());
         u.setName(kc.firstName());

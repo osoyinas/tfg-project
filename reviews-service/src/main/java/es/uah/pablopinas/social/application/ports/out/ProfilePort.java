@@ -8,8 +8,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface ProfilePort {
-    Optional<Profile> findById(UUID userId);
+    Optional<Profile> findById(String userId);
     Profile save(Profile profile);
 
-    List<Profile> findAllByIds(List<UUID> userIds);
+    List<Profile> findAllByIds(List<String> userIds);
 }

@@ -5,8 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.UUID;
 
-public interface BlockJpaRepository extends JpaRepository<Block, UUID> {
-    boolean existsBySourceUserAndTargetUser(UUID sourceUser, UUID targetUser);
-    void deleteBySourceUserAndTargetUser(UUID sourceUser, UUID targetUser);
+public interface BlockJpaRepository extends JpaRepository<Block, String> {
+    boolean existsBySourceUserAndTargetUser(String sourceUser, String targetUser);
+    void deleteBySourceUserAndTargetUser(String sourceUser, String targetUser);
 }
 

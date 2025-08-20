@@ -1,0 +1,35 @@
+:root {
+  --background: #1A1A2E;
+  --foreground: #E0E0E0;
+  --primary: #BB86FC;
+  --primary-foreground: #FFFFFF;
+  --secondary: #03DAC6;
+  --secondary-foreground: #000000;
+  --muted: #8888AA;
+  --destructive: #CF6679;
+}
+
+body {
+  background-color: red;
+  color: var(--foreground);
+  font-family: 'Inter', sans-serif;
+}
+
+.login-pf-page {
+  background-color: var(--background);
+}
+
+#kc-page-title {
+  color: var(--primary);
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  border: none;
+}
+
+.btn-secondary {
+  background-color: var(--secondary);
+  color: var(--secondary-foreground);
+}

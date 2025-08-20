@@ -13,26 +13,26 @@ import java.util.UUID;
 @NoArgsConstructor
 public class Like implements Activity {
     @Id
-    private UUID id;
+    private String id;
     @Column(nullable = false)
-    private UUID userId;
+    private String userId;
     @Column(nullable = false)
-    private UUID targetId;
+    private String targetId;
     @Enumerated(EnumType.STRING)
     private LikeableType type;
     private Instant likedAt;
 
 
-    public Like(UUID userId, Likeable target) {
-        this.id = UUID.randomUUID();
+    public Like(String userId, Likeable target) {
+        this.id = UUID.randomUUID().toString();
         this.userId = userId;
         this.targetId = target.getId();
         this.type = target.getType();
         this.likedAt = Instant.now();
     }
 
-    public Like(UUID userId, UUID targetId, LikeableType type) {
-        this.id = UUID.randomUUID();
+    public Like(String userId, String targetId, LikeableType type) {
+        this.id = UUID.randomUUID().toString();
         this.userId = userId;
         this.targetId = targetId;
         this.type = type;

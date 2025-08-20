@@ -114,6 +114,7 @@ export interface Content {
 export interface Review {
   id: string;
   userId: string;
+  user: User;
   catalogItemId: string;
   rating: number;
   text: string;

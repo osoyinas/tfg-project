@@ -4,15 +4,7 @@ import { useRef, useState, useEffect } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Plus } from "lucide-react";
 import { ContentCard } from "@/components/content/content-card";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,

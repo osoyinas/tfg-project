@@ -12,15 +12,15 @@ import java.util.UUID;
 @NoArgsConstructor
 public class Block {
     @Id
-    private UUID id;
+    private String id;
     @Column(nullable = false)
-    private UUID sourceUser;
+    private String sourceUser;
     @Column(nullable = false)
-    private UUID targetUser;
+    private String targetUser;
     private Instant since;
 
-    public Block(UUID sourceUser, UUID targetUser) {
-        this.id = UUID.randomUUID();
+    public Block(String sourceUser, String targetUser) {
+        this.id = UUID.randomUUID().toString();
         this.sourceUser = sourceUser;
         this.targetUser = targetUser;
         this.since = Instant.now();

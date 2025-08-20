@@ -13,17 +13,17 @@ import java.util.UUID;
 @NoArgsConstructor
 public class Comment implements Activity, Likeable {
     @Id
-    private UUID commentId;
+    private String commentId;
     @Column(nullable = false)
-    private UUID userId;        // autor del comentario
+    private String userId;
     @Column(nullable = false)
-    private UUID reviewId;      // puede ser reviewId o activityId
+    private String reviewId;
     private String text;
     private Instant createdAt;
     private Instant updatedAt;
 
-    public Comment(UUID userId, UUID reviewId, String text) {
-        this.commentId = UUID.randomUUID();
+    public Comment(String userId, String reviewId, String text) {
+        this.commentId = UUID.randomUUID().toString();
         this.userId = userId;
         this.reviewId = reviewId;
         this.text = text;
@@ -38,7 +38,7 @@ public class Comment implements Activity, Likeable {
 
 
     @Override
-    public UUID getId() {
+    public String getId() {
         return commentId;
     }
 

@@ -7,27 +7,26 @@ import lombok.NoArgsConstructor;
 import java.time.Instant;
 import java.util.UUID;
 
-
 @Entity
 @Table(name = "reviews")
 @Getter
 @NoArgsConstructor
 public class Review implements Activity, Likeable {
     @Id
-    private UUID reviewId;
+    private String reviewId;
     @Column(nullable = false)
-    private UUID userId;
+    private String userId;
     @Column(nullable = false)
-    private UUID catalogItemId;
+    private String catalogItemId;
     private Double rating;
     private String text;
     private boolean spoilers;
     private Instant createdAt;
     private Instant updatedAt;
 
-    public Review(UUID userId, UUID catalogItemId,
+    public Review(String userId, String catalogItemId,
                   Double rating, String text, boolean spoilers) {
-        this.reviewId = UUID.randomUUID();
+        this.reviewId = UUID.randomUUID().toString();
         this.userId = userId;
         this.catalogItemId = catalogItemId;
 
@@ -53,7 +52,7 @@ public class Review implements Activity, Likeable {
     }
 
     @Override
-    public UUID getId() {
+    public String getId() {
         return reviewId;
     }
 

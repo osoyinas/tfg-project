@@ -6,7 +6,6 @@ import es.uah.pablopinas.social.infrastructure.adapter.jpa.repository.LikeJpaRep
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.UUID;
 
 @Repository
 public class LikeRepositoryAdapter implements LikesPort {
@@ -17,7 +16,7 @@ public class LikeRepositoryAdapter implements LikesPort {
     }
 
     @Override
-    public boolean existsByUserIdAndTarget(UUID userId, UUID targetId) {
+    public boolean existsByUserIdAndTarget(String userId, String targetId) {
         return likeRepo.existsByUserIdAndTargetId(userId, targetId);
     }
 
@@ -27,17 +26,17 @@ public class LikeRepositoryAdapter implements LikesPort {
     }
 
     @Override
-    public void deleteByUserIdAndTarget(UUID userId, UUID targetId) {
+    public void deleteByUserIdAndTarget(String userId, String targetId) {
         likeRepo.deleteByUserIdAndTargetId(userId, targetId);
     }
 
     @Override
-    public List<UUID> findAllUserIdsByTarget(UUID targetId) {
+    public List<String> findAllUserIdsByTarget(String targetId) {
         return likeRepo.findAllByTargetId(targetId).stream().map(Like::getUserId).toList();
     }
 
     @Override
-    public long countLikesReceivedByUser(UUID userId) {
+    public long countLikesReceivedByUser(String userId) {
         return likeRepo.findAllByUserId(userId).size();
     }
 }

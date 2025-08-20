@@ -5,9 +5,9 @@ import es.uah.pablopinas.social.domain.Block;
 import java.util.UUID;
 
 public interface BlocksPort {
-    boolean existsBySourceUserAndTargetUser(UUID targetUserId, UUID currentUserId);
+    boolean existsBySourceUserAndTargetUser(String targetUserId, String currentUserId);
 
-    void deleteBySourceUserAndTargetUser(UUID currentUserId, UUID targetUserId);
+    void deleteBySourceUserAndTargetUser(String currentUserId, String targetUserId);
 
     Block save(Block block);
 }

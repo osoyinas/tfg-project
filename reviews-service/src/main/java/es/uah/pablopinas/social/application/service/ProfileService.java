@@ -11,8 +11,6 @@ import es.uah.pablopinas.social.domain.exceptions.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.UUID;
-
 @Service
 @RequiredArgsConstructor
 public class ProfileService implements ProfileUseCase {
@@ -26,19 +24,19 @@ public class ProfileService implements ProfileUseCase {
     @SuppressWarnings("all")
     private final ListsPort listsPort;
 
-    public Profile getPublicProfile(UUID userId, UUID requestingUserId) {
+    public Profile getPublicProfile(String userId, String requestingUserId) {
         return profileRepo.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Profile not found"));
     }
 
-    public Profile updateProfile(UUID userId, String bio, String avatarUrl, Boolean privateFlag) {
+    public Profile updateProfile(String userId, String bio, String avatarUrl, Boolean privateFlag) {
         Profile profile = profileRepo.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Profile not found"));
         profile.updateProfile(bio, avatarUrl, privateFlag);
         return profileRepo.save(profile);
     }
 
-    public ProfileStats getProfileStats(UUID userId) {
+    public ProfileStats getProfileStats(String userId) {
         long followers = followRepo.countByFolloweeId(userId);
         long following = followRepo.countByFollowerId(userId);
         long reviews = reviewRepo.countByUserId(userId);
@@ -47,7 +45,7 @@ public class ProfileService implements ProfileUseCase {
         return new ProfileStats(followers, following, reviews, likesReceived, publicLists);
     }
 
-    public void followUser(UUID currentUserId, UUID targetUserId) {
+    public void followUser(String currentUserId, String targetUserId) {
         if (currentUserId.equals(targetUserId)) {
             throw new IllegalArgumentException("Cannot follow oneself");
         }
@@ -64,12 +62,12 @@ public class ProfileService implements ProfileUseCase {
         activityPort.notifyActivity(relation);
     }
 
-    public void unfollowUser(UUID currentUserId, UUID targetUserId) {
+    public void unfollowUser(String currentUserId, String targetUserId) {
         followRepo.deleteByFollowerIdAndFolloweeId(currentUserId, targetUserId);
         // Podríamos también eliminar notificaciones pendientes relacionadas, etc.
     }
 
-    public void blockUser(UUID currentUserId, UUID targetUserId) {
+    public void blockUser(String currentUserId, String targetUserId) {
         if (blockRepo.existsBySourceUserAndTargetUser(currentUserId, targetUserId)) return;
         // Si ya lo sigue, quizás eliminar esa relación:
         followRepo.deleteByFollowerIdAndFolloweeId(currentUserId, targetUserId);
@@ -80,7 +78,7 @@ public class ProfileService implements ProfileUseCase {
         // Podríamos también quitar a targetUser de tus seguidores y viceversa
     }
 
-    public void unblockUser(UUID currentUserId, UUID targetUserId) {
+    public void unblockUser(String currentUserId, String targetUserId) {
         blockRepo.deleteBySourceUserAndTargetUser(currentUserId, targetUserId);
     }
 

@@ -5,13 +5,13 @@ import es.uah.pablopinas.social.domain.Follow;
 import java.util.UUID;
 
 public interface FollowPort {
-    long countByFolloweeId(UUID userId);
+    long countByFolloweeId(String userId);
 
-    long countByFollowerId(UUID userId);
+    long countByFollowerId(String userId);
 
-    boolean existsByFollowerIdAndFolloweeId(UUID currentUserId, UUID targetUserId);
+    boolean existsByFollowerIdAndFolloweeId(String currentUserId, String targetUserId);
 
     Follow save(Follow relation);
 
-    void deleteByFollowerIdAndFolloweeId(UUID currentUserId, UUID targetUserId);
+    void deleteByFollowerIdAndFolloweeId(String currentUserId, String targetUserId);
 }

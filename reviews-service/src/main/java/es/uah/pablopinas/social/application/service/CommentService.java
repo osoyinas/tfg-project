@@ -10,7 +10,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -21,7 +20,7 @@ public class CommentService implements CommentUseCase {
     private final LikesPort likeRepo;
     private final UserWithProfilesPort usersPort;
 
-    public Comment addComment(UUID userId, UUID reviewId, String text) {
+    public Comment addComment(String userId, String reviewId, String text) {
         if (!reviewRepo.existsById(reviewId)) throw new NotFoundException("Review not found");
 
         Comment comment = new Comment(userId, reviewId, text);
@@ -30,7 +29,7 @@ public class CommentService implements CommentUseCase {
         return saved;
     }
 
-    public List<Comment> listComments(UUID reviewId, UUID userId, PageRequest page) {
+    public List<Comment> listComments(String reviewId, String userId, PageRequest page) {
         if (reviewId != null) {
             return commentRepo.findByReviewId(reviewId, page);
         } else if (userId != null) {
@@ -40,12 +39,12 @@ public class CommentService implements CommentUseCase {
         }
     }
 
-    public Comment getComment(UUID commentId) {
+    public Comment getComment(String commentId) {
         return commentRepo.findById(commentId)
                 .orElseThrow(() -> new NotFoundException("Comment not found"));
     }
 
-    public Comment updateComment(UUID commentId, UUID userId, String newText) {
+    public Comment updateComment(String commentId, String userId, String newText) {
         Comment comment = getComment(commentId);
         if (!comment.getUserId().equals(userId)) {
             throw new ForbiddenException("Cannot edit others' comment");
@@ -54,7 +53,7 @@ public class CommentService implements CommentUseCase {
         return commentRepo.save(comment);
     }
 
-    public void deleteComment(UUID commentId, UUID userId) {
+    public void deleteComment(String commentId, String userId) {
         Comment comment = getComment(commentId);
         if (!comment.getUserId().equals(userId)) {
             throw new ForbiddenException("Cannot delete others' comment");
@@ -62,18 +61,18 @@ public class CommentService implements CommentUseCase {
         commentRepo.delete(comment);
     }
 
-    public void likeComment(UUID commentId, UUID userId) {
+    public void likeComment(String commentId, String userId) {
         if (likeRepo.existsByUserIdAndTarget(userId, commentId)) return;
         Like like = likeRepo.save(new Like(userId, commentId, LikeableType.COMMENT));
         activityPort.notifyActivity(like);
     }
 
-    public void unlikeComment(UUID commentId, UUID userId) {
+    public void unlikeComment(String commentId, String userId) {
         likeRepo.deleteByUserIdAndTarget(userId, commentId);
     }
 
-    public List<UserWithProfile> getCommentLikes(UUID commentId) {
-        List<UUID> userIds = likeRepo.findAllUserIdsByTarget(commentId);
+    public List<UserWithProfile> getCommentLikes(String commentId) {
+        List<String> userIds = likeRepo.findAllUserIdsByTarget(commentId);
         return usersPort.getUsersByIds(userIds);
     }
 }

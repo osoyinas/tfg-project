@@ -9,7 +9,9 @@ interface ActionButtonsRowProps {
   // onAddToListClick: () => void
   onShareClick: () => void
   onBookmarkClick: () => void
+  alreadyBookmarked?: boolean
   contentType: "movie" | "book" | "series"
+  isBookmarked?: boolean
 }
 
 export function ActionButtonsRow({
@@ -18,6 +20,7 @@ export function ActionButtonsRow({
   onShareClick,
   onBookmarkClick,
   contentType,
+  alreadyBookmarked,
 }: ActionButtonsRowProps) {
   const getAccentColorClass = () => {
     switch (contentType) {
@@ -62,7 +65,7 @@ export function ActionButtonsRow({
         <span className="sr-only">Compartir</span>
       </Button>
       <Button
-        variant="ghost"
+        variant={alreadyBookmarked ? "default" : "ghost"}
         size="icon"
         onClick={onBookmarkClick}
         className={cn("text-dark-muted-foreground hover:text-dark-primary", getAccentColorClass())}

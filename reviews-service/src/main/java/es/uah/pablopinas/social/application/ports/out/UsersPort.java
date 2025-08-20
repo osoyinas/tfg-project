@@ -7,6 +7,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface UsersPort {
-    Optional<User> findById(UUID userId);
-    List<User> findAllByIds(List<UUID> userIds);
+    Optional<User> findById(String userId);
+    List<User> findAllByIds(List<String> userIds);
 }

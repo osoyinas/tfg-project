@@ -7,8 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.UUID;
 
-public interface CommentJpaRepository extends JpaRepository<Comment, UUID> {
-    List<Comment> findByReviewId(UUID reviewId, PageRequest page);
-    List<Comment> findByUserId(UUID userId, PageRequest page);
+public interface CommentJpaRepository extends JpaRepository<Comment, String> {
+    List<Comment> findByReviewId(String reviewId, PageRequest page);
+    List<Comment> findByUserId(String userId, PageRequest page);
 }
 

@@ -34,7 +34,7 @@ public class MeController {
     public List<User> getUsers(@CurrentUser AuthUser user) {
         String id = user.id();
         return userPort.findAllByIds(
-                List.of(UUID.fromString(id))
+                List.of(id)
         );
 
     }

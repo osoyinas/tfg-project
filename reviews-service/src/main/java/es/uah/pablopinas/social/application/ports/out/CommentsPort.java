@@ -10,11 +10,11 @@ import java.util.UUID;
 public interface CommentsPort {
     Comment save(Comment comment);
 
-    List<Comment> findByReviewId(UUID reviewId, PageRequest page);
+    List<Comment> findByReviewId(String reviewId, PageRequest page);
 
-    List<Comment> findByUserId(UUID userId, PageRequest page);
+    List<Comment> findByUserId(String userId, PageRequest page);
 
-    Optional<Comment> findById(UUID commentId);
+    Optional<Comment> findById(String commentId);
 
     void delete(Comment comment);
 }

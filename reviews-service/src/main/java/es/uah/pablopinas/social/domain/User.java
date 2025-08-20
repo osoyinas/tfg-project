@@ -10,7 +10,7 @@ import java.util.UUID;
 @Getter
 @Setter
 public class User {
-    UUID id;
+    String id;
     String username;
     String email;
     String name;

@@ -5,10 +5,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.UUID;
 
-public interface FollowJpaRepository extends JpaRepository<Follow, UUID> {
-    boolean existsByFollowerIdAndFolloweeId(UUID followerId, UUID followeeId);
-    void deleteByFollowerIdAndFolloweeId(UUID followerId, UUID followeeId);
-    long countByFolloweeId(UUID followeeId);
-    long countByFollowerId(UUID followerId);
+public interface FollowJpaRepository extends JpaRepository<Follow, String> {
+    boolean existsByFollowerIdAndFolloweeId(String followerId, String followeeId);
+    void deleteByFollowerIdAndFolloweeId(String followerId, String followeeId);
+    long countByFolloweeId(String followeeId);
+    long countByFollowerId(String followerId);
 }
 

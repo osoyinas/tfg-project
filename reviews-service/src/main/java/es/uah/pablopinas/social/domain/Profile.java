@@ -13,14 +13,14 @@ import java.util.UUID;
 @Getter
 public class Profile {
     @Id
-    private UUID userId;
+    private String userId;
     private String bio;
     private String avatarUrl;
 
     protected Profile() {
     }
 
-    public Profile(UUID userId) {
+    public Profile(String userId) {
         this.userId = userId;
     }
 

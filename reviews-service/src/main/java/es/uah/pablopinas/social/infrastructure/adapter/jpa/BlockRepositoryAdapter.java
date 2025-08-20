@@ -16,12 +16,12 @@ public class BlockRepositoryAdapter implements BlocksPort {
     }
 
     @Override
-    public boolean existsBySourceUserAndTargetUser(UUID targetUserId, UUID currentUserId) {
+    public boolean existsBySourceUserAndTargetUser(String targetUserId, String currentUserId) {
         return blockRepo.existsBySourceUserAndTargetUser(targetUserId, currentUserId);
     }
 
     @Override
-    public void deleteBySourceUserAndTargetUser(UUID currentUserId, UUID targetUserId) {
+    public void deleteBySourceUserAndTargetUser(String currentUserId, String targetUserId) {
         blockRepo.deleteBySourceUserAndTargetUser(currentUserId, targetUserId);
     }
 

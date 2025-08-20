@@ -17,8 +17,13 @@ public class UserWithProfileAdapter implements UserWithProfilesPort {
     UsersPort usersPort;
     ProfilePort profilePort;
 
+    public UserWithProfileAdapter(UsersPort usersPort, ProfilePort profilePort) {
+        this.usersPort = usersPort;
+        this.profilePort = profilePort;
+    }
+
     @Override
-    public Optional<UserWithProfile> getUser(UUID id) {
+    public Optional<UserWithProfile> getUser(String id) {
         Optional<User> user = usersPort.findById(id);
         if (user.isEmpty()) return Optional.empty();
 
@@ -35,11 +40,11 @@ public class UserWithProfileAdapter implements UserWithProfilesPort {
     }
 
     @Override
-    public List<UserWithProfile> getUsersByIds(List<UUID> ids) {
+    public List<UserWithProfile> getUsersByIds(List<String> ids) {
         if (ids == null || ids.isEmpty()) return List.of();
 
         // IDs únicos y no nulos
-        List<UUID> uniqueIds = ids.stream()
+        List<String> uniqueIds = ids.stream()
                 .filter(Objects::nonNull)
                 .distinct()
                 .toList();
@@ -50,13 +55,13 @@ public class UserWithProfileAdapter implements UserWithProfilesPort {
 
         // 2) Fetch de perfiles existentes
         List<Profile> existingProfiles = profilePort.findAllByIds(uniqueIds);
-        Map<UUID, Profile> profilesById = existingProfiles.stream()
+        Map<String, Profile> profilesById = existingProfiles.stream()
                 .collect(Collectors.toMap(Profile::getUserId, p -> p, (a, b) -> a));
 
         // 3) Para cada usuario, asegurar perfil (crear si no existe) y componer resultado
         List<UserWithProfile> result = new ArrayList<>(users.size());
         for (User u : users) {
-            UUID uid = u.getId();
+            String uid = u.getId();
             Profile profile = profilesById.get(uid);
             if (profile == null) {
                 profile = new Profile(uid);

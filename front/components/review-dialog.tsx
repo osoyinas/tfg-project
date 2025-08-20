@@ -1,6 +1,13 @@
 import { useState } from "react";
 import Rating from "@mui/material/Rating";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -39,46 +46,45 @@ export function ReviewDialog({
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
+          <div className="items-center gap-4 w-full flex justify-center">
+              <Rating
+                name="rating"
+                value={rating}
+                precision={0.5}
+                onChange={(
+                  _event: React.SyntheticEvent,
+                  value: number | null
+                ) => setRating(value ?? 0)}
+                size="large"
+              />
+            </div>
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="spoilers" className="text-right text-dark-foreground">
+            <Textarea
+              id="review"
+              placeholder="Escribe tu reseña aquí..."
+              value={review}
+              onChange={(e) => setReview(e.target.value)}
+              className={`col-span-4 bg-dark-input border-dark-border text-dark-foreground ${focusColorClass} focus:ring-0`}
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label
+              htmlFor="spoilers"
+              className="text-right text-dark-foreground"
+            >
               ¿Tu comentario tiene spoilers?
             </Label>
             <div className="col-span-3 flex items-center">
               <Checkbox
                 id="spoilers"
                 checked={spoilers}
-                onCheckedChange={checked => setSpoilers(!!checked)}
+                onCheckedChange={(checked) => setSpoilers(!!checked)}
                 className="mr-2"
               />
-              <span className="text-sm text-dark-muted-foreground">Marca si tu reseña contiene spoilers</span>
+              <span className="text-sm text-dark-muted-foreground">
+                Marca si tu reseña contiene spoilers
+              </span>
             </div>
-          </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="rating" className="text-right text-dark-foreground">
-                  Calificación
-                </Label>
-                <div className="col-span-3 flex items-center">
-                  <Rating
-                    name="rating"
-                    value={rating}
-                    precision={0.5}
-                      onChange={(_event: React.SyntheticEvent, value: number | null) => setRating(value ?? 0)}
-                    size="large"
-                  />
-                  <span className="ml-2 text-lg">{rating.toFixed(1)}</span>
-                </div>
-              </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="review" className="text-right text-dark-foreground">
-              Reseña
-            </Label>
-            <Textarea
-              id="review"
-              placeholder="Escribe tu reseña aquí..."
-              value={review}
-              onChange={e => setReview(e.target.value)}
-              className={`col-span-3 bg-dark-input border-dark-border text-dark-foreground ${focusColorClass} focus:ring-0`}
-            />
           </div>
         </div>
         <DialogFooter>
@@ -91,7 +97,10 @@ export function ReviewDialog({
           </Button>
           <Button
             type="button"
-            className={`${accentColorClass.replace("text-", "bg-")} text-dark-primary-foreground hover:opacity-90`}
+            className={`${accentColorClass.replace(
+              "text-",
+              "bg-"
+            )} text-dark-primary-foreground hover:opacity-90`}
             onClick={() => {
               onSubmit(rating, review, spoilers);
               setRating(0);

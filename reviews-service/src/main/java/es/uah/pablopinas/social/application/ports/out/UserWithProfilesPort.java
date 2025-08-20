@@ -7,7 +7,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface UserWithProfilesPort {
-    Optional<UserWithProfile> getUser(UUID id);
+    Optional<UserWithProfile> getUser(String id);
 
-    List<UserWithProfile> getUsersByIds(List<UUID> ids);
+    List<UserWithProfile> getUsersByIds(List<String> ids);
 }

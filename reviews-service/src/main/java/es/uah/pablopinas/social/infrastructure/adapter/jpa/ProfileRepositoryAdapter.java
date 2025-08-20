@@ -7,7 +7,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Repository
 public class ProfileRepositoryAdapter implements ProfilePort {
@@ -18,7 +17,7 @@ public class ProfileRepositoryAdapter implements ProfilePort {
     }
 
     @Override
-    public Optional<Profile> findById(UUID userId) {
+    public Optional<Profile> findById(String userId) {
         return profileRepo.findById(userId);
     }
 
@@ -28,7 +27,7 @@ public class ProfileRepositoryAdapter implements ProfilePort {
     }
 
     @Override
-    public List<Profile> findAllByIds(List<UUID> userIds) {
+    public List<Profile> findAllByIds(List<String> userIds) {
         return profileRepo.findAllByUserIdIn(userIds);
     }
 }

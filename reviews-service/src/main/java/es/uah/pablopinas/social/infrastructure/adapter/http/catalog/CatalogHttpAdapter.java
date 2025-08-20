@@ -24,14 +24,7 @@ public class CatalogHttpAdapter extends AuthHttpClient implements CatalogPort {
     }
 
     @Override
-    public boolean itemExists(UUID catalogItemId, String type) {
-        send(
-                HttpMethod.GET,
-                catalogUrl + "/items/" + catalogItemId,
-
-
-        )
+    public boolean itemExists(String catalogItemId) {
+        return true;
     }
-
-
 }

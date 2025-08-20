@@ -10,20 +10,20 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "follows")
-public class Follow implements Activity{
+public class Follow implements Activity {
     @Id
-    private UUID id;   // ID UUID para la relación (opcional, podría usarse compuesta)
+    private String id;   // ID String para la relación (opcional, podría usarse compuesta)
     @Column(nullable = false)
-    private UUID followerId;
+    private String followerId;
     @Column(nullable = false)
-    private UUID followeeId;
+    private String followeeId;
     private Instant since;
 
     protected Follow() {
     }
 
-    public Follow(UUID followerId, UUID followeeId) {
-        this.id = UUID.randomUUID();
+    public Follow(String followerId, String followeeId) {
+        this.id = UUID.randomUUID().toString();
         this.followerId = followerId;
         this.followeeId = followeeId;
         this.since = Instant.now();

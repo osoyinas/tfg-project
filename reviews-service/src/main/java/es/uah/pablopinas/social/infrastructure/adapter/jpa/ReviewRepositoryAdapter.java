@@ -8,7 +8,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Repository
 public class ReviewRepositoryAdapter implements ReviewsPort {
@@ -19,12 +18,12 @@ public class ReviewRepositoryAdapter implements ReviewsPort {
     }
 
     @Override
-    public long countByUserId(UUID userId) {
+    public long countByUserId(String userId) {
         return reviewRepo.countByUserId(userId);
     }
 
     @Override
-    public boolean existsByUserIdAndCatalogItemId(UUID userId, UUID catalogItemId) {
+    public boolean existsByUserIdAndCatalogItemId(String userId, String catalogItemId) {
         return reviewRepo.existsByUserIdAndCatalogItemId(userId, catalogItemId);
     }
 
@@ -34,16 +33,41 @@ public class ReviewRepositoryAdapter implements ReviewsPort {
     }
 
     @Override
-    public List<Review> searchReviews(UUID userId, UUID itemId, String type, Boolean hasRating, Boolean hasText, PageRequest page) {
-        // Implementar lógica de búsqueda avanzada si es necesario
-        // Por ahora, solo por usuario o por item
-        if (userId != null) return reviewRepo.findByUserId(userId, page);
-        if (itemId != null) return reviewRepo.findByCatalogItemId(itemId, page);
+    public List<Review> searchReviews(String userId, String itemId, Boolean hasRating, Boolean hasText, PageRequest page) {
+        // Búsqueda avanzada combinando filtros
+        if (userId != null && itemId != null) {
+            if (Boolean.TRUE.equals(hasRating)) {
+                return reviewRepo.findByUserIdAndCatalogItemIdAndRatingIsNotNull(userId, itemId, page);
+            }
+            if (Boolean.TRUE.equals(hasText)) {
+                return reviewRepo.findByUserIdAndCatalogItemIdAndTextIsNotNull(userId, itemId, page);
+            }
+            return reviewRepo.findByUserIdAndCatalogItemId(userId, itemId, page);
+        }
+        if (userId != null) {
+            if (Boolean.TRUE.equals(hasRating)) {
+                return reviewRepo.findByUserIdAndRatingIsNotNull(userId, page);
+            }
+            if (Boolean.TRUE.equals(hasText)) {
+                return reviewRepo.findByUserIdAndTextIsNotNull(userId, page);
+            }
+            return reviewRepo.findByUserId(userId, page);
+        }
+        if (itemId != null) {
+            if (Boolean.TRUE.equals(hasRating)) {
+                return reviewRepo.findByCatalogItemIdAndRatingIsNotNull(itemId, page);
+            }
+            if (Boolean.TRUE.equals(hasText)) {
+                return reviewRepo.findByCatalogItemIdAndTextIsNotNull(itemId, page);
+            }
+            return reviewRepo.findByCatalogItemId(itemId, page);
+        }
+        // Si no hay filtros, devolver lista vacía
         return List.of();
     }
 
     @Override
-    public Optional<Review> findById(UUID reviewId) {
+    public Optional<Review> findById(String reviewId) {
         return reviewRepo.findById(reviewId);
     }
 
@@ -53,8 +77,7 @@ public class ReviewRepositoryAdapter implements ReviewsPort {
     }
 
     @Override
-    public boolean existsById(UUID targetId) {
+    public boolean existsById(String targetId) {
         return reviewRepo.existsById(targetId);
     }
 }
-

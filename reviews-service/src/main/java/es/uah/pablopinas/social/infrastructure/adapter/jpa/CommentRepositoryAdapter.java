@@ -8,7 +8,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Repository
 public class CommentRepositoryAdapter implements CommentsPort {
@@ -24,17 +23,17 @@ public class CommentRepositoryAdapter implements CommentsPort {
     }
 
     @Override
-    public List<Comment> findByReviewId(UUID reviewId, PageRequest page) {
+    public List<Comment> findByReviewId(String reviewId, PageRequest page) {
         return commentRepo.findByReviewId(reviewId, page);
     }
 
     @Override
-    public List<Comment> findByUserId(UUID userId, PageRequest page) {
+    public List<Comment> findByUserId(String userId, PageRequest page) {
         return commentRepo.findByUserId(userId, page);
     }
 
     @Override
-    public Optional<Comment> findById(UUID commentId) {
+    public Optional<Comment> findById(String commentId) {
         return commentRepo.findById(commentId);
     }
 

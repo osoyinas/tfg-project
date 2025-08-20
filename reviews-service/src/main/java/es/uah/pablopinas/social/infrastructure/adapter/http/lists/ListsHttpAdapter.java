@@ -8,7 +8,7 @@ import java.util.UUID;
 @Component
 public class ListsHttpAdapter implements ListsPort {
     @Override
-    public long countPublicLists(UUID userId) {
+    public long countPublicLists(String userId) {
         return 0;
     }
 }

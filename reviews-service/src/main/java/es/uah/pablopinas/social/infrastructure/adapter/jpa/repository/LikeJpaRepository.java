@@ -6,10 +6,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.UUID;
 
-public interface LikeJpaRepository extends JpaRepository<Like, UUID> {
-    boolean existsByUserIdAndTargetId(UUID userId, UUID targetId);
-    void deleteByUserIdAndTargetId(UUID userId, UUID targetId);
-    List<Like> findAllByTargetId(UUID targetId);
-    List<Like> findAllByUserId(UUID userId);
+public interface LikeJpaRepository extends JpaRepository<Like, String> {
+    boolean existsByUserIdAndTargetId(String userId, String targetId);
+    void deleteByUserIdAndTargetId(String userId, String targetId);
+    List<Like> findAllByTargetId(String targetId);
+    List<Like> findAllByUserId(String userId);
 }
 

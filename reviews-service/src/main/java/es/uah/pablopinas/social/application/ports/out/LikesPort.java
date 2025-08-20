@@ -3,16 +3,15 @@ package es.uah.pablopinas.social.application.ports.out;
 import es.uah.pablopinas.social.domain.Like;
 
 import java.util.List;
-import java.util.UUID;
 
 public interface LikesPort {
-    long countLikesReceivedByUser(UUID userId);
+    long countLikesReceivedByUser(String userId);
 
-    boolean existsByUserIdAndTarget(UUID userId, UUID targetId);
+    boolean existsByUserIdAndTarget(String userId, String targetId);
 
     Like save(Like like);
 
-    void deleteByUserIdAndTarget(UUID userId, UUID targetId);
+    void deleteByUserIdAndTarget(String userId, String targetId);
 
-    List<UUID> findAllUserIdsByTarget(UUID targetId);
+    List<String> findAllUserIdsByTarget(String targetId);
 }

@@ -8,17 +8,17 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface ReviewsPort {
-    long countByUserId(UUID userId);
+    long countByUserId(String userId);
 
-    boolean existsByUserIdAndCatalogItemId(UUID userId, UUID catalogItemId);
+    boolean existsByUserIdAndCatalogItemId(String userId, String catalogItemId);
 
     Review save(Review review);
 
-    List<Review> searchReviews(UUID userId, UUID itemId, String type, Boolean hasRating, Boolean hasText, PageRequest page);
+    List<Review> searchReviews(String userId, String itemId, Boolean hasRating, Boolean hasText, PageRequest page);
 
-    Optional<Review> findById(UUID reviewId);
+    Optional<Review> findById(String reviewId);
 
     void delete(Review review);
 
-    boolean existsById(UUID targetId);
+    boolean existsById(String targetId);
 }
