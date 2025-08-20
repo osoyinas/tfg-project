@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, use, useState } from "react";
-import { SeriesDetail } from "@/components/series-detail";
+import { useEffect, use, useState } from "react";
+import { ContentDetail } from "@/components/content-detail";
 import { SeriesDetailSkeleton } from "@/components/series-detail-skeleton";
 import { useKeycloak } from "@/components/keycloak-provider";
 import { useAuthAxios } from "@/hooks/useAuthAxios";
@@ -18,14 +18,14 @@ export default function SeriesDetailsPage({ params }: SeriesDetailsPageProps) {
 
   const axios = useAuthAxios();
   const { initialized, authenticated } = useKeycloak();
-  const series = useRef<SeriesItem | null>(null);
+  const [series, setSeries] = useState<SeriesItem | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchSeriesData = async () => {
       try {
         const fetchedSeries = await getItem(id, axios);
-        series.current = fetchedSeries as SeriesItem;
+        setSeries(fetchedSeries as SeriesItem);
       } catch (error) {
         console.error("Error fetching series data:", error);
       } finally {
@@ -37,8 +37,39 @@ export default function SeriesDetailsPage({ params }: SeriesDetailsPageProps) {
     }
   }, [initialized, authenticated, id]);
 
-  if (loading || !series.current) {
+  if (loading || !series) {
     return <SeriesDetailSkeleton />;
   }
-  return <SeriesDetail series={series.current} />;
+  return (
+    <ContentDetail
+      title={series.title}
+      creators={series.creators}
+      genres={series.genres}
+      releaseDate={series.releaseDate}
+      rating={series.rating}
+      description={series.description}
+      images={series.images}
+      // userLists={[
+      //   { id: "1", name: "Series Favoritas" },
+      //   { id: "2", name: "Series para Ver" },
+      //   { id: "3", name: "Series de Drama" },
+      // ]}
+      contentType="series"
+      bgClass="bg-dark-series-bg"
+      accentColorClass="text-series-blue"
+      focusColorClass="focus:border-series-blue"
+      details={
+        <>
+          <div>
+            <h3 className="font-semibold text-dark-primary">Creador:</h3>
+            <p>{series.creators?.join(", ")}</p>
+          </div>
+          <div>
+            <h3 className="font-semibold text-dark-primary">Temporadas:</h3>
+            <p>{series.details.seasonCount}</p>
+          </div>
+        </>
+      }
+    />
+  );
 }

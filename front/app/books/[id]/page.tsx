@@ -1,6 +1,6 @@
 "use client";
 
-import { BookDetail } from "@/components/book-detail";
+import { ContentDetail } from "@/components/content-detail";
 import { BookDetailSkeleton } from "@/components/book-detail-skeleton";
 import { useKeycloak } from "@/components/keycloak-provider";
 import { useAuthAxios } from "@/hooks/useAuthAxios";
@@ -13,7 +13,6 @@ interface BookDetailsPageProps {
 }
 
 export default function BookDetailsPage({ params }: BookDetailsPageProps) {
-  // Unwrap params using React.use() for Next.js 14+
   const { id } = use(params) as { id: string };
 
   const axios = useAuthAxios();
@@ -36,5 +35,36 @@ export default function BookDetailsPage({ params }: BookDetailsPageProps) {
   if (!book) {
     return <BookDetailSkeleton />;
   }
-  return <BookDetail book={book} />;
+  return (
+    <ContentDetail
+      title={book.title}
+      creators={book.creators}
+      genres={book.genres}
+      releaseDate={book.releaseDate}
+      rating={book.rating}
+      description={book.description}
+      images={book.images}
+      // userLists={[
+      //   { id: "1", name: "Libros Favoritos" },
+      //   { id: "2", name: "Libros para Leer" },
+      //   { id: "3", name: "Novelas Clásicas" },
+      // ]}
+      contentType="book"
+      bgClass="bg-dark-book-bg"
+      accentColorClass="text-book-green"
+      focusColorClass="focus:border-book-green"
+      details={
+        <>
+          <div>
+            <h3 className="font-semibold text-dark-primary">Páginas:</h3>
+            <p>{book.details.pageCount}</p>
+          </div>
+          <div>
+            <h3 className="font-semibold text-dark-primary">Publisher:</h3>
+            <p>{book.details.publisher}</p>
+          </div>
+        </>
+      }
+    />
+  );
 }

@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils"
 
 interface ActionButtonsRowProps {
   onReviewClick: () => void
-  onAddToListClick: () => void
+  // onAddToListClick: () => void
   onShareClick: () => void
   onBookmarkClick: () => void
   contentType: "movie" | "book" | "series"
@@ -14,7 +14,7 @@ interface ActionButtonsRowProps {
 
 export function ActionButtonsRow({
   onReviewClick,
-  onAddToListClick,
+  // onAddToListClick,
   onShareClick,
   onBookmarkClick,
   contentType,
@@ -43,7 +43,7 @@ export function ActionButtonsRow({
         <MessageSquare className="h-5 w-5" />
         <span className="sr-only">Escribir reseña</span>
       </Button>
-      <Button
+      {/* <Button
         variant="ghost"
         size="icon"
         onClick={onAddToListClick}
@@ -51,7 +51,7 @@ export function ActionButtonsRow({
       >
         <List className="h-5 w-5" />
         <span className="sr-only">Añadir a lista</span>
-      </Button>
+      </Button> */}
       <Button
         variant="ghost"
         size="icon"
