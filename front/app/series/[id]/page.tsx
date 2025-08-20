@@ -42,6 +42,7 @@ export default function SeriesDetailsPage({ params }: SeriesDetailsPageProps) {
   }
   return (
     <ContentDetail
+      id={series.id}
       title={series.title}
       creators={series.creators}
       genres={series.genres}

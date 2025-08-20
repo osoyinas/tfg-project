@@ -12,6 +12,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { ReviewDialog } from "@/components/review-dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -25,6 +26,9 @@ import {
 import { ActionButtonsRow } from "@/components/content/action-buttons-row";
 import { cn } from "@/lib/utils";
 import { ContentImages } from "@/types";
+import axios from "axios";
+import { createReview } from "@/services/reviews";
+import { toast } from "@/hooks/use-toast";
 
 interface UserList {
   id: string;
@@ -32,6 +36,7 @@ interface UserList {
 }
 
 interface ContentDetailProps {
+    id: string;
   title: string;
   creators?: string[];
   genres?: string[];
@@ -54,6 +59,7 @@ interface ContentDetailProps {
 }
 
 export function ContentDetail({
+    id,
   title,
   creators = [],
   genres = [],
@@ -62,7 +68,6 @@ export function ContentDetail({
   description = "",
   images,
 //   userLists,
-  onReview,
   onAddToList,
   onShare,
   onBookmark,
@@ -83,6 +88,25 @@ export function ContentDetail({
   const isPanoramic = Boolean(images?.cover?.url);
   const thumbnailUrl = images?.thumbnail?.url || images?.poster?.url || "/placeholder.svg";
 
+  const handleOnReview = async (rating: number, review: string, spoilers: boolean) => {
+    if (rating && review) {
+      try {
+        await createReview({
+          id,
+          rating,
+          text: review,
+          spoilers
+        }, axios);
+      } catch (error: any) {
+        toast({
+          title: "Error al enviar reseña",
+          description: error?.message || "Ocurrió un error inesperado. Intenta de nuevo.",
+          variant: "destructive"
+        });
+      }
+    }
+  };
+  
   return (
     <div className={cn(`w-full min-h-screen ${bgClass} text-dark-foreground`)}>
       <div className="container mx-auto px-4 py-8">
@@ -107,15 +131,27 @@ export function ContentDetail({
           <div className="md:col-span-2">
             <h1 className={`text-4xl font-bold mb-2 ${accentColorClass}`}>{title}</h1>
             <p className="text-dark-muted-foreground text-lg mb-4">
-              {creators.length > 0 ? creators.join(", ") + " • " : ""}
+              {creators.length > 0 ? creators.slice(0, 2).join(", ") + (creators.length > 2 ? "…" : "") + " • " : ""}
               {genres.length > 0 ? genres.join(", ") + " • " : ""}
-              {releaseDate}
+              {releaseDate
+                ? new Date(releaseDate).toLocaleDateString(undefined, {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })
+                : ""}
             </p>
             <div className="flex items-center gap-4 mb-6">
-              <div className="flex items-center gap-1 text-yellow-500">
+              <button
+                type="button"
+                className="flex items-center gap-1 text-yellow-500 focus:outline-none"
+                onClick={() => setIsReviewModalOpen(true)}
+                title="Escribir una reseña"
+                aria-label="Escribir una reseña"
+              >
                 <Star className="h-6 w-6 fill-yellow-500" />
                 <span className="text-2xl font-bold">{(rating / 2).toFixed(1)}</span>
-              </div>
+              </button>
               <Separator orientation="vertical" className="h-6 bg-dark-border" />
               <ActionButtonsRow
                 onReviewClick={() => setIsReviewModalOpen(true)}
@@ -144,69 +180,14 @@ export function ContentDetail({
         </div>
         {children}
       </div>
-      {/* Review Modal */}
-      <Dialog open={isReviewModalOpen} onOpenChange={setIsReviewModalOpen}>
-        <DialogContent className="bg-dark-card border-dark-border text-dark-foreground">
-          <DialogHeader>
-            <DialogTitle className="text-dark-primary">
-              Escribir una Reseña para {title}
-            </DialogTitle>
-            <DialogDescription className="text-dark-muted-foreground">
-              Comparte tus pensamientos y califica este contenido.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="rating" className="text-right text-dark-foreground">
-                Calificación
-              </Label>
-              <Input
-                id="rating"
-                type="number"
-                step="0.5"
-                min="0"
-                max="5"
-                value={reviewRating}
-                onChange={e => setReviewRating(Number(e.target.value))}
-                className={`col-span-3 bg-dark-input border-dark-border text-dark-foreground ${focusColorClass} focus:ring-0`}
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="review" className="text-right text-dark-foreground">
-                Reseña
-              </Label>
-              <Textarea
-                id="review"
-                placeholder="Escribe tu reseña aquí..."
-                value={reviewText}
-                onChange={e => setReviewText(e.target.value)}
-                className={`col-span-3 bg-dark-input border-dark-border text-dark-foreground ${focusColorClass} focus:ring-0`}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsReviewModalOpen(false)}
-              className="border-dark-border text-dark-foreground hover:bg-dark-accent hover:text-dark-primary"
-            >
-              Cancelar
-            </Button>
-            <Button
-              type="button"
-              className={`${accentColorClass.replace("text-", "bg-")} text-dark-primary-foreground hover:opacity-90`}
-              onClick={() => {
-                onReview?.(reviewRating, reviewText);
-                setIsReviewModalOpen(false);
-                setReviewRating(0);
-                setReviewText("");
-              }}
-            >
-              Enviar Reseña
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ReviewDialog
+        open={isReviewModalOpen}
+        onOpenChange={setIsReviewModalOpen}
+        title={title}
+        accentColorClass={accentColorClass}
+        focusColorClass={focusColorClass}
+  onSubmit={(rating, review, spoilers) => handleOnReview?.(rating, review, spoilers)}
+      />
       {/* Add to List Modal */}
       <Dialog open={isAddToListModalOpen} onOpenChange={setIsAddToListModalOpen}>
         <DialogContent className="bg-dark-card border-dark-border text-dark-foreground">

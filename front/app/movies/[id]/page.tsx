@@ -41,6 +41,7 @@ export default function MovieDetailsPage({ params }: MovieDetailsPageProps) {
   }
   return (
     <ContentDetail
+      id={movie.id}
       title={movie.title}
       creators={movie.creators}
       genres={movie.genres}

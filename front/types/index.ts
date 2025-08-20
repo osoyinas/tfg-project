@@ -110,14 +110,16 @@ export interface Content {
   reviews?: Review[];
 }
 
+
 export interface Review {
   id: string;
-  user?: string;
-  contentTitle: string;
-  contentType: "movie" | "book" | "series";
+  userId: string;
+  catalogItemId: string;
   rating: number;
   text: string;
-  date: string;
+  spoilers: boolean;
+  createdAt: string;
+  likesCount: number;
 }
 
 export interface List {
@@ -184,3 +186,4 @@ export interface Friend {
   isInvited: boolean;
   mutualFriends: number;
 }
+

@@ -40,7 +40,7 @@ export function ActionButtonsRow({
         onClick={onReviewClick}
         className={cn("text-dark-muted-foreground hover:text-dark-primary", getAccentColorClass())}
       >
-        <MessageSquare className="h-5 w-5" />
+        <MessageSquare className="h-7 w-7" />
         <span className="sr-only">Escribir reseña</span>
       </Button>
       {/* <Button
@@ -58,7 +58,7 @@ export function ActionButtonsRow({
         onClick={onShareClick}
         className={cn("text-dark-muted-foreground hover:text-dark-primary", getAccentColorClass())}
       >
-        <Share2 className="h-5 w-5" />
+        <Share2 className="h-7 w-7" />
         <span className="sr-only">Compartir</span>
       </Button>
       <Button
@@ -67,7 +67,7 @@ export function ActionButtonsRow({
         onClick={onBookmarkClick}
         className={cn("text-dark-muted-foreground hover:text-dark-primary", getAccentColorClass())}
       >
-        <Bookmark className="h-5 w-5" />
+        <Bookmark className="h-7 w-7" />
         <span className="sr-only">Guardar</span>
       </Button>
     </div>

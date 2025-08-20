@@ -37,6 +37,7 @@ export default function BookDetailsPage({ params }: BookDetailsPageProps) {
   }
   return (
     <ContentDetail
+      id={book.id}
       title={book.title}
       creators={book.creators}
       genres={book.genres}
