@@ -13,7 +13,6 @@ volumes:
   caddy_data:
   caddy_config:
   pgdata:
-  reviews_pgdata:
   mongodb_data:
   social_pgdata:
 
@@ -64,6 +63,8 @@ services:
       keycloak:
         condition: service_started
       catalog-service:
+        condition: service_healthy
+      social-service:
         condition: service_healthy
     restart: unless-stopped
     networks: [app, egress]
@@ -165,23 +166,6 @@ services:
       POSTGRES_PASSWORD: socialpass
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U socialuser -d socialdb"]
-      interval: 10s
-      timeout: 5s
-      retries: 20
-    restart: unless-stopped
-    networks: [app]
-
-  # -------- REVIEWS DB ----------
-  reviews-db:
-    image: postgres:16
-    environment:
-      POSTGRES_DB: reviewsdb
-      POSTGRES_USER: reviewsuser
-      POSTGRES_PASSWORD: reviewspass
-    volumes:
-      - reviews_pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U reviewsuser -d reviewsdb"]
       interval: 10s
       timeout: 5s
       retries: 20
