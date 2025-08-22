@@ -4,16 +4,14 @@ spring:
     username: ${DB_USER:socialuser}
     password: ${DB_PASS:socialpass}
     driver-class-name: org.postgresql.Driver
-
   jpa:
-    open-in-view: false
     hibernate:
-      ddl-auto: update    # <-- crea/actualiza tablas en dev
-    show-sql: false
+      ddl-auto: update
+    show-sql: true
     properties:
       hibernate:
+        format_sql: true
         jdbc:
           time_zone: UTC
-
   flyway:
-    enabled: false        # <-- desactiva Flyway mientras no tengas migraciones
+    enabled: false

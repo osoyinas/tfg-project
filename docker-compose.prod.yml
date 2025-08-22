@@ -15,6 +15,7 @@ volumes:
   pgdata:
   reviews_pgdata:
   mongodb_data:
+  social_pgdata:
 
 services:
   # -------- REVERSE PROXY + TLS ----------
@@ -83,6 +84,7 @@ services:
       retries: 20
     restart: unless-stopped
     networks: [app]
+
   keycloak:
     build:
       context: ./keycloak-image
@@ -134,6 +136,40 @@ services:
         condition: service_healthy
     restart: unless-stopped
     networks: [app, egress]
+
+  # -------- SOCIAL ----------
+  social-service:
+    build:
+      context: ./social-service
+      dockerfile: Dockerfile
+    env_file:
+      - social-service/.env.prod
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SERVER_PORT: "${SOCIAL_SERVICE_PORT}"
+    depends_on:
+      social-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+    networks: [app, egress]
+
+  social-db:
+    image: postgres:16
+    volumes:
+      - social_pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: socialdb
+      POSTGRES_USER: socialuser
+      POSTGRES_PASSWORD: socialpass
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U socialuser -d socialdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+    networks: [app]
 
   # -------- REVIEWS DB ----------
   reviews-db:

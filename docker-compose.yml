@@ -122,6 +122,7 @@ services:
     env_file:
       - social-service/.env.prod
     environment:
+      SPRING_PROFILES_ACTIVE: prod
       SERVER_PORT: "${SOCIAL_SERVICE_PORT}"
     depends_on:
       social-db:
@@ -134,12 +135,12 @@ services:
     networks: [app]
   social-db:
     image: postgres:16
+    volumes:
+      - social_pgdata:/var/lib/postgresql/data
     environment:
       POSTGRES_DB: socialdb
       POSTGRES_USER: socialuser
       POSTGRES_PASSWORD: socialpass
-    volumes:
-      - social_pgdata:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U socialuser -d socialdb"]
       interval: 10s
