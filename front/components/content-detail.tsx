@@ -42,27 +42,30 @@ interface ContentDetailProps {
 import { useSavedItems } from "./saved-items-provider";
 import { useAuthAxios } from "@/hooks/useAuthAxios";
 import { ContentImages } from "@/types";
-import { ReviewsList } from "./content/reviews-list";
-
-export function ContentDetail({
-    id,
-  title,
-  creators = [],
-  genres = [],
-  releaseDate = "",
-  rating,
-  description = "",
-  images,
+import { ReviewsList, ReviewsListHandle } from "./content/reviews-list";
+import { useRef } from "react";
 //   userLists,
-  onShare,
-  onBookmark,
-  contentType,
-  bgClass,
-  accentColorClass,
-  focusColorClass,
-  details,
-  children,
-}: ContentDetailProps) {
+
+export function ContentDetail(props: ContentDetailProps) {
+  const {
+    id,
+    title,
+    creators = [],
+    genres = [],
+    releaseDate = "",
+    rating,
+    description = "",
+    images,
+    // userLists,
+    onShare,
+    onBookmark,
+    contentType,
+    bgClass,
+    accentColorClass,
+    focusColorClass,
+    details,
+    children,
+  } = props;
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [isAddToListModalOpen, setIsAddToListModalOpen] = useState(false);
 
@@ -86,6 +89,8 @@ export function ContentDetail({
     onBookmark?.();
   };
 
+  const reviewsListRef = useRef<ReviewsListHandle>(null);
+
   const handleOnReview = async (rating: number, review: string, spoilers: boolean) => {
     if (rating && review) {
       try {
@@ -100,6 +105,8 @@ export function ContentDetail({
           description: "Tu reseña ha sido enviada con éxito.",
           variant: "default"
         });
+        // Refrescar la lista de reseñas
+        reviewsListRef.current?.refetch();
       } catch (error: any) {
         toast({
           title: "Error al enviar reseña",
@@ -171,7 +178,7 @@ export function ContentDetail({
               {details}
             </div>
             <Separator className="my-8 bg-dark-border" />
-            <ReviewsList itemId={id} />
+            <ReviewsList ref={reviewsListRef} itemId={id} />
           </div>
         </div>
         {children}
