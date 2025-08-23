@@ -9,6 +9,7 @@ const keycloakConfig = {
   clientId: process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID!!,
 };
 
+
 const keycloak = new Keycloak(keycloakConfig);
 
 export default keycloak;

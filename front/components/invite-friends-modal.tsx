@@ -47,7 +47,7 @@ export function InviteFriendsModal({ open, onOpenChange }: InviteFriendsModalPro
         <DialogHeader>
           <DialogTitle className="text-dark-primary">Invitar Amigos</DialogTitle>
           <DialogDescription className="text-dark-muted-foreground">
-            Invita a tus amigos a unirse a MovieBookSeries para compartir reseñas y listas.
+            Invita a tus amigos a unirse a ReviewIt para compartir reseñas y listas.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-6 py-4">

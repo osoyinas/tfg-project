@@ -1,6 +1,8 @@
 "use client";
 
 import { AuthGuard } from "@/components/AuthGuard";
+import { BottomNavigation } from "@/components/bottom-navigation";
+import { TopBar } from "@/components/top-bar";
 import React from "react";
 
 export default function BooksLayout({
@@ -8,5 +10,11 @@ export default function BooksLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <AuthGuard>{children}</AuthGuard>;
+  return (
+    <>
+      <TopBar />
+      <AuthGuard>{children}</AuthGuard>
+      <BottomNavigation />
+    </>
+  );
 }
