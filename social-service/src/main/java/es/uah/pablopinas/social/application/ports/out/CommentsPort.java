@@ -12,6 +12,8 @@ public interface CommentsPort {
 
     List<Comment> findByReviewId(String reviewId, PageRequest page);
 
+    int getCommentsCount(String reviewId);
+
     List<Comment> findByUserId(String userId, PageRequest page);
 
     Optional<Comment> findById(String commentId);

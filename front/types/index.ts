@@ -1,3 +1,44 @@
+export interface ReviewComment {
+  id: string;
+  user: User | null;
+  reviewId: string;
+  text: string;
+  createdAt: string;
+  likesCount: number;
+  likedByCurrentUser: boolean;
+}
+// --- Profile Types ---
+export interface ProfileUser {
+  id: string;
+  username: string;
+  email: string;
+  name: string;
+  lastName: string;
+}
+
+export interface ProfileData {
+  userId: string;
+  bio: string | null;
+  avatarUrl: string | null;
+}
+
+export interface Profile {
+  user: ProfileUser;
+  profile: ProfileData;
+}
+
+export interface ProfileStats {
+  followers: number;
+  following: number;
+  reviews: number;
+  likesReceived: number;
+  publicLists: number;
+}
+
+export interface ProfileWithStats extends Profile {
+  stats: ProfileStats;
+}
+
 export interface Filters {
   title?: string;
   type?: ContentType | "Todos";
@@ -121,6 +162,8 @@ export interface Review {
   spoilers: boolean;
   createdAt: string;
   likesCount: number;
+  commentsCount: number;
+  likedByCurrentUser: boolean;
 }
 
 export interface List {

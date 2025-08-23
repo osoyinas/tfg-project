@@ -12,6 +12,8 @@ public class ReviewResponseDTO {
     private boolean spoilers;
     private String createdAt;
     private int likesCount;
+    private int commentsCount;
+    private boolean likedByCurrentUser;
     private UserWithProfileDTO user;
 }
 

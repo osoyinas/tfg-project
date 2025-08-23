@@ -28,6 +28,11 @@ public class CommentRepositoryAdapter implements CommentsPort {
     }
 
     @Override
+    public int getCommentsCount(String reviewId) {
+        return commentRepo.countByReviewId(reviewId);
+    }
+
+    @Override
     public List<Comment> findByUserId(String userId, PageRequest page) {
         return commentRepo.findByUserId(userId, page);
     }

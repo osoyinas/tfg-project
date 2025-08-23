@@ -24,7 +24,7 @@ public class Profile {
         this.userId = userId;
     }
 
-    public void updateProfile(String newBio, String newAvatarUrl, Boolean privateFlag) {
+    public void updateProfile(String newBio, String newAvatarUrl) {
         if (newBio != null) this.bio = newBio;
         if (newAvatarUrl != null) this.avatarUrl = newAvatarUrl;
     }

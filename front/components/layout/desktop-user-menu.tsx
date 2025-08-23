@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Bell, LogOut, Settings, User } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 interface DesktopUserMenuProps {
   notifications?: number
@@ -18,12 +19,16 @@ interface DesktopUserMenuProps {
   onProfileClick?: () => void
 }
 
+const ACCOUNT_URL = `${process.env.NEXT_PUBLIC_KEYCLOAK_URL}/realms/${process.env.NEXT_PUBLIC_KEYCLOAK_REALM}/account/`
+
 export function DesktopUserMenu({ notifications = 0, onLogout, onProfileClick }: DesktopUserMenuProps) {
+  const router = useRouter();
   return (
     <div className="flex items-center gap-2">
       <Button
         variant="ghost"
         size="icon"
+        disabled
         className="relative text-dark-foreground hover:bg-dark-accent hover:text-dark-primary"
       >
         <Bell className="h-5 w-5" />
@@ -47,14 +52,19 @@ export function DesktopUserMenu({ notifications = 0, onLogout, onProfileClick }:
         <DropdownMenuContent align="end" className="w-56 bg-dark-card border-dark-border text-dark-foreground">
           <DropdownMenuItem
             className="flex items-center gap-2 cursor-pointer hover:bg-dark-accent"
-            onClick={onProfileClick}
+            onClick={() => {
+              if (onProfileClick) onProfileClick();
+              router.push("/profile");
+            }}
           >
             <User className="h-4 w-4" />
-            <Link href="/profile">Perfil</Link>
+            Perfil
           </DropdownMenuItem>
-          <DropdownMenuItem className="flex items-center gap-2 cursor-pointer hover:bg-dark-accent">
-            <Settings className="h-4 w-4" />
-            <Link href="/settings">Configuración</Link>
+          <DropdownMenuItem asChild className="flex items-center gap-2 cursor-pointer hover:bg-dark-accent">
+            <a href={ACCOUNT_URL} target="_blank" rel="noopener noreferrer">
+              <Settings className="h-4 w-4" />
+              Cuenta
+            </a>
           </DropdownMenuItem>
           <DropdownMenuSeparator className="bg-dark-border" />
           <DropdownMenuItem

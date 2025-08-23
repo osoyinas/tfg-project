@@ -12,16 +12,18 @@ export interface ReviewsListHandle {
 }
 
 interface ReviewsListProps {
-  itemId: string;
+  itemId?: string;
+  justMine?: boolean;
   page?: number;
   size?: number;
 }
 
 export const ReviewsList = forwardRef<ReviewsListHandle, ReviewsListProps>(
-  ({ itemId, page = 0, size = 20 }, ref: ForwardedRef<ReviewsListHandle>) => {
+  ({ itemId, justMine, page = 0, size = 20 }, ref: ForwardedRef<ReviewsListHandle>) => {
     const axios = useAuthAxios();
     const filters = {
       itemId,
+      justMine,
       page,
       size,
     };
@@ -33,7 +35,7 @@ export const ReviewsList = forwardRef<ReviewsListHandle, ReviewsListProps>(
       refetch,
     } = useQuery<Review[], Error>({
       queryKey: ['reviews', itemId, page, size],
-      queryFn: () => getReviews(itemId, filters, axios),
+      queryFn: () => getReviews( filters, axios),
     });
 
     useImperativeHandle(ref, () => ({

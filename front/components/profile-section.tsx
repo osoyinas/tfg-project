@@ -2,154 +2,205 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { List, Star, MessageSquare, UserPlus } from "lucide-react"
-import { ContentCard } from "@/components/content/content-card"
-import { ReviewCard } from "@/components/content/review-card"
-import { UserActivityCard } from "@/components/content/user-activity-card"
-import { ListOverviewCard } from "@/components/lists/list-overview-card"
-import { useState } from "react"
+import { MessageSquare, UserPlus } from "lucide-react"
+import { useEffect, useRef, useState } from "react"
 import { CreateListModal } from "@/components/create-list-modal"
 import { InviteFriendsModal } from "@/components/invite-friends-modal"
+import { ReviewsList } from "./content/reviews-list"
+import { getMyProfileWithStats, updateProfile } from "@/services/profile"
+import { AvatarPickerDialog } from "@/components/avatar-picker-dialog"
+import { useAuthAxios } from "@/hooks/useAuthAxios"
+import { ProfileWithStats } from "@/types"
+import { useKeycloak } from "./keycloak-provider"
 
 export function ProfileSection() {
   const [isCreateListModalOpen, setIsCreateListModalOpen] = useState(false)
   const [isInviteFriendsModalOpen, setIsInviteFriendsModalOpen] = useState(false)
+  const [profile, setProfile] = useState<ProfileWithStats | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const {authenticated, initialized} = useKeycloak()
+  const axios = useAuthAxios()
 
-  // Mock data for profile
-  const user = {
-    name: "Jane Doe",
-    username: "@janedoe",
-    bio: "Cinephile, bookworm, and series binger. Sharing my thoughts on all things media!",
-    avatar: "/placeholder-user.jpg",
-    followers: 1234,
-    following: 567,
+  // Edit mode state
+  const [editMode, setEditMode] = useState(false)
+  const [editBio, setEditBio] = useState("")
+  const [editAvatar, setEditAvatar] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
+  const [successMsg, setSuccessMsg] = useState<string | null>(null)
+  const [editError, setEditError] = useState<string | null>(null)
+  // Eliminado fileInputRef y avatarFile
+  const [avatarDialogOpen, setAvatarDialogOpen] = useState(false)
+
+  useEffect(() => {
+    if (!initialized || !authenticated) return;
+
+    async function fetchProfile() {
+      setLoading(true)
+      setError(null)
+      try {
+        const data = await getMyProfileWithStats(axios)
+        console.log("Fetched profile data:", data)
+        setProfile(data)
+      } catch (err) {
+        setError("No se pudo cargar el perfil.")
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchProfile()
+  }, [axios, initialized, authenticated])
+
+  // When entering edit mode, set initial values
+  useEffect(() => {
+    if (editMode && profile) {
+      setEditBio(profile.profile.bio || "")
+      setEditAvatar(profile.profile.avatarUrl)
+      setEditError(null)
+      setSuccessMsg(null)
+    }
+  }, [editMode, profile])
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <span className="text-dark-muted-foreground">Cargando perfil...</span>
+      </div>
+    )
   }
 
-  const recentActivity = [
-    {
-      type: "review",
-      content: "Pulp Fiction",
-      rating: 5,
-      text: "Still a masterpiece! The dialogue is just unmatched.",
-      date: "2 days ago",
-    },
-    { type: "list", content: "Top 10 Sci-Fi Movies", items: 10, date: "1 week ago" },
-    { type: "rating", content: "Dune: Part Two", rating: 4.5, date: "3 days ago" },
-    {
-      type: "review",
-      content: "The Midnight Library",
-      rating: 4,
-      text: "A thought-provoking read about life choices.",
-      date: "4 days ago",
-    },
-  ]
+  if (error || !profile) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <span className="text-red-500">{error || "Error desconocido."}</span>
+      </div>
+    )
+  }
 
-  const userLists = [
-    {
-      id: "1",
-      name: "Películas Favoritas",
-      description: "Mis películas imprescindibles de todos los tiempos.",
-      items: 15,
-      type: "movie",
-    },
-    {
-      id: "2",
-      name: "Libros para el Verano",
-      description: "Lecturas ligeras y emocionantes para la temporada.",
-      items: 8,
-      type: "book",
-    },
-    {
-      id: "3",
-      name: "Series que Recomiendo",
-      description: "Series que no te puedes perder.",
-      items: 12,
-      type: "series",
-    },
-  ]
 
-  const userReviews = [
-    {
-      id: "r1",
-      contentTitle: "Oppenheimer",
-      contentType: "movie",
-      rating: 4.5,
-      text: "Una película intensa y visualmente impresionante. Cillian Murphy está espectacular.",
-      date: "2024-07-20",
-    },
-    {
-      id: "r2",
-      contentTitle: "Cien años de soledad",
-      contentType: "book",
-      rating: 5,
-      text: "Una obra maestra de la literatura. La narrativa es mágica y envolvente.",
-      date: "2024-07-15",
-    },
-    {
-      id: "r3",
-      contentTitle: "Breaking Bad",
-      contentType: "series",
-      rating: 5,
-      text: "Simplemente la mejor serie de la historia. Cada temporada es una joya.",
-      date: "2024-07-10",
-    },
-  ]
+  const { user, profile: profileData, stats } = profile
 
-  const userRatings = [
-    {
-      id: "rt1",
-      contentTitle: "Spider-Man: Across the Spider-Verse",
-      contentType: "movie",
-      rating: 5,
-      date: "2024-07-22",
-    },
-    {
-      id: "rt2",
-      contentTitle: "El Señor de los Anillos: La Comunidad del Anillo",
-      contentType: "movie",
-      rating: 5,
-      date: "2024-07-18",
-    },
-    { id: "rt3", contentTitle: "Dune (Libro)", contentType: "book", rating: 4.5, date: "2024-07-12" },
-  ]
+  // Eliminar handleAvatarChange
+
+  // Handle avatar selection from dialog
+  const handleAvatarDialogSelect = (url: string) => {
+    setEditAvatar(url)
+  }
+
+  // Save profile changes
+  const handleSave = async () => {
+    setSaving(true)
+    setEditError(null)
+    setSuccessMsg(null)
+    try {
+      const avatarUrl = editAvatar || profileData.avatarUrl
+      const updated = await updateProfile({
+        bio: editBio,
+        avatarUrl: avatarUrl || undefined,
+      }, axios)
+      setProfile((prev) => prev ? { ...prev, profile: updated.profile } : prev)
+      setEditMode(false)
+      setSuccessMsg("Perfil actualizado correctamente.")
+    } catch (err) {
+      setEditError("No se pudo actualizar el perfil.")
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  // Cancel editing
+  const handleCancel = () => {
+    setEditMode(false)
+    setEditError(null)
+    setSuccessMsg(null)
+  }
 
   return (
     <div className="container mx-auto px-4 py-8 bg-dark-background text-dark-foreground min-h-screen">
       <div className="flex flex-col md:flex-row items-center md:items-start gap-6 mb-8">
-        <Avatar className="h-24 w-24 md:h-32 md:w-32 border-4 border-dark-primary shadow-lg">
-          <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.name} />
-          <AvatarFallback className="bg-dark-accent text-dark-primary text-3xl">{user.name.charAt(0)}</AvatarFallback>
-        </Avatar>
+        <div className="relative">
+          <Avatar className="h-24 w-24 md:h-32 md:w-32 border-4 border-dark-primary shadow-lg">
+            <AvatarImage src={editMode ? (editAvatar || "/placeholder-user.jpg") : (profileData?.avatarUrl || "/placeholder-user.jpg")} alt={user.name} />
+            <AvatarFallback className="bg-dark-accent text-dark-primary text-3xl">{user.name?.charAt(0)}</AvatarFallback>
+          </Avatar>
+          {editMode && (
+            <>
+              <div className="absolute bottom-2 right-2 flex">
+                <button
+                  className="bg-dark-primary text-dark-primary-foreground rounded-full p-2 shadow hover:bg-dark-primary/90 transition"
+                  onClick={() => setAvatarDialogOpen(true)}
+                  title="Elegir avatar de galería"
+                  type="button"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                </button>
+              </div>
+              <AvatarPickerDialog
+                open={avatarDialogOpen}
+                onOpenChange={setAvatarDialogOpen}
+                onSelect={handleAvatarDialogSelect}
+              />
+            </>
+          )}
+        </div>
         <div className="text-center md:text-left flex-1">
-          <h1 className="text-3xl font-bold text-dark-primary">{user.name}</h1>
-          <p className="text-dark-muted-foreground text-lg">{user.username}</p>
-          <p className="mt-2 text-dark-foreground max-w-prose">{user.bio}</p>
+          <h1 className="text-3xl font-bold text-dark-primary">{user.name} {user.lastName}</h1>
+          <p className="text-dark-muted-foreground text-lg">@{user.username}</p>
+          {editMode ? (
+            <textarea
+              className="mt-2 w-full max-w-prose rounded bg-dark-card border border-dark-border p-2 text-dark-foreground focus:outline-none focus:ring-2 focus:ring-dark-primary min-h-[80px]"
+              value={editBio}
+              onChange={e => setEditBio(e.target.value)}
+              maxLength={300}
+              placeholder="Escribe tu biografía..."
+              disabled={saving}
+            />
+          ) : (
+            <p className="mt-2 text-dark-foreground max-w-prose min-h-[40px]">{profileData?.bio || <span className="text-dark-muted-foreground">Sin biografía.</span>}</p>
+          )}
           <div className="flex justify-center md:justify-start gap-6 mt-4">
             <div className="flex flex-col items-center">
-              <span className="text-xl font-bold text-dark-primary">{user.followers}</span>
+              <span className="text-xl font-bold text-dark-primary">{stats.followers}</span>
               <span className="text-dark-muted-foreground">Seguidores</span>
             </div>
             <div className="flex flex-col items-center">
-              <span className="text-xl font-bold text-dark-primary">{user.following}</span>
+              <span className="text-xl font-bold text-dark-primary">{stats.following}</span>
               <span className="text-dark-muted-foreground">Siguiendo</span>
             </div>
           </div>
           <div className="flex justify-center md:justify-start gap-4 mt-6">
-            <Button className="bg-dark-primary text-dark-primary-foreground hover:bg-dark-primary/90">
-              <UserPlus className="mr-2 h-4 w-4" />
-              Seguir
-            </Button>
-            <Button
-              variant="outline"
-              className="border-dark-border text-dark-foreground hover:bg-dark-accent hover:text-dark-primary bg-transparent"
-            >
-              <MessageSquare className="mr-2 h-4 w-4" />
-              Mensaje
-            </Button>
+            {editMode ? (
+              <>
+                <Button
+                  className="bg-dark-primary text-dark-primary-foreground hover:bg-dark-primary/90 min-w-[100px]"
+                  onClick={handleSave}
+                  disabled={saving}
+                >
+                  {saving ? "Guardando..." : "Guardar"}
+                </Button>
+                <Button
+                  variant="outline"
+                  className="border-dark-border text-dark-foreground hover:bg-dark-accent hover:text-dark-primary bg-transparent min-w-[100px]"
+                  onClick={handleCancel}
+                  disabled={saving}
+                >
+                  Cancelar
+                </Button>
+              </>
+            ) : (
+              <Button
+                variant="outline"
+                className="border-dark-border text-dark-foreground hover:bg-dark-accent hover:text-dark-primary bg-transparent min-w-[100px]"
+                onClick={() => setEditMode(true)}
+              >
+                Editar perfil
+              </Button>
+            )}
           </div>
+          {editError && <div className="mt-2 text-red-500">{editError}</div>}
+          {successMsg && <div className="mt-2 text-green-500">{successMsg}</div>}
         </div>
       </div>
 
@@ -191,91 +242,30 @@ export function ProfileSection() {
 
         <TabsContent value="activity" className="mt-6">
           <h2 className="text-2xl font-bold mb-4 text-dark-primary">Actividad Reciente</h2>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {recentActivity.map((activity, index) => (
-              <UserActivityCard key={index} activity={activity} />
-            ))}
-          </div>
+          {/* Aquí deberías mapear la actividad real del usuario si está disponible */}
+          <div className="text-dark-muted-foreground">Próximamente: actividad reciente.</div>
         </TabsContent>
 
         <TabsContent value="lists" className="mt-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold text-dark-primary">Mis Listas</h2>
-            <Button
-              onClick={() => setIsCreateListModalOpen(true)}
-              className="bg-dark-secondary text-dark-secondary-foreground hover:bg-dark-secondary/90"
-            >
-              <List className="mr-2 h-4 w-4" />
-              Crear Nueva Lista
-            </Button>
-          </div>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {userLists.map((list) => (
-              <ListOverviewCard key={list.id} list={list} />
-            ))}
-          </div>
+          <h2 className="text-2xl font-bold mb-4 text-dark-primary">Mis Listas</h2>
+          <div className="text-dark-muted-foreground">Próximamente: tus listas públicas.</div>
         </TabsContent>
 
         <TabsContent value="reviews" className="mt-6">
           <h2 className="text-2xl font-bold mb-4 text-dark-primary">Mis Reseñas</h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {userReviews.map((review) => (
-              <ReviewCard key={review.id} review={review} />
-            ))}
+            <ReviewsList justMine />
           </div>
         </TabsContent>
 
         <TabsContent value="ratings" className="mt-6">
           <h2 className="text-2xl font-bold mb-4 text-dark-primary">Mis Calificaciones</h2>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {userRatings.map((rating) => (
-              <Card key={rating.id} className="bg-dark-card border-dark-border text-dark-foreground">
-                <CardHeader>
-                  <CardTitle className="text-dark-primary">{rating.contentTitle}</CardTitle>
-                  <CardDescription className="text-dark-muted-foreground">{rating.contentType}</CardDescription>
-                </CardHeader>
-                <CardContent className="flex items-center gap-2">
-                  <Star className="h-5 w-5 text-yellow-500 fill-yellow-500" />
-                  <span className="text-lg font-semibold">{rating.rating}</span>
-                  <span className="text-dark-muted-foreground text-sm ml-auto">{rating.date}</span>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <div className="text-dark-muted-foreground">Próximamente: tus calificaciones.</div>
         </TabsContent>
 
         <TabsContent value="watched" className="mt-6">
           <h2 className="text-2xl font-bold mb-4 text-dark-primary">Contenido Visto/Leído</h2>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {/* Placeholder for watched/read content */}
-            <ContentCard
-              content={{
-                id: "w1",
-                title: "Inception",
-                type: "movie",
-                imageUrl: "/placeholder.svg?height=300&width=200",
-                rating: 4.8,
-              }}
-            />
-            <ContentCard
-              content={{
-                id: "w2",
-                title: "1984",
-                type: "book",
-                imageUrl: "/placeholder.svg?height=300&width=200",
-                rating: 4.5,
-              }}
-            />
-            <ContentCard
-              content={{
-                id: "w3",
-                title: "The Queen's Gambit",
-                type: "series",
-                imageUrl: "/placeholder.svg?height=300&width=200",
-                rating: 4.7,
-              }}
-            />
-          </div>
+          <div className="text-dark-muted-foreground">Próximamente: tu historial de contenido.</div>
         </TabsContent>
       </Tabs>
 

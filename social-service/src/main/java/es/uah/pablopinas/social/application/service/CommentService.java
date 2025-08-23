@@ -75,4 +75,9 @@ public class CommentService implements CommentUseCase {
         List<String> userIds = likeRepo.findAllUserIdsByTarget(commentId);
         return usersPort.getUsersByIds(userIds);
     }
+
+    @Override
+    public int getCommentsCount(String reviewId) {
+        return commentRepo.getCommentsCount(reviewId);
+    }
 }

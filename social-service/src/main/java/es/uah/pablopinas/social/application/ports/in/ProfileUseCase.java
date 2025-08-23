@@ -6,7 +6,7 @@ import es.uah.pablopinas.social.domain.ProfileStats;
 public interface ProfileUseCase {
     Profile getPublicProfile(String userId, String requestingUserId);
 
-    Profile updateProfile(String userId, String bio, String avatarUrl, Boolean privateFlag);
+    Profile updateProfile(String userId, String bio, String avatarUrl);
 
     ProfileStats getProfileStats(String userId);
 

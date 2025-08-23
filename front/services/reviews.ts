@@ -30,7 +30,7 @@ export async function createReview(
 }
 
 interface reviewsFilters  {
-    userId?: string,
+    justMine?: boolean,
     itemId?: string,
     hasRating?: boolean,
     hasText?: boolean,
@@ -38,7 +38,6 @@ interface reviewsFilters  {
     size?: number
 }
 export async function getReviews(
-  itemId: string,
   filters: reviewsFilters,
   axios: AxiosInstance
 ): Promise<Review[]> {
@@ -54,7 +53,12 @@ export async function getReviews(
   }
 }
 
+export function getReviewById(id: string, axios: AxiosInstance): Promise<Review> {
+  return axios.get(`/api/social/reviews/${id}`).then(response => mapReview(response.data));
+}
+
 function mapReview(review: any): Review {
+  console.log("Mapping review:", review);
   return {
     ...review,
     user: review.user ? {
@@ -63,4 +67,29 @@ function mapReview(review: any): Review {
       avatar: review.user.profileImageUrl
     } : null
   };
+}
+
+
+export async function likeReview(
+  reviewId: string,
+  axios: AxiosInstance
+): Promise<void> {
+  try {
+    await axios.post(`/api/social/reviews/${reviewId}/like`);
+  } catch (error) {
+    console.error("Error liking review", error);
+    throw error;
+  }
+}
+
+export async function unlikeReview(
+  reviewId: string,
+  axios: AxiosInstance
+): Promise<void> {
+  try {
+    await axios.delete(`/api/social/reviews/${reviewId}/like`);
+  } catch (error) {
+    console.error("Error unliking review", error);
+    throw error;
+  }
 }

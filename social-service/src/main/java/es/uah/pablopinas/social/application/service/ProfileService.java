@@ -29,10 +29,10 @@ public class ProfileService implements ProfileUseCase {
                 .orElseThrow(() -> new NotFoundException("Profile not found"));
     }
 
-    public Profile updateProfile(String userId, String bio, String avatarUrl, Boolean privateFlag) {
+    public Profile updateProfile(String userId, String bio, String avatarUrl) {
         Profile profile = profileRepo.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Profile not found"));
-        profile.updateProfile(bio, avatarUrl, privateFlag);
+        profile.updateProfile(bio, avatarUrl);
         return profileRepo.save(profile);
     }
 

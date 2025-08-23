@@ -22,5 +22,7 @@ public interface CommentUseCase {
     void unlikeComment(String commentId, String userId);
 
     List<UserWithProfile> getCommentLikes(String commentId);
+
+    int getCommentsCount(String id);
 }
 
