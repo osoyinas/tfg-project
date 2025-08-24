@@ -43,6 +43,7 @@ export default function BookDetailsPage({ params }: BookDetailsPageProps) {
       genres={book.genres}
       releaseDate={book.releaseDate}
       rating={book.rating}
+      ratingCount={book.ratingCount}
       description={book.description}
       images={book.images}
       // userLists={[

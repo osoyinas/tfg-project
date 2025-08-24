@@ -48,6 +48,7 @@ export default function MovieDetailsPage({ params }: MovieDetailsPageProps) {
       releaseDate={movie.releaseDate}
       rating={movie.rating}
       description={movie.description}
+      ratingCount={movie.ratingCount}
       images={movie.images}
       // userLists={[
       //   { id: "1", name: "Películas Favoritas" },

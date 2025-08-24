@@ -48,6 +48,7 @@ export default function SeriesDetailsPage({ params }: SeriesDetailsPageProps) {
       genres={series.genres}
       releaseDate={series.releaseDate}
       rating={series.rating}
+      ratingCount={series.ratingCount}
       description={series.description}
       images={series.images}
       // userLists={[

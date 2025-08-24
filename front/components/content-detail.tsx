@@ -18,7 +18,6 @@ import { cn } from "@/lib/utils";
 import { createReview } from "@/services/reviews";
 import { toast } from "@/hooks/use-toast";
 
-
 interface ContentDetailProps {
   id: string;
   title: string;
@@ -26,6 +25,7 @@ interface ContentDetailProps {
   genres?: string[];
   releaseDate?: string;
   rating: number; // 0-5
+  ratingCount: number;
   images: ContentImages;
   description?: string;
   onShare?: () => void;
@@ -46,6 +46,7 @@ import { ReviewsList, ReviewsListHandle } from "./content/reviews-list";
 import { useRef } from "react";
 //   userLists,
 
+
 export function ContentDetail(props: ContentDetailProps) {
   const {
     id,
@@ -53,7 +54,8 @@ export function ContentDetail(props: ContentDetailProps) {
     creators = [],
     genres = [],
     releaseDate = "",
-    rating,
+    rating: initialRating,
+    ratingCount: initialRatingCount,
     description = "",
     images,
     // userLists,
@@ -69,10 +71,15 @@ export function ContentDetail(props: ContentDetailProps) {
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [isAddToListModalOpen, setIsAddToListModalOpen] = useState(false);
 
+  // Estado local para rating y ratingCount
+  const [currentRating, setCurrentRating] = useState<number>(initialRating);
+  const [currentRatingCount, setCurrentRatingCount] = useState<number>(initialRatingCount);
+
   const { addItem, removeItem, isSaved } = useSavedItems();
   const saved = isSaved(id);
   const isPanoramic = Boolean(images?.cover?.url);
-  const thumbnailUrl = images?.thumbnail?.url || images?.poster?.url || "/placeholder.svg";
+  const thumbnailUrl =
+    images?.thumbnail?.url || images?.poster?.url || "/placeholder.svg";
 
   const axios = useAuthAxios();
   const handleOnBookmark = () => {
@@ -83,42 +90,68 @@ export function ContentDetail(props: ContentDetailProps) {
         id,
         type: contentType,
         title,
-        image: images?.thumbnail?.url || images?.poster?.url || images?.cover?.url || "/placeholder.svg",
+        image:
+          images?.thumbnail?.url ||
+          images?.poster?.url ||
+          images?.cover?.url ||
+          "/placeholder.svg",
       });
     }
     onBookmark?.();
   };
 
+  // Calcula el nuevo rating promedio
+  function calculateNewRating(
+    oldRating: number,
+    oldCount: number,
+    newReviewRating: number
+  ) {
+    console.log("Calculando nuevo rating...", {
+      oldRating,
+      oldCount,
+      newReviewRating,
+    });
+    return (oldRating * oldCount + newReviewRating*2) / (oldCount + 1);
+  }
+
   const reviewsListRef = useRef<ReviewsListHandle>(null);
 
-  const handleOnReview = async (rating: number, review: string, spoilers: boolean) => {
-    if (rating && review) {
+  const handleOnReview = async (
+    newRating: number,
+    review: string,
+    spoilers: boolean
+  ) => {
+    if (newRating && review) {
       try {
-        await createReview({
-          id,
-          rating,
-          text: review,
-          spoilers
-        }, axios);
-        toast({
-          title: "Reseña enviada",
-          description: "Tu reseña ha sido enviada con éxito.",
-          variant: "default"
-        });
-        // Refrescar la lista de reseñas
+        await createReview(
+          {
+            id,
+            rating: newRating,
+            text: review,
+            spoilers,
+          },
+          axios
+        );
         reviewsListRef.current?.refetch();
+        setCurrentRating((prev) => calculateNewRating(prev, currentRatingCount, newRating));
+        setCurrentRatingCount((prev) => prev + 1);
       } catch (error: any) {
         toast({
           title: "Error al enviar reseña",
-          description: error?.message || "Ocurrió un error inesperado. Intenta de nuevo.",
-          variant: "destructive"
+          description:
+            error?.message || "Ocurrió un error inesperado. Intenta de nuevo.",
+          variant: "destructive",
         });
       }
     }
   };
 
   return (
-    <div className={cn(`w-full min-h-screen ${bgClass} text-dark-foreground mb-16`)}>
+    <div
+      className={cn(
+        `w-full min-h-screen ${bgClass} text-dark-foreground mb-16`
+      )}
+    >
       <div className="container mx-auto px-4 py-8">
         {isPanoramic && (
           <div className="w-full mb-8 relative hidden md:block">
@@ -126,7 +159,7 @@ export function ContentDetail(props: ContentDetailProps) {
               src={images?.cover?.url}
               alt={title}
               className="w-full h-full object-cover [mask-image:linear-gradient(to_bottom,rgba(0,0,0,1),rgba(0,0,0,0))] [mask-repeat:no-repeat] [mask-size:100%] max-h-[400px]"
-              style={{ display: 'block', width: '100%', objectFit: 'cover' }}
+              style={{ display: "block", width: "100%", objectFit: "cover" }}
             />
           </div>
         )}
@@ -136,13 +169,24 @@ export function ContentDetail(props: ContentDetailProps) {
               src={thumbnailUrl}
               alt={title}
               className="shadow-lg object-cover w-full h-auto max-w-xs max-h-[60vh] sm:max-h-[450px] rounded-lg"
-              style={{ objectFit: 'contain', width: '100%', height: 'auto', maxHeight: '60vh' }}
+              style={{
+                objectFit: "contain",
+                width: "100%",
+                height: "auto",
+                maxHeight: "60vh",
+              }}
             />
           </div>
           <div className="md:col-span-2">
-            <h1 className={`text-4xl font-bold mb-2 ${accentColorClass}`}>{title}</h1>
+            <h1 className={`text-4xl font-bold mb-2 ${accentColorClass}`}>
+              {title}
+            </h1>
             <p className="text-dark-muted-foreground text-lg mb-4">
-              {creators.length > 0 ? creators.slice(0, 2).join(", ") + (creators.length > 2 ? "…" : "") + " • " : ""}
+              {creators.length > 0
+                ? creators.slice(0, 2).join(", ") +
+                  (creators.length > 2 ? "…" : "") +
+                  " • "
+                : ""}
               {genres.length > 0 ? genres.join(", ") + " • " : ""}
               {releaseDate
                 ? new Date(releaseDate).toLocaleDateString(undefined, {
@@ -161,9 +205,15 @@ export function ContentDetail(props: ContentDetailProps) {
                 aria-label="Escribir una reseña"
               >
                 <Star className="h-6 w-6 fill-yellow-500" />
-                <span className="text-2xl font-bold">{(rating / 2).toFixed(1)}</span>
+                <span className="text-2xl font-bold">
+                  {(currentRating / 2).toFixed(1)}
+                </span>
+                <span className="ml-2 text-base text-dark-muted-foreground">({currentRatingCount})</span>
               </button>
-              <Separator orientation="vertical" className="h-6 bg-dark-border" />
+              <Separator
+                orientation="vertical"
+                className="h-6 bg-dark-border"
+              />
               <ActionButtonsRow
                 onReviewClick={() => setIsReviewModalOpen(true)}
                 // onAddToListClick={() => setIsAddToListModalOpen(true)}
@@ -173,7 +223,9 @@ export function ContentDetail(props: ContentDetailProps) {
                 isBookmarked={saved}
               />
             </div>
-            <p className="text-dark-foreground leading-relaxed mb-6">{description}</p>
+            <p className="text-dark-foreground leading-relaxed mb-6">
+              {description}
+            </p>
             <div className="grid grid-cols-2 gap-4 text-dark-foreground mb-6">
               {details}
             </div>
@@ -189,10 +241,15 @@ export function ContentDetail(props: ContentDetailProps) {
         title={title}
         accentColorClass={accentColorClass}
         focusColorClass={focusColorClass}
-  onSubmit={(rating, review, spoilers) => handleOnReview?.(rating, review, spoilers)}
+        onSubmit={(rating, review, spoilers) =>
+          handleOnReview?.(rating, review, spoilers)
+        }
       />
       {/* Add to List Modal */}
-      <Dialog open={isAddToListModalOpen} onOpenChange={setIsAddToListModalOpen}>
+      <Dialog
+        open={isAddToListModalOpen}
+        onOpenChange={setIsAddToListModalOpen}
+      >
         <DialogContent className="bg-dark-card border-dark-border text-dark-foreground">
           <DialogHeader>
             <DialogTitle className="text-dark-primary">
