@@ -46,3 +46,18 @@ export async function getItem(
     throw error;
   }
 }
+
+export async function getItemsByIds(
+  ids: BaseContentItem["id"][],
+  axios: AxiosInstance
+): Promise<(MovieItem | BookItem | SeriesItem)[]> {
+  try {
+    // Unir los ids por coma para la query string
+    const idsParam = ids.join(",");
+    const response = await axios.get("/api/catalog/items", { params: { ids: idsParam } });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching items by IDs:", error);
+    throw error;
+  }
+}

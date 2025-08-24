@@ -4,6 +4,7 @@ import es.uah.pablopinas.social.application.ports.out.LikesPort;
 import es.uah.pablopinas.social.domain.Like;
 import es.uah.pablopinas.social.infrastructure.adapter.jpa.repository.LikeJpaRepository;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -26,6 +27,7 @@ public class LikeRepositoryAdapter implements LikesPort {
     }
 
     @Override
+    @Transactional
     public void deleteByUserIdAndTarget(String userId, String targetId) {
         likeRepo.deleteByUserIdAndTargetId(userId, targetId);
     }

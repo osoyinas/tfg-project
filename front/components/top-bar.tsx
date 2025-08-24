@@ -8,18 +8,40 @@ import { DesktopUserMenu } from "./layout/desktop-user-menu";
 import { MobileMenuToggle } from "./layout/mobile-menu-toggle";
 import { useKeycloak } from "@/components/keycloak-provider";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { getMyProfileWithStats } from "@/services/profile";
+import { useAuthAxios } from "@/hooks/useAuthAxios";
 import { SearchModal } from "@/components/search-modal";
 
 export function TopBar() {
   const { authenticated, login, logout } = useKeycloak();
   const [searchOpen, setSearchOpen] = useState(false);
+  const axios = useAuthAxios();
+  const profileRef = useRef<import("@/types").ProfileWithStats | null>(null);
+  const [profileLoaded, setProfileLoaded] = useState(false);
+
+  useEffect(() => {
+    if (authenticated && !profileLoaded) {
+      getMyProfileWithStats(axios)
+        .then((data) => {
+          profileRef.current = data;
+          setProfileLoaded(true);
+        })
+        .catch(() => setProfileLoaded(true));
+    }
+  }, [authenticated, profileLoaded, axios]);
+
+  // Helper para obtener avatar
+  const avatarUrl =
+    authenticated && profileRef.current && profileRef.current.profile && profileRef.current.profile.avatarUrl
+      ? profileRef.current.profile.avatarUrl
+      : undefined;
+
   return (
     <>
       <header className="sticky top-0 z-40 w-full border-b border-dark-border bg-dark-card py-3 shadow-sm">
         <div className="container flex h-14 items-center justify-between px-4 md:px-6">
           <div className="flex items-center gap-4">
-            <MobileMenuToggle />
             <LogoAndBrand />
           </div>
           {/* Desktop search bar opens modal */}
@@ -49,7 +71,7 @@ export function TopBar() {
               <Search className="h-6 w-6" />
             </button>
             {authenticated ? (
-              <DesktopUserMenu onLogout={logout} />
+              <DesktopUserMenu onLogout={logout} {...(avatarUrl ? { avatarUrl } : {})} />
             ) : (
               <DesktopAuthButtons onLogin={login} />
             )}

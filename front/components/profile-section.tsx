@@ -4,10 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { MessageSquare, UserPlus } from "lucide-react"
-import { useEffect, useRef, useState } from "react"
-import { CreateListModal } from "@/components/create-list-modal"
-import { InviteFriendsModal } from "@/components/invite-friends-modal"
+import { useEffect, useState } from "react"
 import { ReviewsList } from "./content/reviews-list"
 import { getMyProfileWithStats, updateProfile } from "@/services/profile"
 import { AvatarPickerDialog } from "@/components/avatar-picker-dialog"
@@ -118,12 +115,14 @@ export function ProfileSection() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 bg-dark-background text-dark-foreground min-h-screen">
-      <div className="flex flex-col md:flex-row items-center md:items-start gap-6 mb-8">
-        <div className="relative">
-          <Avatar className="h-24 w-24 md:h-32 md:w-32 border-4 border-dark-primary shadow-lg">
+    <div className="container mx-auto px-4 py-8 bg-dark-background text-dark-foreground min-h-screen mb-16">
+      <div className="relative flex flex-col items-center gap-4 mb-8 w-full">
+        {/* Fondo decorativo */}
+        <div className="absolute inset-0 h-40 md:h-56 w-full bg-gradient-to-b from-dark-primary/30 to-transparent rounded-b-3xl -z-10" />
+        <div className="relative mt-4">
+          <Avatar className="h-28 w-28 sm:h-36 sm:w-36 md:h-40 md:w-40 border-4 border-dark-primary shadow-xl mx-auto transition-all duration-300">
             <AvatarImage src={editMode ? (editAvatar || "/placeholder-user.jpg") : (profileData?.avatarUrl || "/placeholder-user.jpg")} alt={user.name} />
-            <AvatarFallback className="bg-dark-accent text-dark-primary text-3xl">{user.name?.charAt(0)}</AvatarFallback>
+            <AvatarFallback className="bg-dark-accent text-dark-primary text-4xl">{user.name?.charAt(0)}</AvatarFallback>
           </Avatar>
           {editMode && (
             <>
@@ -145,51 +144,51 @@ export function ProfileSection() {
             </>
           )}
         </div>
-        <div className="text-center md:text-left flex-1">
-          <h1 className="text-3xl font-bold text-dark-primary">{user.name} {user.lastName}</h1>
-          <p className="text-dark-muted-foreground text-lg">@{user.username}</p>
-          {editMode ? (
-            <textarea
-              className="mt-2 w-full max-w-prose rounded bg-dark-card border border-dark-border p-2 text-dark-foreground focus:outline-none focus:ring-2 focus:ring-dark-primary min-h-[80px]"
-              value={editBio}
-              onChange={e => setEditBio(e.target.value)}
-              maxLength={300}
-              placeholder="Escribe tu biografía..."
-              disabled={saving}
-            />
-          ) : (
-            <p className="mt-2 text-dark-foreground max-w-prose min-h-[40px]">{profileData?.bio || <span className="text-dark-muted-foreground">Sin biografía.</span>}</p>
-          )}
-          <div className="flex justify-center md:justify-start gap-6 mt-4">
-            <div className="flex flex-col items-center">
-              <span className="text-xl font-bold text-dark-primary">{stats.followers}</span>
-              <span className="text-dark-muted-foreground">Seguidores</span>
-            </div>
-            <div className="flex flex-col items-center">
-              <span className="text-xl font-bold text-dark-primary">{stats.following}</span>
-              <span className="text-dark-muted-foreground">Siguiendo</span>
-            </div>
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-dark-primary text-center drop-shadow-lg mt-2">{user.name} {user.lastName}</h1>
+        <p className="text-dark-muted-foreground text-lg sm:text-xl text-center">@{user.username}</p>
+        <div className="flex flex-wrap justify-center gap-4 mt-4 w-full max-w-xs sm:max-w-md md:max-w-lg">
+          <div className="flex-1 min-w-[120px] bg-dark-card rounded-xl shadow p-4 flex flex-col items-center transition-transform hover:scale-105">
+            <span className="text-2xl font-bold text-dark-primary animate-pulse-slow">{stats.followers}</span>
+            <span className="text-dark-muted-foreground text-sm">Seguidores</span>
           </div>
-          <div className="flex justify-center md:justify-start gap-4 mt-6">
-            {editMode ? (
-              <>
-                <Button
-                  className="bg-dark-primary text-dark-primary-foreground hover:bg-dark-primary/90 min-w-[100px]"
-                  onClick={handleSave}
-                  disabled={saving}
-                >
-                  {saving ? "Guardando..." : "Guardar"}
-                </Button>
-                <Button
-                  variant="outline"
-                  className="border-dark-border text-dark-foreground hover:bg-dark-accent hover:text-dark-primary bg-transparent min-w-[100px]"
-                  onClick={handleCancel}
-                  disabled={saving}
-                >
-                  Cancelar
-                </Button>
-              </>
-            ) : (
+          <div className="flex-1 min-w-[120px] bg-dark-card rounded-xl shadow p-4 flex flex-col items-center transition-transform hover:scale-105">
+            <span className="text-2xl font-bold text-dark-primary animate-pulse-slow">{stats.following}</span>
+            <span className="text-dark-muted-foreground text-sm">Siguiendo</span>
+          </div>
+        </div>
+        {editMode ? (
+          <textarea
+            className="mt-4 w-full max-w-prose rounded bg-dark-card border border-dark-border p-2 text-dark-foreground focus:outline-none focus:ring-2 focus:ring-dark-primary min-h-[80px]"
+            value={editBio}
+            onChange={e => setEditBio(e.target.value)}
+            maxLength={300}
+            placeholder="Escribe tu biografía..."
+            disabled={saving}
+          />
+        ) : (
+          <p className="mt-4 text-dark-foreground max-w-prose min-h-[40px] text-center text-base sm:text-lg">{profileData?.bio || <span className="text-dark-muted-foreground">Sin biografía.</span>}</p>
+        )}
+        <div className="flex justify-center gap-4 mt-6">
+          {editMode ? (
+            <>
+              <Button
+                className="bg-dark-primary text-dark-primary-foreground hover:bg-dark-primary/90 min-w-[100px]"
+                onClick={handleSave}
+                disabled={saving}
+              >
+                {saving ? "Guardando..." : "Guardar"}
+              </Button>
+              <Button
+                variant="outline"
+                className="border-dark-border text-dark-foreground hover:bg-dark-accent hover:text-dark-primary bg-transparent min-w-[100px]"
+                onClick={handleCancel}
+                disabled={saving}
+              >
+                Cancelar
+              </Button>
+            </>
+          ) : (
+            <>
               <Button
                 variant="outline"
                 className="border-dark-border text-dark-foreground hover:bg-dark-accent hover:text-dark-primary bg-transparent min-w-[100px]"
@@ -197,29 +196,26 @@ export function ProfileSection() {
               >
                 Editar perfil
               </Button>
-            )}
-          </div>
-          {editError && <div className="mt-2 text-red-500">{editError}</div>}
-          {successMsg && <div className="mt-2 text-green-500">{successMsg}</div>}
+              <a href="/account">
+                <Button
+                  variant="outline"
+                  className="border-dark-border text-dark-foreground hover:bg-dark-accent hover:text-dark-primary bg-transparent min-w-[100px]"
+                  type="button"
+                >
+                  Cuenta
+                </Button>
+              </a>
+            </>
+          )}
         </div>
+        {editError && <div className="mt-2 text-red-500 text-center">{editError}</div>}
+        {successMsg && <div className="mt-2 text-green-500 text-center">{successMsg}</div>}
       </div>
 
       <Separator className="my-8 bg-dark-border" />
 
-      <Tabs defaultValue="activity" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 md:grid-cols-5 bg-dark-card border-dark-border">
-          <TabsTrigger
-            value="activity"
-            className="text-dark-foreground data-[state=active]:bg-dark-primary data-[state=active]:text-dark-primary-foreground"
-          >
-            Actividad
-          </TabsTrigger>
-          <TabsTrigger
-            value="lists"
-            className="text-dark-foreground data-[state=active]:bg-dark-primary data-[state=active]:text-dark-primary-foreground"
-          >
-            Listas
-          </TabsTrigger>
+      <Tabs defaultValue="reviews" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 bg-dark-card border-dark-border mb-6">
           <TabsTrigger
             value="reviews"
             className="text-dark-foreground data-[state=active]:bg-dark-primary data-[state=active]:text-dark-primary-foreground"
@@ -227,50 +223,23 @@ export function ProfileSection() {
             Reseñas
           </TabsTrigger>
           <TabsTrigger
-            value="ratings"
+            value="activity"
             className="text-dark-foreground data-[state=active]:bg-dark-primary data-[state=active]:text-dark-primary-foreground"
           >
-            Calificaciones
-          </TabsTrigger>
-          <TabsTrigger
-            value="watched"
-            className="text-dark-foreground data-[state=active]:bg-dark-primary data-[state=active]:text-dark-primary-foreground"
-          >
-            Visto/Leído
+            Likes y Comentarios
           </TabsTrigger>
         </TabsList>
-
-        <TabsContent value="activity" className="mt-6">
-          <h2 className="text-2xl font-bold mb-4 text-dark-primary">Actividad Reciente</h2>
-          {/* Aquí deberías mapear la actividad real del usuario si está disponible */}
-          <div className="text-dark-muted-foreground">Próximamente: actividad reciente.</div>
-        </TabsContent>
-
-        <TabsContent value="lists" className="mt-6">
-          <h2 className="text-2xl font-bold mb-4 text-dark-primary">Mis Listas</h2>
-          <div className="text-dark-muted-foreground">Próximamente: tus listas públicas.</div>
-        </TabsContent>
-
-        <TabsContent value="reviews" className="mt-6">
+        <TabsContent value="reviews" className="mt-0">
           <h2 className="text-2xl font-bold mb-4 text-dark-primary">Mis Reseñas</h2>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <ReviewsList justMine />
+          <div className="flex flex-col gap-4">
+            <ReviewsList justMine withItems />
           </div>
         </TabsContent>
-
-        <TabsContent value="ratings" className="mt-6">
-          <h2 className="text-2xl font-bold mb-4 text-dark-primary">Mis Calificaciones</h2>
-          <div className="text-dark-muted-foreground">Próximamente: tus calificaciones.</div>
-        </TabsContent>
-
-        <TabsContent value="watched" className="mt-6">
-          <h2 className="text-2xl font-bold mb-4 text-dark-primary">Contenido Visto/Leído</h2>
-          <div className="text-dark-muted-foreground">Próximamente: tu historial de contenido.</div>
+        <TabsContent value="activity" className="mt-0">
+          <h2 className="text-2xl font-bold mb-4 text-dark-primary">Likes y Comentarios</h2>
+          <div className="text-dark-muted-foreground">Próximamente: actividad de likes y comentarios tipo Twitter.</div>
         </TabsContent>
       </Tabs>
-
-      <CreateListModal open={isCreateListModalOpen} onOpenChange={setIsCreateListModalOpen} />
-      <InviteFriendsModal open={isInviteFriendsModalOpen} onOpenChange={setIsInviteFriendsModalOpen} />
     </div>
   )
 }

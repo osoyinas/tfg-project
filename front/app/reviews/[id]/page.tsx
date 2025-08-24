@@ -23,9 +23,14 @@ import { BaseContentItem, Review, ReviewComment } from "@/types";
 import { getReviewById } from "@/services/reviews";
 import { getItem } from "@/services/getItems";
 import { useKeycloak } from "@/components/keycloak-provider";
-import { getReviewComments, addComment, dislikeComment } from "@/services/comments";
+import {
+  getReviewComments,
+  addComment,
+  dislikeComment,
+} from "@/services/comments";
 import { CommentCard } from "@/components/content/comment-card";
 import { useCallback } from "react";
+import { ReviewCard } from "@/components/content/review-card";
 
 // Puedes crear un servicio getReviewById en services/reviews.ts
 
@@ -61,7 +66,7 @@ export default function ReviewDetailPage() {
       ),
     getNextPageParam: (lastPage, allPages) =>
       lastPage.length === 10 ? allPages.length : undefined,
-  enabled: !!id && !!axios && initialized && authenticated,
+    enabled: !!id && !!axios && initialized && authenticated,
     initialPageParam: 0,
   });
 
@@ -73,8 +78,9 @@ export default function ReviewDetailPage() {
     },
     onSuccess: () => {
       setCommentInput("");
+      refetchComments();
       queryClient.invalidateQueries({
-        queryKey: ["review-comments", id, commentsPages],
+        queryKey: ["review-comments", id],
       });
     },
     onError: () => setCommentLoading(false),
@@ -125,7 +131,6 @@ export default function ReviewDetailPage() {
   }
 
   // Estructura de imágenes como en content-detail
-  const isPanoramic = Boolean(item.images?.cover?.url);
   const thumbnailUrl =
     item.images?.thumbnail?.url ||
     item.images?.poster?.url ||
@@ -135,20 +140,19 @@ export default function ReviewDetailPage() {
     <div className="w-full min-h-screen bg-dark-background text-dark-foreground mb-16">
       <div className="container mx-auto px-4 py-8">
         {/* Panoramic cover */}
-        {isPanoramic && (
-          <div className="w-full h-48 md:h-64 rounded-lg overflow-hidden mb-8 relative">
-            <img
-              src={item.images?.cover?.url}
-              alt={item.title}
-              className="w-full h-full object-cover object-center"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-dark-background/80 to-transparent" />
-          </div>
-        )}
-        <div className="">
-          {/* Thumbnail on the left */}
-          {/* Main content on the right */}
-          <div className="md:col-span-2">
+        {/* Título y cover/thumbnail a la derecha */}
+        <div className="flex flex-col md:flex-row md:items-center md:gap-8 mb-8">
+          {item.images?.thumbnail?.url && (
+            <div className="flex-shrink-0 ml-0 md:ml-4 mt-4 md:mt-0">
+              <img
+                src={item.images.thumbnail.url}
+                alt={item.title}
+                className="w-32 h-48 object-cover rounded-lg shadow-md border border-dark-border bg-dark-card"
+                style={{ minWidth: 96, minHeight: 144 }}
+              />
+            </div>
+          )}  
+          <div className="flex-1">
             <h1 className="text-4xl font-bold mb-2 text-dark-primary">
               {item.title}
             </h1>
@@ -167,147 +171,81 @@ export default function ReviewDetailPage() {
                   })
                 : ""}
             </p>
-            <Separator className="my-8 bg-dark-border" />
-            {/* Review principal */}
-            <Card className="mb-6">
-              <CardHeader className="flex flex-row items-center gap-4 pb-2">
-                {review.user && (
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage
-                      src="/placeholder-user.jpg"
-                      alt={review.user.name}
-                    />
-                    <AvatarFallback className="bg-dark-accent text-dark-primary">
-                      {review.user.name.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
-                )}
-                <div className="flex-1">
-                  <CardTitle className="text-lg font-semibold text-dark-primary">
-                    {review.user?.name || "Usuario Anónimo"}
-                  </CardTitle>
-                  <CardDescription className="text-sm text-dark-muted-foreground">
-                    {review.spoilers
-                      ? "⚠️ Contiene spoilers"
-                      : "✅ Sin spoilers"}
-                  </CardDescription>
-                </div>
-                <div className="flex items-center gap-1 text-yellow-500">
-                  <Star className="h-6 w-6 fill-yellow-500" />
-                  <span className="font-semibold text-2xl">
-                    {review.rating}
-                  </span>
-                </div>
-              </CardHeader>
-              <CardContent className="pt-2">
-                <p className="text-dark-foreground leading-relaxed mb-3">
-                  {review.text}
-                </p>
-                <div className="flex items-center gap-4 mt-2">
-                  <span className="flex items-center gap-1 text-dark-muted-foreground">
-                    <ThumbsUp className="h-4 w-4" />
-                    {review.likesCount ?? 0}
-                  </span>
-                  <span className="flex items-center gap-1 text-dark-muted-foreground">
-                    <MessageCircle className="h-4 w-4" />
-                    {review.commentsCount ?? 0}
-                  </span>
-                </div>
-                <p className="text-xs text-dark-muted-foreground text-right mt-2">
-                  {new Date(review.createdAt).toLocaleDateString("es-ES", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </p>
-              </CardContent>
-            </Card>
-            {/* Comentarios de la review */}
-            <div className="mt-8">
-              <h2 className="text-2xl font-bold mb-4 text-dark-primary">
-                Comentarios
-              </h2>
-              {/* Input para comentar */}
-              <form
-                className="flex gap-2 mb-6"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  if (!commentInput.trim() || commentLoading) return;
-                  commentMutation.mutate(commentInput.trim());
-                }}
+          </div>
+        </div>
+        <div className="md:col-span-2">
+          <Separator className="my-8 bg-dark-border" />
+          {/* Review principal */}
+          <ReviewCard review={review} />
+          {/* Comentarios de la review */}
+          <div className="mt-8">
+            <h2 className="text-2xl font-bold mb-4 text-dark-primary">
+              Comentarios
+            </h2>
+            {/* Input para comentar */}
+            <form
+              className="flex gap-2 mb-6"
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!commentInput.trim() || commentLoading) return;
+                commentMutation.mutate(commentInput.trim());
+              }}
+            >
+              <input
+                className="flex-1 rounded-md border border-dark-border bg-dark-background px-3 py-2 text-dark-foreground focus:outline-none focus:ring-2 focus:ring-dark-primary"
+                placeholder="Escribe un comentario..."
+                value={commentInput}
+                onChange={(e) => setCommentInput(e.target.value)}
+                disabled={commentLoading}
+                maxLength={500}
+                required
+              />
+              <button
+                type="submit"
+                className="px-4 py-2 rounded-md bg-dark-primary text-white font-semibold disabled:opacity-60"
+                disabled={commentLoading || !commentInput.trim()}
               >
-                <input
-                  className="flex-1 rounded-md border border-dark-border bg-dark-background px-3 py-2 text-dark-foreground focus:outline-none focus:ring-2 focus:ring-dark-primary"
-                  placeholder="Escribe un comentario..."
-                  value={commentInput}
-                  onChange={(e) => setCommentInput(e.target.value)}
-                  disabled={commentLoading}
-                  maxLength={500}
-                  required
-                />
-                <button
-                  type="submit"
-                  className="px-4 py-2 rounded-md bg-dark-primary text-white font-semibold disabled:opacity-60"
-                  disabled={commentLoading || !commentInput.trim()}
-                >
-                  Comentar
-                </button>
-              </form>
-              {/* Lista de comentarios con scroll infinito */}
-              <div
-                className="flex flex-col gap-3 max-h-[400px] overflow-y-auto"
-                onScroll={async (e) => {
-                  const el = e.currentTarget;
-                  if (
-                    el.scrollTop + el.clientHeight >= el.scrollHeight - 40 &&
-                    hasNextPage &&
-                    !isFetchingNextPage
-                  ) {
-                    await fetchNextPage();
-                  }
-                }}
-              >
-                {commentsLoading ? (
-                  <div className="text-center py-4">
-                    Cargando comentarios...
-                  </div>
-                ) : commentsError ? (
-                  <div className="text-center text-red-500 py-4">
-                    Error al cargar comentarios
-                  </div>
-                ) : commentsPages &&
-                  commentsPages.pages &&
-                  commentsPages.pages.flat().length > 0 ? (
-                  commentsPages.pages
-                    .flat()
-                    .map((comment: ReviewComment) => (
-                      <CommentCard
-                        key={comment.id}
-                        comment={comment}
-                        onLike={async (liked) => {
-                          if (!axios) return;
-                          if (liked) {
-                            // Like: POST
-                            await axios.post(`/api/social/comments/${comment.id}/like`);
-                          } else {
-                            // Dislike: DELETE
-                            await dislikeComment(comment.id, axios);
-                          }
-                          refetchComments();
-                        }}
-                      />
-                    ))
-                ) : (
-                  <div className="text-dark-muted-foreground">
-                    Sé el primero en comentar.
-                  </div>
-                )}
-                {isFetchingNextPage && (
-                  <div className="text-center py-2">Cargando más...</div>
-                )}
-              </div>
+                Comentar
+              </button>
+            </form>
+            {/* Lista de comentarios, sin scroll interno */}
+            <div className="flex flex-col gap-3">
+              {commentsLoading ? (
+                <div className="text-center py-4">Cargando comentarios...</div>
+              ) : commentsError ? (
+                <div className="text-center text-red-500 py-4">
+                  Error al cargar comentarios
+                </div>
+              ) : commentsPages &&
+                commentsPages.pages &&
+                commentsPages.pages.flat().length > 0 ? (
+                commentsPages.pages.flat().map((comment: ReviewComment) => (
+                  <CommentCard
+                    key={comment.id}
+                    comment={comment}
+                    onLike={async (liked) => {
+                      if (!axios) return;
+                      if (liked) {
+                        // Like: POST
+                        await axios.post(
+                          `/api/social/comments/${comment.id}/like`
+                        );
+                      } else {
+                        // Dislike: DELETE
+                        await dislikeComment(comment.id, axios);
+                      }
+                      refetchComments();
+                    }}
+                  />
+                ))
+              ) : (
+                <div className="text-dark-muted-foreground">
+                  Sé el primero en comentar.
+                </div>
+              )}
+              {isFetchingNextPage && (
+                <div className="text-center py-2">Cargando más...</div>
+              )}
             </div>
           </div>
         </div>

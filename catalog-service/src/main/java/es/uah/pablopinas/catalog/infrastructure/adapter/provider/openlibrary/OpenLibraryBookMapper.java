@@ -68,9 +68,8 @@ public class OpenLibraryBookMapper {
     private ImageSet getImageSetFromCoverI(Integer coverI) {
         if (coverI == null) return null;
         return ImageSet.builder()
-                .cover(new Image(COVER_BASE_URL + coverI + "-L.jpg", "Cover"))
-                .poster(new Image(COVER_BASE_URL + coverI + "-M.jpg", "Poster"))
-                .thumbnail(new Image(COVER_BASE_URL + coverI + "-S.jpg", "Thumbnail"))
+                .poster(new Image(COVER_BASE_URL + coverI + "-L.jpg", "Poster"))
+                .thumbnail(new Image(COVER_BASE_URL + coverI + "-L.jpg", "Thumbnail"))
                 .build();
     }
 

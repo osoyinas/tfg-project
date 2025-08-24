@@ -16,7 +16,6 @@ export function BottomNavigation() {
     { href: "/movies", icon: Film, label: "Películas" },
     { href: "/books", icon: Book, label: "Libros" },
     { href: "/series", icon: Tv, label: "Series" },
-    { href: "/lists", icon: List, label: "Listas" },
   ];
 
   return (

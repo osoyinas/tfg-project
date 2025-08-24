@@ -58,7 +58,6 @@ export function getReviewById(id: string, axios: AxiosInstance): Promise<Review>
 }
 
 function mapReview(review: any): Review {
-  console.log("Mapping review:", review);
   return {
     ...review,
     user: review.user ? {

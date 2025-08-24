@@ -182,7 +182,7 @@ export function ContentDetail(props: ContentDetailProps) {
               {title}
             </h1>
             <p className="text-dark-muted-foreground text-lg mb-4">
-              {creators.length > 0
+              {creators?.length > 0
                 ? creators.slice(0, 2).join(", ") +
                   (creators.length > 2 ? "…" : "") +
                   " • "
