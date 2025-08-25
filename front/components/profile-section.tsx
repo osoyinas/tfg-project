@@ -146,16 +146,6 @@ export function ProfileSection() {
         </div>
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-dark-primary text-center drop-shadow-lg mt-2">{user.name} {user.lastName}</h1>
         <p className="text-dark-muted-foreground text-lg sm:text-xl text-center">@{user.username}</p>
-        <div className="flex flex-wrap justify-center gap-4 mt-4 w-full max-w-xs sm:max-w-md md:max-w-lg">
-          <div className="flex-1 min-w-[120px] bg-dark-card rounded-xl shadow p-4 flex flex-col items-center transition-transform hover:scale-105">
-            <span className="text-2xl font-bold text-dark-primary animate-pulse-slow">{stats.followers}</span>
-            <span className="text-dark-muted-foreground text-sm">Seguidores</span>
-          </div>
-          <div className="flex-1 min-w-[120px] bg-dark-card rounded-xl shadow p-4 flex flex-col items-center transition-transform hover:scale-105">
-            <span className="text-2xl font-bold text-dark-primary animate-pulse-slow">{stats.following}</span>
-            <span className="text-dark-muted-foreground text-sm">Siguiendo</span>
-          </div>
-        </div>
         {editMode ? (
           <textarea
             className="mt-4 w-full max-w-prose rounded bg-dark-card border border-dark-border p-2 text-dark-foreground focus:outline-none focus:ring-2 focus:ring-dark-primary min-h-[80px]"
