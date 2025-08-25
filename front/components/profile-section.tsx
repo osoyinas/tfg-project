@@ -20,6 +20,8 @@ interface ProfileSectionProps {
   userId?: string;
 }
 
+const ACCOUNT_URL = `${process.env.NEXT_PUBLIC_KEYCLOAK_URL}/realms/${process.env.NEXT_PUBLIC_KEYCLOAK_REALM}/account/`
+
 export function ProfileSection({ userId }: ProfileSectionProps) {
   const [isCreateListModalOpen, setIsCreateListModalOpen] = useState(false);
   const [isInviteFriendsModalOpen, setIsInviteFriendsModalOpen] =
@@ -262,7 +264,7 @@ export function ProfileSection({ userId }: ProfileSectionProps) {
                   >
                     Editar perfil
                   </Button>
-                  <a href="/account">
+                  <a href={ACCOUNT_URL}>
                     <Button
                       variant="outline"
                       className="border-dark-border text-dark-foreground hover:bg-dark-accent hover:text-dark-primary bg-transparent min-w-[100px]"
