@@ -31,6 +31,19 @@ export async function updateProfile(
     throw error;
   }
 }
+export async function getUserProfile(
+  userId: string,
+  axios: AxiosInstance
+): Promise<ProfileWithStats> {
+  try {
+    const response = await axios.get(`/api/social/profiles/${userId}/stats`);
+    // Si la respuesta tiene stats, devolver como ProfileWithStats
+    return mapProfileResponse(response.data) as ProfileWithStats;
+  } catch (error) {
+    console.error("Error fetching user profile", error);
+    throw error;
+  }
+}
 
 export async function getMyProfileWithStats(
   axios: AxiosInstance

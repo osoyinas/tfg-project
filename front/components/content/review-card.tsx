@@ -93,7 +93,7 @@ export function ReviewCard({ review, item }: ReviewCardProps) {
       <CardHeader className="flex flex-row items-center gap-4 pb-2 pt-4 px-6">
         {review.user && (
           <a
-            href={review.user.id ? `/profiles/${review.user.id}` : "/profiles/"}
+            href={review.user.id ? `/profile/${review.user.id}` : "/profile/"}
             onClick={e => e.stopPropagation()}
             tabIndex={0}
             aria-label={`Ver perfil de ${review.user.name}`}

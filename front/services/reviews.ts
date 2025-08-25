@@ -61,7 +61,7 @@ function mapReview(review: any): Review {
   return {
     ...review,
     user: review.user ? {
-      id: review.user.userid,
+      id: review.user.userId,
       name: review.user.username,
       avatar: review.user.profileImageUrl
     } : null
